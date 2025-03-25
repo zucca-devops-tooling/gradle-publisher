@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    `gradle-publisher`
+    id("com.zucca.gradle-publisher") version "1.0.0-SNAPSHOT"
 }
 
 group = "com.zucca"
@@ -27,4 +27,12 @@ tasks.test {
 
 kotlin {
     jvmToolchain(17)
+}
+
+
+
+publisher {
+    devRepoUrl = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
+    usernameProperty = "jfrogUser"
+    passwordProperty = "jfrogPassword"
 }
