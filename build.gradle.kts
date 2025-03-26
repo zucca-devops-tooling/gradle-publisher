@@ -32,7 +32,7 @@ buildscript {
         maven {
             url = uri("https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot")
         }
-        credentials {
+        credentials(PasswordCredentials::class) {
             username = findProperty("jfrogUser") as String?
             password = findProperty("jfrogPassword") as String?
         }

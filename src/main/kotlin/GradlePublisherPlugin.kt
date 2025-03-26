@@ -7,10 +7,12 @@ import com.zucca.core.VersionManager
 import com.zucca.helpers.GitHelper
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.repositories.PasswordCredentials
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.credentials
 import org.gradle.kotlin.dsl.get
 
 class GradlePublisherPlugin(): Plugin<Project> {
@@ -49,7 +51,7 @@ class GradlePublisherPlugin(): Plugin<Project> {
                 repositories{
                     maven{
                         url = target.uri(repositoryManager.getUrl())
-                        credentials {
+                        credentials(PasswordCredentials::class) {
                             username = repositoryAuthenticator.getUsername()
                             password = repositoryAuthenticator.getPassword()
                         }
