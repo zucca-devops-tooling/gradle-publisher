@@ -13,8 +13,15 @@ pipeline {
         }
 
         stage('Build & Test') {
+            environment {
+                JFROG_CREDENTIALS = credentials('jfrog-user-pass')
+            }
             steps {
-                sh './gradlew clean build test'
+                sh """
+                    ./gradlew clean build test \
+                        -PjfrogUser=$JFROG_CREDENTIALS_USR \
+                        -PjfrogPassword=$JFROG_CREDENTIALS_PSW
+                """
             }
         }
 

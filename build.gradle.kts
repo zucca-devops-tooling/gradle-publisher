@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    id("com.zucca.gradle-publisher") version "1.0.0-SNAPSHOT"
 }
 
 group = "com.zucca"
@@ -18,7 +17,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     implementation(gradleApi())
     implementation(localGroovy())
-    implementation("com.zucca:gradle-publisher:1.0.0-SNAPSHOT")
 }
 
 tasks.test {
@@ -29,7 +27,22 @@ kotlin {
     jvmToolchain(17)
 }
 
+buildscript {
+    repositories {
+        maven {
+            url = uri("https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot")
+        }
+        credentials {
+            username = findProperty("jfrogUser") as String?
+            password = findProperty("jfrogPassword") as String?
+        }
+    }
+    dependencies {
+        classpath("com.zucca:gradle-publisher:1.0.0-SNAPSHOT")
+    }
+}
 
+apply(plugin = "com.zucca.gradle-publisher")
 
 publisher {
     devRepoUrl = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
