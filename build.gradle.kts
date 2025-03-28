@@ -3,6 +3,14 @@ plugins {
     `kotlin-dsl`
     id("com.zucca.gradle-publisher") version "1.0.0-SNAPSHOT"
 }
+gradlePlugin {
+    plugins {
+        create("gradlePublisherPlugin") {
+            id = "com.zucca.gradle-publisher"           // plugin ID used in plugins{} DSL
+            implementationClass = "com.zucca.GradlePublisherPlugin"  // fully qualified class name
+        }
+    }
+}
 
 group = "com.zucca"
 version = "1.0.0-SNAPSHOT"
