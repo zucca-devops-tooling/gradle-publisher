@@ -1,3 +1,6 @@
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
+}
 rootProject.name = "gradle-publisher"
 
 val jfrogUser = gradle.startParameter.projectProperties["jfrogUser"]
@@ -14,7 +17,4 @@ pluginManagement {
         }
         gradlePluginPortal()
     }
-}
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
 }
