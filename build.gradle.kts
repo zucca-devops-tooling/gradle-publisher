@@ -43,7 +43,7 @@ buildscript {
     }
 }
 
-apply(plugin = "com.zucca.gradle-publisher")
+apply(plugin = "gradle-publisher")
 
 publisher {
     devRepoUrl = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
