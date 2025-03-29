@@ -11,9 +11,9 @@ class GitHelper(private val gitFolder: String, private val project: Project) {
         val gitOutput = ByteArrayOutputStream()
 
         val gitArgs = listOf(
+            "--git-dir=$gitFolder/.git",
             "log",
             rev.toString(),
-            "--git-dir=$gitFolder/.git",
             "--pretty=%(decorate:${getDecoratorString()})"
         )
 
