@@ -9,6 +9,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
@@ -61,7 +62,7 @@ class GradlePublisherPlugin(): Plugin<Project> {
                 }
 
                 target.version = versionManager.getVersion()
-                target.tasks.named("publishMavenPublicationToMyMavenRepo").configure {
+                target.tasks.withType(PublishToMavenRepository::class.java).configureEach {
                     onlyIf {
                         repositoryManager.shouldPublish()
                     }
