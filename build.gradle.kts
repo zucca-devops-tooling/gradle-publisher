@@ -1,9 +1,9 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    id("com.zucca.gradle-publisher") version "1.0.0-SNAPSHOT"
+    //id("com.zucca.gradle-publisher") version "1.0.0-SNAPSHOT"
     id("java-gradle-plugin")
-    //id("maven-publish")
+    id("maven-publish")
 }
 
 group = "com.zucca"
@@ -39,7 +39,7 @@ gradlePlugin {
     }
 }
 
-/*
+
 publishing {
     repositories {
         maven {
@@ -51,7 +51,7 @@ publishing {
             }
         }
     }
-}*/
+}
 
 /*
 publisher {

@@ -1,11 +1,12 @@
 package com.zucca.core
 
+import com.zucca.configuration.PluginConfiguration
 import org.gradle.api.Project
 import java.io.FileNotFoundException
 import java.net.Authenticator
 import java.net.URL
 
-class RepositoryManager(private val prodRepoUrl: String, private val devRepoUrl: String, private val repositoryAuthenticator: RepositoryAuthenticator,
+class RepositoryManager(private val pluginConfiguration: PluginConfiguration, private val repositoryAuthenticator: RepositoryAuthenticator,
                         private val versionManager: VersionManager, private val project: Project
 ) {
 
@@ -19,15 +20,15 @@ class RepositoryManager(private val prodRepoUrl: String, private val devRepoUrl:
 
     fun getUrl(): String {
         if (versionManager.isRelease()) {
-            return prodRepoUrl
+            return pluginConfiguration.prodRepoUrl
         }
 
-        return devRepoUrl
+        return pluginConfiguration.devRepoUrl
     }
 
     private fun getUri(): String {
         val group = project.group.toString().replace(".", "/")
-        val name = project.name.toString().replace(".", "/")
+        val name = project.name.replace(".", "/")
 
         return getUrl() + group + "/" + name
     }

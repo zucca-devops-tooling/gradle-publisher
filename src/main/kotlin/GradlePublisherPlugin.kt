@@ -18,13 +18,12 @@ class GradlePublisherPlugin(): Plugin<Project> {
 
     override fun apply(target: Project) {
         val configuration = target.extensions.create("publisher", PluginConfiguration::class.java)
-        val gitHelper = GitHelper(configuration.gitFolder, target)
-        val versionManager = VersionManager(configuration.releaseBranchPatterns, gitHelper, target)
+        val gitHelper = GitHelper({ configuration.gitFolder }, target)
+        val versionManager = VersionManager({ configuration.releaseBranchPatterns }, gitHelper, target)
         val repositoryAuthenticator =
-            RepositoryAuthenticator(configuration.usernameProperty, configuration.passwordProperty, target)
+            RepositoryAuthenticator(configuration, target)
         val repositoryManager = RepositoryManager(
-            configuration.prodRepoUrl,
-            configuration.devRepoUrl,
+            configuration,
             repositoryAuthenticator,
             versionManager,
             target
