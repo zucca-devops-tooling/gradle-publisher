@@ -18,7 +18,7 @@ pipeline {
             }
             steps {
                 sh """
-                    ./gradlew clean build test \
+                    ./gradlew clean build test --refresh-dependencies \
                         -PjfrogUser=$JFROG_CREDENTIALS_USR \
                         -PjfrogPassword=$JFROG_CREDENTIALS_PSW
                 """
