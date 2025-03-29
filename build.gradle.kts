@@ -49,4 +49,11 @@ publishing {
             }
         }
     }
+
+    publications {
+        withType<MavenPublication>().matching { it.name.endsWith("PluginMarker") }.configureEach {
+            groupId = "com.zucca" // ✅ override the wrong default
+            artifactId = "gradle-publisher.gradle.plugin"
+        }
+    }
 }
