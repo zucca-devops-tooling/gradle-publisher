@@ -32,7 +32,7 @@ kotlin {
 gradlePlugin {
     plugins {
         create("gradlePublisherPlugin") {
-            id = "gradle-publisher"
+            id = "com.zucca"
             implementationClass = "com.zucca.GradlePublisherPlugin"
         }
     }
