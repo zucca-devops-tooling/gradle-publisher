@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    id("com.gradle.plugin-publish") version "1.3.1"
+    id("java-gradle-plugin")
     id("maven-publish")
 }
 
@@ -32,7 +32,7 @@ kotlin {
 gradlePlugin {
     plugins {
         create("gradlePublisherPlugin") {
-            id = "com.zucca.gradle-publisher"
+            id = "com.zucca"
             implementationClass = "com.zucca.GradlePublisherPlugin"
         }
     }
@@ -47,6 +47,13 @@ publishing {
                 username = project.findProperty("jfrogUser") as String?
                 password = project.findProperty("jfrogPassword") as String?
             }
+        }
+    }
+
+    publications {
+        withType<MavenPublication>().matching { it.name.endsWith("PluginMarker") }.configureEach {
+            groupId = "com.zucca" // ✅ override the wrong default
+            artifactId = "gradle-publisher.gradle.plugin"
         }
     }
 }
