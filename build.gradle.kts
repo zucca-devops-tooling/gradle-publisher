@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    id("com.gradle.plugin-publish") version "1.3.1"
+    id("java-gradle-plugin")
     id("maven-publish")
 }
 
@@ -46,6 +46,26 @@ publishing {
             credentials {
                 username = project.findProperty("jfrogUser") as String?
                 password = project.findProperty("jfrogPassword") as String?
+            }
+        }
+    }
+
+    publications {
+        create<MavenPublication>("manualPluginMarker") {
+            groupId = "com.zucca"
+            artifactId = "gradle-publisher.gradle.plugin"
+            version = "1.0.0-SNAPSHOT"
+            pom {
+                packaging = "pom"
+                withXml {
+                    asNode().appendNode("dependencies").apply {
+                        appendNode("dependency").apply {
+                            appendNode("groupId", "com.zucca")
+                            appendNode("artifactId", "gradle-publisher")
+                            appendNode("version", "1.0.0-SNAPSHOT")
+                        }
+                    }
+                }
             }
         }
     }
