@@ -64,31 +64,43 @@ class GitHelper(private val gitFolder: String, private val project: Project) {
         return branch ?: "HEAD"
     }
 
-    fun getMainBranchName(): String? {
+    fun isMainBranch(branch: String): Boolean {
+        return getMainBranchName() == branch || listOf("main", "master").contains(branch)
+    }
+
+    private fun getMainBranchName(): String? {
         val gitOutput = ByteArrayOutputStream()
 
+        // Try symbolic-ref method
         project.exec {
             executable = "git"
             args = listOf("--git-dir=$gitFolder/.git", "symbolic-ref", "refs/remotes/origin/HEAD")
             standardOutput = gitOutput
-            isIgnoreExitValue = true // Prevents errors from stopping execution
+            isIgnoreExitValue = true
         }
 
-        val output = gitOutput.toString().trim()
-        if (output.isNotEmpty()) {
-            return output.substringAfterLast("/")
+        val symbolicOutput = gitOutput.toString().trim()
+        if (symbolicOutput.startsWith("refs/remotes/origin/")) {
+            return symbolicOutput.substringAfterLast("/")
         }
 
-        // Fallback method
+        // Fallback: git remote show origin
         gitOutput.reset()
         project.exec {
             executable = "git"
             args = listOf("remote", "show", "origin")
             standardOutput = gitOutput
+            isIgnoreExitValue = true
         }
 
         val remoteOutput = gitOutput.toString().trim()
         val match = Regex("HEAD branch: (\\S+)").find(remoteOutput)
-        return match?.groupValues?.get(1)
+        if (match != null) return match.groupValues[1]
+
+        // Fallback: common CI env vars
+        val envVars = System.getenv()
+        return envVars["GITHUB_BASE_REF"]
+            ?: envVars["GITHUB_REF_NAME"]
+            ?: envVars["CI_DEFAULT_BRANCH"]
     }
 }

@@ -23,13 +23,11 @@ class VersionManager(private val releaseBranchPatterns: List<String>, private va
         val currentBranch = gitHelper.getBranch()
 
         if (releaseBranchPatterns.isEmpty()) {
-            val mainBranch = gitHelper.getMainBranchName() ?: return false
-
             if (currentBranch == "HEAD") {
                 return false
             }
 
-            return currentBranch == mainBranch
+            return gitHelper.isMainBranch(currentBranch)
         }
 
         return releaseBranchPatterns.any { currentBranch.matches(Regex(it)) }

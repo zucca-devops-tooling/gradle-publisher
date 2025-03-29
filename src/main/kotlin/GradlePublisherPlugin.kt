@@ -29,7 +29,6 @@ class GradlePublisherPlugin(): Plugin<Project> {
             versionManager,
             target
         )
-        val gradleVersion = target.gradle.gradleVersion.substringBefore(".").toInt()
 
         target.plugins.apply("maven-publish")
 
@@ -37,8 +36,8 @@ class GradlePublisherPlugin(): Plugin<Project> {
             dependsOn(target.tasks.named("build"))
         }
 
-        fun configure() {
-            target.configure<PublishingExtension> {
+        target.afterEvaluate {
+            configure<PublishingExtension> {
                 publications {
                     create<MavenPublication>("maven") {
                         groupId = target.group.toString()
@@ -68,15 +67,6 @@ class GradlePublisherPlugin(): Plugin<Project> {
                     }
                 }
             }
-        }
-
-        if (gradleVersion < 8) {
-            // older versions of gradle don't have this behaviour by default
-            target.afterEvaluate {
-                configure()
-            }
-        } else {
-            configure()
         }
     }
 }
