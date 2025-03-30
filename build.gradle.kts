@@ -38,7 +38,6 @@ gradlePlugin {
         }
     }
 }
-
 /*
 publishing {
     repositories {
@@ -52,7 +51,6 @@ publishing {
         }
     }
 }*/
-
 
 publisher {
     devRepoUrl = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"

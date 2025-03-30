@@ -21,18 +21,25 @@ class GitHelper(private val gitFolderProvider: () -> String, private val project
          */
 
         // println("gitargs $gitArgs")
-
-        project.exec {
+        val stdout = ByteArrayOutputStream()
+        val stderr = ByteArrayOutputStream()
+        val result = project.exec {
             executable = "sh"
             args = listOf(
                 "-c",
                 "git --git-dir=$gitFolder/.git log -1 --pretty=\"%(decorate:prefix=,suffix=,separator=#,pointer=&,exclude=PR/*,refs/tags/*)\""
             )
-            standardOutput = gitOutput
+            standardOutput = stdout
+            errorOutput = stderr
+            isIgnoreExitValue = true
         }
 
+        println("Exit code: ${result.exitValue}")
+        println("STDOUT:\n${stdout.toString().trim()}")
+        println("STDERR:\n${stderr.toString().trim()}")
+
         val output = gitOutput.toString().trim()
-        return extractBranchName(output)
+        return extractBranchName(stdout.toString().trim())
     }
 
     private fun getDecoratorString(): String {
