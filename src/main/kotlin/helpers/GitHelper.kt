@@ -31,33 +31,27 @@ class GitHelper(private val gitFolderProvider: () -> String, private val project
     }
 
     private fun getDecoratorString(): String {
-        val jenkinsRef = "PR/*"
-        val tagsRef = "refs/tags/*"
-
         val decorate = listOf(
             "prefix=", // Avoid the `(` prefix on references
             "suffix=", // Avoid the `)` suffix on references
             "separator=$SEPARATOR",
             "pointer=$POINTER",
-            // "exclude=$jenkinsRef,$tagsRef" // Ignore tags and Jenkins generated branches
         )
 
         return decorate.joinToString(",")
     }
 
     private fun extractBranchName(output: String): String? {
+        val tagsRef = "refs/tags/*"
         println("revision output:$output")
-        println("contains$POINTER?")
-        if (output.contains(POINTER)) {
-            val onlyBranches = output.substringAfter(POINTER)
-            println("substring after pointer $onlyBranches")
 
-            return onlyBranches.split(SEPARATOR)
-                .map { it.substringAfter("/") }
-                .firstOrNull()
-        }
+        val onlyBranches = if (output.contains(POINTER)) output.substringAfter(POINTER) else output
 
-        return null
+        return onlyBranches.split(SEPARATOR)
+            .filter { it.contains("/") } // These are branches
+            .filter { it != tagsRef } // We don't consider tags
+            .map { it.substringAfter("/") } // Get rid of `origin/`
+            .firstOrNull()
     }
 
     fun getBranch(): String {
