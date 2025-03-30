@@ -31,7 +31,7 @@ pipeline {
             }
             steps {
                 sh """
-                    ./gradlew publish \
+                    ./gradlew publish --info \
                         -PjfrogUser=$JFROG_CREDENTIALS_USR \
                         -PjfrogPassword=$JFROG_CREDENTIALS_PSW
                 """
