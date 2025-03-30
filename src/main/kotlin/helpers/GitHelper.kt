@@ -18,6 +18,8 @@ class GitHelper(private val gitFolderProvider: () -> String, private val project
             "--pretty=%(decorate:${getDecoratorString()})"
         )
 
+        println("gitargs $gitArgs")
+
         project.exec {
             executable = "git"
             args = gitArgs
@@ -44,8 +46,11 @@ class GitHelper(private val gitFolderProvider: () -> String, private val project
     }
 
     private fun extractBranchName(output: String): String? {
+        println("revision output:$output")
+        println("contains$POINTER?")
         if (output.contains(POINTER)) {
             val onlyBranches = output.substringAfter(POINTER)
+            println("substring after pointer $onlyBranches")
 
             return onlyBranches.split(SEPARATOR)
                 .map { it.substringAfter("/") }
@@ -66,6 +71,7 @@ class GitHelper(private val gitFolderProvider: () -> String, private val project
     }
 
     fun isMainBranch(branch: String): Boolean {
+        println("comparing " + branch + " with " + getMainBranchName())
         return getMainBranchName() == branch || listOf("main", "master").contains(branch)
     }
 
