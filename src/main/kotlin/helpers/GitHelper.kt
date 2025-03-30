@@ -10,36 +10,24 @@ class GitHelper(private val gitFolderProvider: () -> String, private val project
     private fun getBranchForRevision(rev: Int): String? {
         val gitOutput = ByteArrayOutputStream()
         val gitFolder = gitFolderProvider()
-        /*
+
         val gitArgs = listOf(
             "--git-dir=$gitFolder/.git",
             "log",
             rev.toString(),
-            "--pretty=\"%(decorate:${getDecoratorString()})\""
+            "--pretty=%(decorate:${getDecoratorString()})"
         )
 
-         */
+        println("gitargs $gitArgs")
 
-        // println("gitargs $gitArgs")
-        val stdout = ByteArrayOutputStream()
-        val stderr = ByteArrayOutputStream()
-        val result = project.exec {
-            executable = "sh"
-            args = listOf(
-                "-c",
-                "git --git-dir=$gitFolder/.git log -1 --pretty=\"%(decorate:prefix=,suffix=,separator=#,pointer=&,exclude=PR/*,refs/tags/*)\""
-            )
-            standardOutput = stdout
-            errorOutput = stderr
-            isIgnoreExitValue = true
+        project.exec {
+            executable = "git"
+            args = gitArgs
+            standardOutput = gitOutput
         }
 
-        println("Exit code: ${result.exitValue}")
-        println("STDOUT:\n${stdout.toString().trim()}")
-        println("STDERR:\n${stderr.toString().trim()}")
-
         val output = gitOutput.toString().trim()
-        return extractBranchName(stdout.toString().trim())
+        return extractBranchName(output)
     }
 
     private fun getDecoratorString(): String {
@@ -51,7 +39,7 @@ class GitHelper(private val gitFolderProvider: () -> String, private val project
             "suffix=", // Avoid the `)` suffix on references
             "separator=$SEPARATOR",
             "pointer=$POINTER",
-            "exclude=$jenkinsRef,$tagsRef" // Ignore tags and Jenkins generated branches
+            // "exclude=$jenkinsRef,$tagsRef" // Ignore tags and Jenkins generated branches
         )
 
         return decorate.joinToString(",")
