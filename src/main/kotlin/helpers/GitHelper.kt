@@ -10,7 +10,7 @@ class GitHelper(private val gitFolderProvider: () -> String, private val project
     private fun getBranchForRevision(rev: Int): String? {
         val gitOutput = ByteArrayOutputStream()
         val gitFolder = gitFolderProvider()
-
+        /*
         val gitArgs = listOf(
             "--git-dir=$gitFolder/.git",
             "log",
@@ -18,11 +18,16 @@ class GitHelper(private val gitFolderProvider: () -> String, private val project
             "--pretty=\"%(decorate:${getDecoratorString()})\""
         )
 
-        println("gitargs $gitArgs")
+         */
+
+        // println("gitargs $gitArgs")
 
         project.exec {
-            executable = "git"
-            args = gitArgs
+            executable = "sh"
+            args = listOf(
+                "-c",
+                "git --git-dir=$gitFolder/.git log -1 --pretty=\"%(decorate:prefix=,suffix=,separator=#,pointer=&,exclude=PR/*,refs/tags/*)\""
+            )
             standardOutput = gitOutput
         }
 
