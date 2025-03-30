@@ -1,13 +1,13 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    //id("com.zucca.gradle-publisher") version "1.0.0-SNAPSHOT"
+    id("com.zucca.gradle-publisher") version "1.0.0-SNAPSHOT"
     id("java-gradle-plugin")
-    id("maven-publish")
+    //id("maven-publish")
 }
 
 group = "com.zucca"
-version = "1.0.0-SNAPSHOT"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -39,6 +39,7 @@ gradlePlugin {
     }
 }
 
+/*
 publishing {
     repositories {
         maven {
@@ -51,9 +52,10 @@ publishing {
         }
     }
 }
-/*
+*/
+
 publisher {
     devRepoUrl = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
     usernameProperty = "jfrogUser"
     passwordProperty = "jfrogPassword"
-}*/
+}
