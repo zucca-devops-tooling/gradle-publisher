@@ -15,7 +15,7 @@ class GitHelper(private val gitFolderProvider: () -> String, private val project
             "--git-dir=$gitFolder/.git",
             "log",
             rev.toString(),
-            "--pretty=format:%(decorate:${getDecoratorString()})"
+            "--pretty=\"%(decorate:${getDecoratorString()})\""
         )
 
         println("gitargs $gitArgs")
