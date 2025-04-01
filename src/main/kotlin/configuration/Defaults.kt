@@ -1,8 +1,12 @@
-package com.zucca.configuration
+package dev.zucca_ops.configuration
 
 object Defaults {
-    const val PROD_REPO_URL = "https://repo.maven.apache.org/maven2/"
-    const val DEV_REPO_URL = "https://oss.sonatype.org/content/repositories/snapshots/"
+    const val TARGET = "local"
     const val USER_PROPERTY = "mavenUsername"
     const val PASS_PROPERTY = "mavenPassword"
+    const val GIT_FOLDER = "."
+    val RELEASE_BRANCH_REGEXES = listOf(
+        """^release/\d+\.\d+\.\d+$""",
+        """^v\d+\.\d+\.\d+$"""
+    )
 }

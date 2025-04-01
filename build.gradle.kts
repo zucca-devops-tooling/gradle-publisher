@@ -1,13 +1,12 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    id("com.zucca.gradle-publisher") version "1.0.0-SNAPSHOT"
+    id("com.zucca.gradle-publisher") version "1.0.0-PR4-SNAPSHOT"
     id("java-gradle-plugin")
-    //id("maven-publish")
 }
 
-group = "com.zucca"
-version = "1.0.0"
+group = "dev.zucca-ops"
+version = "0.0.1"
 
 repositories {
     mavenCentral()
@@ -33,29 +32,22 @@ kotlin {
 gradlePlugin {
     plugins {
         create("gradlePublisherPlugin") {
-            id = "com.zucca.gradle-publisher"
-            implementationClass = "com.zucca.GradlePublisherPlugin"
+            id = "dev.zucca-ops.gradle-publisher"
+            implementationClass = "dev.zucca_ops.GradlePublisherPlugin"
         }
     }
 }
-
-/*
-publishing {
-    repositories {
-        maven {
-            name = "ArtifactorySnapshots"
-            url = uri("https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot")
-            credentials {
-                username = project.findProperty("jfrogUser") as String?
-                password = project.findProperty("jfrogPassword") as String?
-            }
-        }
-    }
-}
-*/
 
 publisher {
-    devRepoUrl = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
-    usernameProperty = "jfrogUser"
-    passwordProperty = "jfrogPassword"
+    dev {
+        target = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
+        usernameProperty = "jfrogUser"
+        passwordProperty = "jfrogPassword"
+    }
+    prod {
+        target = "mavenCentral"
+    }
+
+    usernameProperty = "ossrhUser"
+    passwordProperty = "ossrhPassword"
 }

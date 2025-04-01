@@ -1,10 +1,16 @@
-package com.zucca.configuration
+package dev.zucca_ops.configuration
 
-open class PluginConfiguration() {
-    var releaseBranchPatterns: List<String> = emptyList()
-    var usernameProperty: String = Defaults.USER_PROPERTY
-    var passwordProperty: String = Defaults.PASS_PROPERTY
-    var devRepoUrl: String = Defaults.DEV_REPO_URL
-    var prodRepoUrl: String = Defaults.PROD_REPO_URL
-    var gitFolder: String = "."
+import org.gradle.api.model.ObjectFactory
+import javax.inject.Inject
+
+open class PluginConfiguration @Inject constructor(objects: ObjectFactory) {
+    val dev = objects.newInstance(RepositoryConfig::class.java)
+    val prod = objects.newInstance(RepositoryConfig::class.java)
+
+    // Shared fallback credentials
+    var usernameProperty: String? = Defaults.USER_PROPERTY
+    var passwordProperty: String? = Defaults.PASS_PROPERTY
+
+    var gitFolder: String = Defaults.GIT_FOLDER
+    var releaseBranchPatterns: List<String> = Defaults.RELEASE_BRANCH_REGEXES
 }

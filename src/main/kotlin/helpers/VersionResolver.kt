@@ -1,9 +1,11 @@
-package com.zucca.core
+package dev.zucca_ops.helpers
 
-import com.zucca.helpers.GitHelper
+import dev.zucca_ops.configuration.PluginConfiguration
 import org.gradle.api.Project
 
-class VersionManager(private val releaseBranchPatternsProvider: () -> List<String>, private val gitHelper: GitHelper, private val project: Project) {
+class VersionResolver(private val project: Project, private val configuration: PluginConfiguration) {
+
+    private val gitHelper: GitHelper = GitHelper(project, configuration.gitFolder)
 
     fun getVersion(): String {
         val baseVersion = getProjectVersion()
@@ -21,7 +23,7 @@ class VersionManager(private val releaseBranchPatternsProvider: () -> List<Strin
 
     fun isRelease(): Boolean {
         val currentBranch = gitHelper.getBranch()
-        val releaseBranchPatterns = releaseBranchPatternsProvider()
+        val releaseBranchPatterns = configuration.releaseBranchPatterns
 
         if (releaseBranchPatterns.isEmpty()) {
             if (currentBranch == "HEAD") {
