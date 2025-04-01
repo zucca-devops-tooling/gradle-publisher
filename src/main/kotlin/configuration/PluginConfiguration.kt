@@ -1,6 +1,6 @@
 package com.zucca.configuration
 
-class PluginConfiguration() {
+open class PluginConfiguration() {
     var releaseBranchPatterns: List<String> = emptyList()
     var usernameProperty: String = Defaults.USER_PROPERTY
     var passwordProperty: String = Defaults.PASS_PROPERTY
