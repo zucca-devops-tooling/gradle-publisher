@@ -1,15 +1,14 @@
-package com.zucca.helpers
+package dev.zucca_ops.helpers
 import org.gradle.api.Project
 import java.io.ByteArrayOutputStream
 
-class GitHelper(private val gitFolderProvider: () -> String, private val project: Project) {
+class GitHelper(private val project: Project, private val gitFolder: String) {
 
     private val POINTER = "&"
     private val SEPARATOR = "#"
 
     private fun getBranchForRevision(rev: Int): String? {
         val gitOutput = ByteArrayOutputStream()
-        val gitFolder = gitFolderProvider()
 
         val gitArgs = listOf(
             "--git-dir=$gitFolder/.git",
@@ -71,7 +70,6 @@ class GitHelper(private val gitFolderProvider: () -> String, private val project
 
     private fun getMainBranchName(): String? {
         val gitOutput = ByteArrayOutputStream()
-        val gitFolder = gitFolderProvider()
 
         // Try symbolic-ref method
         project.exec {

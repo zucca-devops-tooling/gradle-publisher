@@ -13,28 +13,49 @@ pipeline {
         }
 
         stage('Build & Test') {
-            environment {
-                JFROG_CREDENTIALS = credentials('jfrog-user-pass')
-            }
             steps {
-                sh """
-                    ./gradlew clean build test --refresh-dependencies \
-                        -PjfrogUser=$JFROG_CREDENTIALS_USR \
-                        -PjfrogPassword=$JFROG_CREDENTIALS_PSW
-                """
+
+                withCredentials([
+                    usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASS'),
+                    usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
+                ]) {
+                     sh """#!/bin/bash
+
+                         ./gradlew clean build --refresh-dependencies --info \\
+                             -PmavenCentralUsername=\$OSSRH_USER \\
+                             -PmavenCentralPassword=\$OSSRH_PASS \\
+                             -PjfrogUser=\$JFROG_USER \\
+                             -PjfrogPassword=\$JFROG_PASS
+                     """
+                }
             }
         }
-
-        stage('Publish to Artifactory') {
-            environment {
-                JFROG_CREDENTIALS = credentials('jfrog-user-pass')
-            }
+        stage('Publish Artifacts') {
             steps {
-                sh """
-                    ./gradlew publish --info \
-                        -PjfrogUser=$JFROG_CREDENTIALS_USR \
-                        -PjfrogPassword=$JFROG_CREDENTIALS_PSW
-                """
+                withCredentials([
+                    file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH'),
+                    string(credentialsId: 'GPG_KEY_ID', variable: 'GPG_KEY_ID'),
+                    string(credentialsId: 'GPG_KEY_PASS', variable: 'GPG_KEY_PASS'),
+                    usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASS'),
+                    usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
+                ]) {
+                    sh """#!/bin/bash
+                        set -euo pipefail
+
+                        echo "🔐 Reading secret key into memory..."
+                        export GPG_ASC_ARMOR="\$(cat \$GPG_KEY_PATH)"
+
+
+                        ./gradlew publish --info \\
+                            "-Psigning.keyId=\$GPG_KEY_ID" \\
+                            "-Psigning.password=\$GPG_KEY_PASS" \\
+                            "-Psigning.secretKeyRingFile=\$GPG_KEY_PATH" \\
+                            "-PmavenCentralUsername=\$OSSRH_USER" \\
+                            "-PmavenCentralPassword=\$OSSRH_PASS" \\
+                            "-PjfrogUser=\$JFROG_USER" \\
+                            "-PjfrogPassword=\$JFROG_PASS"
+                    """
+                }
             }
         }
     }
