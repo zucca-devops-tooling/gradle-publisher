@@ -15,10 +15,6 @@ class GradlePublisherPlugin(): Plugin<Project> {
     override fun apply(target: Project) {
         val configuration = target.extensions.create("publisher", PluginConfiguration::class.java)
 
-        target.tasks.named("publish") {
-            dependsOn(target.tasks.named("build"))
-        }
-
         target.afterEvaluate {
             val versionResolver = VersionResolver(this, configuration)
             val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration, versionResolver)

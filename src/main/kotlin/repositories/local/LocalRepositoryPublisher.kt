@@ -14,6 +14,9 @@ class LocalRepositoryPublisher(private val project: Project, private val version
 
     override fun configurePublishingRepository(publishingExtension: PublishingExtension) {
         project.plugins.apply("maven-publish")
+        project.tasks.named("publish") {
+            dependsOn(project.tasks.named("build"))
+        }
 
         publishingExtension.repositories {
             mavenLocal()

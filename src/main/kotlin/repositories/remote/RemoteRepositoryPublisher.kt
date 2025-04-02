@@ -20,6 +20,9 @@ class RemoteRepositoryPublisher(private val project: Project,
 
     override fun configurePublishingRepository(publishingExtension: PublishingExtension) {
         project.plugins.apply("maven-publish")
+        project.tasks.named("publish") {
+            dependsOn(project.tasks.named("build"))
+        }
 
         val username: String?
         val password: String?
