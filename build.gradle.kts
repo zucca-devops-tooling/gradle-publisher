@@ -38,6 +38,7 @@ gradlePlugin {
     }
 }
 
+/*
 publisher {
     dev {
         target = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
@@ -50,4 +51,10 @@ publisher {
 
     usernameProperty = "ossrhUser"
     passwordProperty = "ossrhPassword"
+}*/
+
+publisher {
+    devRepoUrl = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
+    usernameProperty = "jfrogUser"
+    passwordProperty = "jfrogPassword"
 }
