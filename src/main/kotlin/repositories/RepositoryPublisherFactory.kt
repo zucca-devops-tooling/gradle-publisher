@@ -10,7 +10,7 @@ import org.gradle.api.Project
 
 object RepositoryPublisherFactory {
     fun get(project: Project, configuration: PluginConfiguration): RepositoryPublisher {
-        val versionResolver: VersionResolver = VersionResolver(project, configuration)
+        val versionResolver = VersionResolver(project, configuration)
         val repositoryConfig: RepositoryConfig = if (versionResolver.isRelease()) configuration.prod else configuration.dev
 
         val repositoryAuthenticator = RepositoryAuthenticator(project, configuration)

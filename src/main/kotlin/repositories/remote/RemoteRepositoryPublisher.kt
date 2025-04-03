@@ -16,15 +16,19 @@ class RemoteRepositoryPublisher(private val project: Project,
                                 private val configuration: PluginConfiguration) : BaseRepositoryPublisher(project, versionResolver) {
 
     override fun shouldPublish(): Boolean {
-        Authenticator.setDefault(repositoryAuthenticator)
+        if (versionResolver.isRelease()) {
+            Authenticator.setDefault(repositoryAuthenticator)
 
-        try{
-            URL(getUri()).readBytes()
+            try {
+                URL(getUri()).readBytes()
 
-            return true
-        } catch (e: FileNotFoundException) {
-            return false
+                return true
+            } catch (e: FileNotFoundException) {
+                return false
+            }
         }
+
+        return true
     }
 
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
@@ -66,6 +70,7 @@ class RemoteRepositoryPublisher(private val project: Project,
         val group = project.group.toString().replace(".", "/")
         val name = project.name.replace(".", "/")
 
-        return getRepoUrl() + group + "/" + name
+        val baseUrl = getRepoUrl().let { if (it.endsWith("/")) it else "$it/" }
+        return "$baseUrl$group/$name"
     }
 }
