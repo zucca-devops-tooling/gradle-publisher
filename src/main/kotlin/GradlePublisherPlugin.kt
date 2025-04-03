@@ -17,9 +17,7 @@ class GradlePublisherPlugin(): Plugin<Project> {
         target.afterEvaluate {
             val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
 
-            configure<PublishingExtension> {
-                repositoryPublisher.configurePublishingRepository()
-            }
+            repositoryPublisher.configurePublishingRepository()
         }
     }
 }
