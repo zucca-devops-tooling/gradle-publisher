@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    id("com.zucca.gradle-publisher") version "1.0.0-PR-4-SNAPSHOT"
+    id("dev.zucca-ops.gradle-publisher") version "0.0.1-PR-6-SNAPSHOT"
     id("java-gradle-plugin")
 }
 
@@ -38,7 +38,7 @@ gradlePlugin {
     }
 }
 
-/*
+
 publisher {
     dev {
         target = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
@@ -51,10 +51,4 @@ publisher {
 
     usernameProperty = "ossrhUser"
     passwordProperty = "ossrhPassword"
-}*/
-
-publisher {
-    devRepoUrl = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
-    usernameProperty = "jfrogUser"
-    passwordProperty = "jfrogPassword"
 }
