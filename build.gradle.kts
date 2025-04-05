@@ -1,13 +1,14 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    id("com.zucca.gradle-publisher") version "1.0.0-SNAPSHOT"
+    id("dev.zucca-ops.gradle-publisher") version "0.0.1-PR-6-SNAPSHOT"
     id("java-gradle-plugin")
-    //id("maven-publish")
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
+    signing
 }
 
-group = "com.zucca"
-version = "1.0.0"
+group = "dev.zucca-ops"
+version = "0.0.1"
 
 repositories {
     mavenCentral()
@@ -33,29 +34,84 @@ kotlin {
 gradlePlugin {
     plugins {
         create("gradlePublisherPlugin") {
-            id = "com.zucca.gradle-publisher"
-            implementationClass = "com.zucca.GradlePublisherPlugin"
+            id = "dev.zucca-ops.gradle-publisher"
+            implementationClass = "dev.zucca_ops.GradlePublisherPlugin"
         }
     }
 }
 
-/*
-publishing {
-    repositories {
-        maven {
-            name = "ArtifactorySnapshots"
-            url = uri("https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot")
-            credentials {
-                username = project.findProperty("jfrogUser") as String?
-                password = project.findProperty("jfrogPassword") as String?
+publisher {
+    dev {
+        target = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
+        usernameProperty = "jfrogUser"
+        passwordProperty = "jfrogPassword"
+    }
+    prod {
+        target = "mavenCentral"
+        customGradleCommand = "publishToSonatype"
+    }
+
+    releaseBranchPatterns = listOf("PR-6")
+    usernameProperty = "ossrhUser"
+    passwordProperty = "ossrhPassword"
+}
+
+afterEvaluate {
+    extensions.configure<PublishingExtension> {
+        publications {
+            named<MavenPublication>("maven") {
+                pom {
+                    name.set("Gradle Publisher")
+                    description.set("A Gradle plugin that simplifies publishing by detecting environment and routing to the correct repository with dynamic versions.")
+                    url.set("https://github.com/zucca-devops-tooling/gradle-publisher")
+
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                            distribution.set("repo")
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id.set("zucca")
+                            name.set("Guido Zuccarelli")
+                            email.set("guidozuccarelli@hotmail.com")
+                        }
+                    }
+
+                    scm {
+                        connection.set("scm:git:git://github.com/zucca-devops-tooling/gradle-publisher.git")
+                        developerConnection.set("scm:git:ssh://github.com/zucca-devops-tooling/gradle-publisher.git")
+                        url.set("https://github.com/zucca-devops-tooling/gradle-publisher")
+                    }
+                }
             }
         }
     }
 }
-*/
 
-publisher {
-    devRepoUrl = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
-    usernameProperty = "jfrogUser"
-    passwordProperty = "jfrogPassword"
+afterEvaluate {
+// Signing
+    signing {
+        useInMemoryPgpKeys(
+            System.getenv("SIGNING_KEY_ID"),
+            System.getenv("SIGNING_KEY"),
+            System.getenv("SIGNING_PASSWORD")
+        )
+
+        val publishing = extensions.getByType<PublishingExtension>()
+        sign(publishing.publications["maven"])
+    }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            username.set(findProperty("ossrhUser") as String)
+            password.set(findProperty("ossrhPassword") as String)
+        }
+    }
 }
