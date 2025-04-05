@@ -46,6 +46,7 @@ publisher {
     }
     prod {
         target = "mavenCentral"
+        customGradleCommand = "publishToSonatype"
     }
 
     usernameProperty = "ossrhUser"

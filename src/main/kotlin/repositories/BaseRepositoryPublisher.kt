@@ -13,11 +13,6 @@ import org.gradle.kotlin.dsl.get
 abstract class BaseRepositoryPublisher(private val project: Project, private val versionResolver: VersionResolver): RepositoryPublisher {
 
     override fun configurePublishingRepository() {
-        project.plugins.apply("maven-publish")
-        project.tasks.named("publish") {
-            dependsOn(project.tasks.named("build"))
-        }
-
         project.configure<PublishingExtension> {
             publications {
                 create<MavenPublication>("maven") {
@@ -33,13 +28,13 @@ abstract class BaseRepositoryPublisher(private val project: Project, private val
             project.version = versionResolver.getVersion()
             project.tasks.withType(PublishToMavenRepository::class.java).configureEach {
                 onlyIf {
-                    shouldPublish()
+                    isPublishable()
                 }
             }
         }
     }
 
-    protected abstract fun shouldPublish(): Boolean
+    protected abstract fun isPublishable(): Boolean
 
     protected abstract fun registerRepository(repositoryHandler: RepositoryHandler)
 

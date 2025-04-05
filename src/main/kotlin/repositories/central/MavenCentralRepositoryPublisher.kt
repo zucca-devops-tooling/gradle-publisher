@@ -1,35 +1,35 @@
 package dev.zucca_ops.repositories.central
 
 import dev.zucca_ops.helpers.VersionResolver
+import dev.zucca_ops.repositories.BaseRepositoryPublisher
 import dev.zucca_ops.repositories.RepositoryConstants
-import dev.zucca_ops.repositories.RepositoryPublisher
 import org.gradle.api.Project
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
+import org.gradle.api.artifacts.dsl.RepositoryHandler
 import java.io.FileNotFoundException
 import java.net.URL
 
 class MavenCentralRepositoryPublisher(private val project: Project, private val versionResolver: VersionResolver,
-                                      private val gradleCommand: String): RepositoryPublisher {
+                                      private val gradleCommand: String):
+    BaseRepositoryPublisher(project, versionResolver) {
     override fun configurePublishingRepository() {
-        if (!project.tasks.names.contains("publish")) {
-            project.tasks.register("publish") {
-                group = "publishing"
-                description = "Custom placeholder for publishing to Maven Central"
+        super.configurePublishingRepository()
 
-                if (shouldPublish()) {
-                    if (project.tasks.names.contains(gradleCommand)) {
-                        dependsOn("build")
-                        finalizedBy(gradleCommand)
-                    }
+        project.tasks.named("publish").configure {
+            if (isPublishable()) {
+                // Disable the normal publish logic
+                enabled = false
+
+                // Dynamically register a rerouter task
+                project.tasks.register("reroutePublishToMavenCentral") {
+                    group = "publishing"
+                    description = "Auto-reroutes publish to $gradleCommand"
+                    dependsOn(gradleCommand)
                 }
-            }
-        }
 
-        project.version = versionResolver.getVersion()
-        project.tasks.withType(PublishToMavenRepository::class.java).configureEach {
-            onlyIf {
-                shouldPublish()
+                // Now make publish depend on the reroute task
+                dependsOn("reroutePublishToMavenCentral")
+
+                project.logger.lifecycle("⚙️ Routing 'publish' to '$gradleCommand'")
             }
         }
     }
@@ -51,8 +51,12 @@ class MavenCentralRepositoryPublisher(private val project: Project, private val 
         }
     }
 
-    private fun shouldPublish(): Boolean {
+    override fun isPublishable(): Boolean {
         return !versionResolver.isRelease() || !artifactAlreadyPublished()
+    }
+
+    override fun registerRepository(repositoryHandler: RepositoryHandler) {
+        repositoryHandler.mavenCentral()
     }
 
 }

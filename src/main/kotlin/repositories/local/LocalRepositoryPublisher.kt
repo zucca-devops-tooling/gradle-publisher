@@ -17,7 +17,7 @@ import java.io.File
 class LocalRepositoryPublisher(private val project: Project, private val versionResolver: VersionResolver):
     BaseRepositoryPublisher(project, versionResolver) {
 
-    override fun shouldPublish(): Boolean {
+    override fun isPublishable(): Boolean {
         if (versionResolver.isRelease()) {
             val m2Repo = File(System.getProperty("user.home"), RepositoryConstants.LOCAL_MAVEN_PATH)
             val groupPath = project.group.toString().replace('.', '/')
