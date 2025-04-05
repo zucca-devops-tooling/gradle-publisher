@@ -92,16 +92,18 @@ afterEvaluate {
     }
 }
 
+afterEvaluate {
 // Signing
-signing {
-    useInMemoryPgpKeys(
-        System.getenv("SIGNING_KEY_ID"),
-        System.getenv("SIGNING_KEY"),
-        System.getenv("SIGNING_PASSWORD")
-    )
+    signing {
+        useInMemoryPgpKeys(
+            System.getenv("SIGNING_KEY_ID"),
+            System.getenv("SIGNING_KEY"),
+            System.getenv("SIGNING_PASSWORD")
+        )
 
-    val publishing = extensions.getByType<PublishingExtension>()
-    sign(publishing.publications["maven"])
+        val publishing = extensions.getByType<PublishingExtension>()
+        sign(publishing.publications["maven"])
+    }
 }
 
 nexusPublishing {
