@@ -32,6 +32,11 @@ class LocalRepositoryPublisher(private val project: Project, private val version
         return true
     }
 
+    override fun shouldSign(): Boolean {
+        return false
+    }
+
+
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
         repositoryHandler.mavenLocal()
         repositoryHandler.removeIf{ it.name == "sonatype" }

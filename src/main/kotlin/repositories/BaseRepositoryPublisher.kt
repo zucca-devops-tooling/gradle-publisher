@@ -31,10 +31,17 @@ abstract class BaseRepositoryPublisher(private val project: Project, private val
                     isPublishable()
                 }
             }
+            project.tasks.matching { it.name == "signMavenPublication" }.configureEach {
+                onlyIf {
+                    shouldSign()
+                }
+            }
         }
     }
 
     protected abstract fun isPublishable(): Boolean
+
+    protected abstract fun shouldSign(): Boolean
 
     protected abstract fun registerRepository(repositoryHandler: RepositoryHandler)
 

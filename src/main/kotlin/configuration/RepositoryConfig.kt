@@ -5,4 +5,5 @@ open class RepositoryConfig {
     var usernameProperty: String = Defaults.USER_PROPERTY
     var passwordProperty: String = Defaults.PASS_PROPERTY
     var customGradleCommand: String? = null
+    var sign: Boolean = false
 }

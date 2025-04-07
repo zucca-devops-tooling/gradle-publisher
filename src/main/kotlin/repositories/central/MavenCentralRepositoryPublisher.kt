@@ -55,6 +55,10 @@ class MavenCentralRepositoryPublisher(private val project: Project, private val 
         return !versionResolver.isRelease() || !artifactAlreadyPublished()
     }
 
+    override fun shouldSign(): Boolean {
+        return true
+    }
+
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
         repositoryHandler.mavenCentral()
     }

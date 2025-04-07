@@ -32,6 +32,10 @@ class RemoteRepositoryPublisher(private val project: Project,
         return true
     }
 
+    override fun shouldSign(): Boolean {
+        return if (versionResolver.isRelease()) configuration.prod.sign else configuration.dev.sign
+    }
+
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
         val username: String?
         val password: String?
