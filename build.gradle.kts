@@ -89,4 +89,25 @@ afterEvaluate {
             }
         }
     }
+    // Signing
+    signing {
+        useInMemoryPgpKeys(
+            System.getenv("SIGNING_KEY_ID"),
+            System.getenv("SIGNING_KEY"),
+            System.getenv("SIGNING_PASSWORD")
+        )
+
+        val publishing = extensions.getByType<PublishingExtension>()
+        sign(publishing.publications["maven"])
+    }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            username.set(findProperty("ossrhUser") as String)
+            password.set(findProperty("ossrhPassword") as String)
+        }
+    }
 }
