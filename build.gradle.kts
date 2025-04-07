@@ -108,8 +108,8 @@ nexusPublishing {
         sonatype {
             stagingProfileId.set("80d2a6ff-5a1a-43af-8951-71ad9b6216f9")
             nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            username.set(findProperty("ossrhUser") as String)
-            password.set(findProperty("ossrhPassword") as String)
+            username.set("weN5+x7r")
+            password.set("PjMXFl8/wFbsPIRFa1Y/0uQjCfdvfDkH/5f7uayc+hAh")
         }
     }
 }
