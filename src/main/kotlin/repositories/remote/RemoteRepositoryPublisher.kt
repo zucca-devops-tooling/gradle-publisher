@@ -58,7 +58,10 @@ class RemoteRepositoryPublisher(private val project: Project,
             }
         }
 
-        repositoryHandler.removeIf{ it.name == "sonatype" }
+        repositoryHandler.removeIf{
+            println("Check if removing " + it.name)
+            it.name == "sonatype"
+        }
     }
 
     private fun getRepoUrl(): String {
