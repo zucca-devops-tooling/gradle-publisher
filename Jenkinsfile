@@ -16,9 +16,6 @@ pipeline {
             environment {
                 JFROG_CREDENTIALS = credentials('jfrog-user-pass')
                 OSSRH_CREDENTIALS = credentials('OSSRH_CREDENTIALS')
-                GPG_SECRET_KEY = credentials('GPG_SECRET_KEY')
-                GPG_KEY_ID = credentials('GPG_KEY_ID')
-                GPG_KEY_PASS = credentials('GPG_KEY_PASS')
             }
             steps {
                 sh """
@@ -34,6 +31,9 @@ pipeline {
         stage('Publish to Artifactory') {
             environment {
                 OSSRH_CREDENTIALS = credentials('OSSRH_CREDENTIALS')
+                GPG_SECRET_KEY = credentials('GPG_SECRET_KEY')
+                GPG_KEY_ID = credentials('GPG_KEY_ID')
+                GPG_KEY_PASS = credentials('GPG_KEY_PASS')
             }
             steps {
                 sh """
