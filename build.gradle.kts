@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "0.0.1-PR-6-SNAPSHOT"
+    id("dev.zucca-ops.gradle-publisher") version "0.0.1-maven-central-workaround-SNAPSHOT"
     id("java-gradle-plugin")
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     signing

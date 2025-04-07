@@ -14,22 +14,19 @@ class MavenCentralRepositoryPublisher(private val project: Project, private val 
     override fun configurePublishingRepository() {
         super.configurePublishingRepository()
 
-        project.tasks.named("publish").configure {
-            if (isPublishable()) {
-                // Disable the normal publish logic
+        if (isPublishable()) {
+            // Dynamically register a rerouter task
+            val rerouteTask = project.tasks.register("reroutePublishToMavenCentral") {
+                group = "publishing"
+                description = "Auto-reroutes publish to $gradleCommand"
+                dependsOn(gradleCommand)
+            }
+
+            project.logger.lifecycle("⚙️ Routing 'publish' to '$gradleCommand'")
+
+            project.tasks.named("publish").configure {
                 enabled = false
-
-                // Dynamically register a rerouter task
-                project.tasks.register("reroutePublishToMavenCentral") {
-                    group = "publishing"
-                    description = "Auto-reroutes publish to $gradleCommand"
-                    dependsOn(gradleCommand)
-                }
-
-                // Now make publish depend on the reroute task
-                dependsOn("reroutePublishToMavenCentral")
-
-                project.logger.lifecycle("⚙️ Routing 'publish' to '$gradleCommand'")
+                dependsOn(rerouteTask)
             }
         }
     }
