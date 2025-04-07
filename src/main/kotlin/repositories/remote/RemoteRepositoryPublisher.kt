@@ -58,10 +58,14 @@ class RemoteRepositoryPublisher(private val project: Project,
             }
         }
 
-        repositoryHandler.removeIf{
-            println("Check if removing " + it.name)
-            it.name == "sonatype"
-        }
+        project.tasks
+            .matching {  it.name.contains("ToSonatypeRepository") || it.name.contains("SonatypeStaging") }
+            .configureEach {
+                onlyIf {
+                    logger.lifecycle("❌ Skipping Nexus task: $name (disabled by publisher plugin)")
+                    false
+                }
+            }
     }
 
     private fun getRepoUrl(): String {
