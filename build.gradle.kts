@@ -51,7 +51,6 @@ publisher {
         customGradleCommand = "publishToSonatype"
     }
 
-    releaseBranchPatterns = listOf("PR-6")
     usernameProperty = "ossrhUser"
     passwordProperty = "ossrhPassword"
 }
