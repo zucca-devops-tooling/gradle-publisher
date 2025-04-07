@@ -24,6 +24,7 @@ class RemoteRepositoryPublisher(private val project: Project,
 
                 return true
             } catch (e: FileNotFoundException) {
+                println("RemoteRepository: production version already published")
                 return false
             }
         }
@@ -56,13 +57,17 @@ class RemoteRepositoryPublisher(private val project: Project,
                 artifact()
             }
         }
+
+        repositoryHandler.removeIf{ it.name == "sonatype" }
     }
 
     private fun getRepoUrl(): String {
         if (versionResolver.isRelease()) {
+            println("RemoteRepository: returning prod target url")
             return configuration.prod.target
         }
 
+        println("RemoteRepository: returning dev target url")
         return configuration.dev.target
     }
 

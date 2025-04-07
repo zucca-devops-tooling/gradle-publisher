@@ -34,6 +34,7 @@ class LocalRepositoryPublisher(private val project: Project, private val version
 
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
         repositoryHandler.mavenLocal()
+        repositoryHandler.removeIf{ it.name == "sonatype" }
     }
 
 }
