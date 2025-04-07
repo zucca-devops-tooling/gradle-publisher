@@ -31,11 +31,13 @@ pipeline {
                 """
             }
         }
-
         stage('Publish to Artifactory') {
+            environment {
+                OSSRH_CREDENTIALS = credentials('OSSRH_CREDENTIALS')
+            }
             steps {
                 sh """
-                    ./gradlew publish --info
+                    ./gradlew publish --info -PossrhUser=$OSSRH_CREDENTIALS_USR -PossrhPassword=$OSSRH_CREDENTIALS_PSW
                 """
             }
         }
