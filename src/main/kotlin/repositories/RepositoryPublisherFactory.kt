@@ -17,7 +17,7 @@ object RepositoryPublisherFactory {
 
         return when(repositoryConfig.target) {
             RepositoryConstants.LOCAL_TARGET_COMMAND -> LocalRepositoryPublisher(project, versionResolver)
-            RepositoryConstants.MAVEN_CENTRAL_URL -> MavenCentralRepositoryPublisher(project, versionResolver, repositoryConfig.customGradleCommand!!)
+            RepositoryConstants.MAVEN_CENTRAL_COMMAND -> MavenCentralRepositoryPublisher(project, versionResolver, repositoryConfig.customGradleCommand!!)
             else -> RemoteRepositoryPublisher(project, versionResolver, repositoryAuthenticator, configuration)
         }
     }
