@@ -53,7 +53,6 @@ publisher {
 
     usernameProperty = "ossrhUser"
     passwordProperty = "ossrhPassword"
-    releaseBranchPatterns = listOf("PR-6")
 }
 
 afterEvaluate {
