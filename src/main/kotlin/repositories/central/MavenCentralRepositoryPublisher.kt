@@ -15,6 +15,12 @@ class MavenCentralRepositoryPublisher(private val project: Project, private val 
         super.configurePublishingRepository()
 
         if (isPublishable()) {
+            project.tasks.matching { it.name.startsWith("publish") && it.name.contains("To") && it.name != gradleCommand }
+                .configureEach {
+                    enabled = false
+                    logger.lifecycle("❌ Disabled publishing task: $name")
+                }
+
             // Dynamically register a rerouter task
             val rerouteTask = project.tasks.register("reroutePublishToMavenCentral") {
                 group = "publishing"
