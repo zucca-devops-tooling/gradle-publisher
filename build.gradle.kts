@@ -3,8 +3,7 @@ plugins {
     `kotlin-dsl`
     id("dev.zucca-ops.gradle-publisher") version "0.0.1-maven-central-workaround-SNAPSHOT"
     id("java-gradle-plugin")
-    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    signing
+    id("com.moengage.plugin.maven.publish") version "1.1.0"
 }
 
 group = "dev.zucca-ops"
@@ -48,68 +47,10 @@ publisher {
     }
     prod {
         target = "mavenCentral"
-        customGradleCommand = "publishToSonatype"
+        customGradleCommand = "publishToMavenRepository"
     }
 
     usernameProperty = "ossrhUser"
     passwordProperty = "ossrhPassword"
     releaseBranchPatterns = listOf("PR-6")
-}
-
-afterEvaluate {
-    extensions.configure<PublishingExtension> {
-        publications {
-            named<MavenPublication>("maven") {
-                pom {
-                    name.set("Gradle Publisher")
-                    description.set("A Gradle plugin that simplifies publishing by detecting environment and routing to the correct repository with dynamic versions.")
-                    url.set("https://github.com/zucca-devops-tooling/gradle-publisher")
-
-                    licenses {
-                        license {
-                            name.set("The Apache License, Version 2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-                            distribution.set("repo")
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id.set("zucca")
-                            name.set("Guido Zuccarelli")
-                            email.set("guidozuccarelli@hotmail.com")
-                        }
-                    }
-
-                    scm {
-                        connection.set("scm:git:git://github.com/zucca-devops-tooling/gradle-publisher.git")
-                        developerConnection.set("scm:git:ssh://github.com/zucca-devops-tooling/gradle-publisher.git")
-                        url.set("https://github.com/zucca-devops-tooling/gradle-publisher")
-                    }
-                }
-            }
-        }
-    }
-    // Signing
-    signing {
-        useInMemoryPgpKeys(
-            System.getenv("SIGNING_KEY_ID"),
-            System.getenv("SIGNING_KEY"),
-            System.getenv("SIGNING_PASSWORD")
-        )
-
-        val publishing = extensions.getByType<PublishingExtension>()
-        sign(publishing.publications["maven"])
-    }
-}
-
-nexusPublishing {
-    repositories {
-        sonatype {
-            stagingProfileId.set("80d2a6ff-5a1a-43af-8951-71ad9b6216f9")
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            username.set("weN5+x7r")
-            password.set("PjMXFl8/wFbsPIRFa1Y/0uQjCfdvfDkH/5f7uayc+hAh")
-        }
-    }
 }
