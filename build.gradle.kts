@@ -3,7 +3,7 @@ plugins {
     `kotlin-dsl`
     id("dev.zucca-ops.gradle-publisher") version "0.0.1-maven-central-workaround-SNAPSHOT"
     id("java-gradle-plugin")
-    id("com.moengage.plugin.maven.publish") version "1.1.0"
+    id("com.moengage.plugin.maven.publish") version "0.02"
 }
 
 group = "dev.zucca-ops"
