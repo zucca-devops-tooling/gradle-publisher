@@ -2,39 +2,53 @@ package dev.zucca_ops.repositories.central
 
 import dev.zucca_ops.helpers.VersionResolver
 import dev.zucca_ops.repositories.BaseRepositoryPublisher
+import dev.zucca_ops.repositories.RepositoryAuthenticator
 import dev.zucca_ops.repositories.RepositoryConstants
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import java.io.FileNotFoundException
 import java.net.URL
+import java.util.*
+import org.gradle.api.provider.Property
+import org.gradle.api.file.DirectoryProperty
 
 class MavenCentralRepositoryPublisher(private val project: Project, private val versionResolver: VersionResolver,
-                                      private val gradleCommand: String):
+                                      private val repositoryAuthenticator: RepositoryAuthenticator):
     BaseRepositoryPublisher(project, versionResolver) {
     override fun configurePublishingRepository() {
         super.configurePublishingRepository()
 
-        if (isPublishable()) {
-            project.tasks.matching { it.name.startsWith("publish") && it.name.contains("To") && it.name != gradleCommand }
-                .configureEach {
-                    enabled = false
-                    logger.lifecycle("❌ Disabled publishing task: $name")
-                }
+        project.pluginManager.apply("tech.yanand.maven-central-publish")
+        val encodedCredentials = encodeBasicAuth(repositoryAuthenticator.getProdUsername()!!,
+            repositoryAuthenticator.getProdPassword()!!
+        )
+        project.extensions.configure("mavenCentral", Action<Any> {
+            val clazz = this.javaClass
 
-            // Dynamically register a rerouter task
-            val rerouteTask = project.tasks.register("reroutePublishToMavenCentral") {
-                group = "publishing"
-                description = "Auto-reroutes publish to $gradleCommand"
-                dependsOn(gradleCommand)
-            }
+            val repoDir = project.layout.buildDirectory.dir("repos/bundles").get()
 
-            project.logger.lifecycle("⚙️ Routing 'publish' to '$gradleCommand'")
+            clazz.getMethod("getRepoDir")
+                .invoke(this)
+                .let { it as DirectoryProperty }
+                .set(repoDir)
 
-            project.tasks.named("publish").configure {
-                enabled = false
-                dependsOn(rerouteTask)
-            }
+            @Suppress("UNCHECKED_CAST")
+            clazz.getMethod("getAuthToken")
+                .invoke(this)
+                .let { it as Property<String> }
+                .set(encodedCredentials)
+        })
+
+        project.tasks.named("publish").configure {
+            finalizedBy("publishToMavenCentralPortal")
         }
+
+    }
+
+    private fun encodeBasicAuth(user: String, token: String): String {
+        val authString = "$user:$token"
+        return Base64.getEncoder().encodeToString(authString.toByteArray(Charsets.UTF_8))
     }
 
     private fun getUri(): String {
@@ -63,7 +77,10 @@ class MavenCentralRepositoryPublisher(private val project: Project, private val 
     }
 
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
-        repositoryHandler.mavenCentral()
+        repositoryHandler.maven {
+            name = "Local"
+            url = project.layout.buildDirectory.dir("repos/bundles").get().asFile.toURI()
+        }
     }
 
 }

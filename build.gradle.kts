@@ -1,9 +1,11 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "0.0.1-maven-central-workaround-SNAPSHOT"
+    id("dev.zucca-ops.gradle-publisher") version "0.0.1-SNAPSHOT"
     id("java-gradle-plugin")
-    id("com.moengage.plugin.maven.publish") version "1.0.0"
+    signing
+ //   id("tech.yanand.maven-central-publish") version "1.2.0" apply false
+ //   id("maven-publish")
 }
 
 group = "dev.zucca-ops"
@@ -12,7 +14,7 @@ version = "0.0.1"
 repositories {
     mavenCentral()
     maven {
-        url = uri("https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot")
+        url = uri("https://zucca.jfrog.io/artifactory/publisher-libs-snapshot")
     }
 }
 
@@ -39,11 +41,24 @@ gradlePlugin {
     }
 }
 
+signing {
+    val signingKeyPath = findProperty("signing.secretKeyFile")?.toString()
+    val signingPassword = findProperty("signing.password") as String?
+
+    if (!signingKeyPath.isNullOrBlank() && !signingPassword.isNullOrBlank()) {
+        val keyContent = File(signingKeyPath).readText()
+        useInMemoryPgpKeys(keyContent, signingPassword)
+        sign(publishing.publications["maven"])
+    } else {
+        logger.warn("🔐 GPG signing skipped: missing key or password")
+    }
+}
+
 publisher {
     dev {
-        target = "https://zuccadevops.jfrog.io/artifactory/publisher-libs-snapshot"
-        usernameProperty = "jfrogUser"
-        passwordProperty = "jfrogPassword"
+        target = "https://zucca.jfrog.io/artifactory/publisher-libs-snapshot"
+        usernameProperty = "jfrogUser2"
+        passwordProperty = "jfrogPassword2"
     }
     prod {
         target = "mavenCentral"

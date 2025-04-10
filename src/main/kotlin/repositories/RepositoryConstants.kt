@@ -5,4 +5,5 @@ object RepositoryConstants {
     const val LOCAL_TARGET_COMMAND = "local"
     const val MAVEN_CENTRAL_COMMAND = "mavenCentral"
     const val LOCAL_MAVEN_PATH = ".m2/repository"
+    const val CUSTOM_MAVEN_CENTRAL_COMMAND = "nexus"
 }
