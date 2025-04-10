@@ -21,20 +21,17 @@ pipeline {
                     usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_CREDENTIALS_USR', passwordVariable: 'JFROG_CREDENTIALS_PSW'),
                     usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
                 ]) {
-                    sh [
-                        './gradlew',
-                        "clean",
-                        "build",
-                        "--refresh-dependencies",
-                        "--info",
-                        "-Psigning.secretKeyFile=${GPG_ASC_PATH}",
-                        "-Psigning.password=${GPG_KEY_PASS}",
-                        "-Psigning.keyId=${GPG_KEY_ID}",
-                        "-PmavenCentralUsername=${OSSRH_USER}",
-                        "-PmavenCentralPassword=${OSSRH_PASS}",
-                        "-PjfrogUser=${JFROG_CREDENTIALS_USR}",
-                        "-PjfrogPassword=${JFROG_CREDENTIALS_PSW}"
-                    ]
+                    sh """
+                        ./gradlew clean build test --refresh-dependencies \
+                            -PjfrogUser=$JFROG_CREDENTIALS_USR \
+                            -PjfrogPassword=$JFROG_CREDENTIALS_PSW \
+                            -PmavenCentralUsername=$OSSRH_USER \
+                            -PmavenCentralPassword=$OSSRH_PASS \
+                            -Psigning.secretKeyFile=$GPG_ASC_PATH \
+                            -Psigning.password=$GPG_KEY_PASS \
+                            -Psigning.keyId=$GPG_KEY_ID \
+
+                    """
                 }
             }
         }
@@ -47,19 +44,16 @@ pipeline {
                     usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_CREDENTIALS_USR', passwordVariable: 'JFROG_CREDENTIALS_PSW'),
                     usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
                 ]) {
-                    sh [
-                        './gradlew',
-                        'publish',
-                        'publishToMavenCentralPortal',
-                        '--info',
-                        "-Psigning.secretKeyFile=${GPG_ASC_PATH}",
-                        "-Psigning.password=${GPG_KEY_PASS}",
-                        "-Psigning.keyId=${GPG_KEY_ID}",
-                        "-PmavenCentralUsername=${OSSRH_USER}",
-                        "-PmavenCentralPassword=${OSSRH_PASS}",
-                        "-PjfrogUser=${JFROG_CREDENTIALS_USR}",
-                        "-PjfrogPassword=${JFROG_CREDENTIALS_PSW}"
-                    ]
+                    sh(script: '''#!/bin/bash
+                        ./gradlew publish publishToMavenCentralPortal --info \
+                            -Psigning.secretKeyFile=$GPG_ASC_PATH \
+                            -Psigning.password=$GPG_KEY_PASS \
+                            -Psigning.keyId=$GPG_KEY_ID \
+                            -PmavenCentralUsername=$OSSRH_USER \
+                            -PmavenCentralPassword=$OSSRH_PASS \
+                            -PjfrogUser=$JFROG_CREDENTIALS_USR \
+                            -PjfrogPassword=$JFROG_CREDENTIALS_PSW
+                    ''', shell: '/bin/bash')
                 }
             }
         }
