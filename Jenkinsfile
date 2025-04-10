@@ -38,7 +38,7 @@ pipeline {
                     usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
                 ]) {
                     sh """
-                        ./gradlew publish --info \
+                        ./gradlew publish publishToMavenCentralPortal --info \
                             -Psigning.secretKeyFile=$GPG_ASC_PATH \
                             -Psigning.password=$GPG_KEY_PASS \
                             -Psigning.keyId=$GPG_KEY_ID \
