@@ -44,16 +44,16 @@ pipeline {
                     usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_CREDENTIALS_USR', passwordVariable: 'JFROG_CREDENTIALS_PSW'),
                     usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
                 ]) {
-                    sh(script: '''#!/bin/bash
-                        ./gradlew publish publishToMavenCentralPortal --info \
-                            -Psigning.secretKeyFile=$GPG_ASC_PATH \
-                            -Psigning.password=$GPG_KEY_PASS \
-                            -Psigning.keyId=$GPG_KEY_ID \
-                            -PmavenCentralUsername=$OSSRH_USER \
-                            -PmavenCentralPassword=$OSSRH_PASS \
-                            -PjfrogUser=$JFROG_CREDENTIALS_USR \
-                            -PjfrogPassword=$JFROG_CREDENTIALS_PSW
-                    ''', shell: '/bin/bash')
+                    sh '''#!/bin/bash
+                                    ./gradlew publish publishToMavenCentralPortal --info \
+                                        -Psigning.secretKeyFile=$GPG_ASC_PATH \
+                                        -Psigning.password=$GPG_KEY_PASS \
+                                        -Psigning.keyId=$GPG_KEY_ID \
+                                        -PmavenCentralUsername=$OSSRH_USER \
+                                        -PmavenCentralPassword=$OSSRH_PASS \
+                                        -PjfrogUser=$JFROG_CREDENTIALS_USR \
+                                        -PjfrogPassword=$JFROG_CREDENTIALS_PSW
+                                '''
                 }
             }
         }
