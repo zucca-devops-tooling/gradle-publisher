@@ -22,6 +22,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     implementation(gradleApi())
     implementation(localGroovy())
+    implementation("tech.yanand.maven-central-publish:tech.yanand.maven-central-publish.gradle.plugin:1.2.0")
 }
 
 tasks.test {
@@ -57,8 +58,8 @@ signing {
 publisher {
     dev {
         target = "https://zucca.jfrog.io/artifactory/publisher-libs-snapshot"
-        usernameProperty = "jfrogUser2"
-        passwordProperty = "jfrogPassword2"
+        usernameProperty = "jfrogUser"
+        passwordProperty = "jfrogPassword"
     }
     prod {
         target = "mavenCentral"
