@@ -22,6 +22,8 @@ pipeline {
                     usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_CREDENTIALS_USR', passwordVariable: 'JFROG_CREDENTIALS_PSW'),
                     usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
                 ]) {
+
+                    script {
                     def gradleCmd = "./gradlew clean build test --refresh-dependencies" +
                             " -Psigning.secretKeyFile=$GPG_ASC_PATH" +
                             " -Psigning.password=$GPG_KEY_PASS" +
@@ -32,6 +34,7 @@ pipeline {
                             " -PjfrogPassword=$JFROG_CREDENTIALS_PSW"
 
                     sh gradleCmd
+                    }
                 }
             }
         }
@@ -44,6 +47,7 @@ pipeline {
                     usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_CREDENTIALS_USR', passwordVariable: 'JFROG_CREDENTIALS_PSW'),
                     usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
                 ]) {
+                    script {
                     def gradleCmd = "./gradlew publish publishToMavenCentralPortal --info" +
                                             " -Psigning.secretKeyFile=$GPG_ASC_PATH" +
                                             " -Psigning.password=$GPG_KEY_PASS" +
@@ -54,6 +58,7 @@ pipeline {
                                             " -PjfrogPassword=$JFROG_CREDENTIALS_PSW"
 
                                         sh gradleCmd
+                    }
                 }
             }
         }
