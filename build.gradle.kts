@@ -44,25 +44,23 @@ gradlePlugin {
         }
     }
 }
-afterEvaluate {
-    signing {
-        val keyId = findProperty("signing.keyId") as String?
-        val password = findProperty("signing.password") as String?
-        val gpgHome = System.getProperty("gpg.homedir")?.toString()
+signing {
+    val keyId = findProperty("signing.keyId") as String?
+    val password = findProperty("signing.password") as String?
+    val gpgHome = System.getProperty("gpg.homedir")?.toString()
 
-        if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !gpgHome.isNullOrBlank()) {
-            useGpgCmd()
-            // Environment variable for GPG CLI to pick up keyring
-            System.setProperty("GNUPGHOME", gpgHome)
-            publishing.publications.withType<MavenPublication>().configureEach {
-                signing.sign(this)
-            }
-        } else {
-            logger.lifecycle("signing.keyId = ${keyId}")
-            logger.lifecycle("signing.password = ${if (password.isNullOrBlank()) "MISSING" else "****"}")
-            logger.lifecycle("gpg.homedir = ${gpgHome}")
-            logger.warn("🔐 GPG signing skipped: missing keyId, password, or gpg.homedir")
+    if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !gpgHome.isNullOrBlank()) {
+        useGpgCmd()
+        // Environment variable for GPG CLI to pick up keyring
+        System.setProperty("GNUPGHOME", gpgHome)
+        publishing.publications.withType<MavenPublication>().configureEach {
+            signing.sign(this)
         }
+    } else {
+        logger.lifecycle("signing.keyId = ${keyId}")
+        logger.lifecycle("signing.password = ${if (password.isNullOrBlank()) "MISSING" else "****"}")
+        logger.lifecycle("gpg.homedir = ${gpgHome}")
+        logger.warn("🔐 GPG signing skipped: missing keyId, password, or gpg.homedir")
     }
 }
 publishing {
