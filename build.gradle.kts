@@ -47,22 +47,20 @@ gradlePlugin {
 signing {
     val keyId = findProperty("signing.keyId") as String?
     val password = findProperty("signing.password") as String?
-    val gpgHome = System.getProperty("gpg.homedir")?.toString()
+    val rawKey = System.getenv("GPG_ASC_ARMOR")
 
-    if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !gpgHome.isNullOrBlank()) {
-        useGpgCmd()
-        // Environment variable for GPG CLI to pick up keyring
-        System.setProperty("GNUPGHOME", gpgHome)
+    if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !rawKey.isNullOrBlank()) {
+        logger.lifecycle("🔐 Using in-memory GPG signing")
+        useInMemoryPgpKeys(keyId, rawKey, password)
+
         publishing.publications.withType<MavenPublication>().configureEach {
             signing.sign(this)
         }
     } else {
-        logger.lifecycle("signing.keyId = ${keyId}")
-        logger.lifecycle("signing.password = ${if (password.isNullOrBlank()) "MISSING" else "****"}")
-        logger.lifecycle("gpg.homedir = ${gpgHome}")
-        logger.warn("🔐 GPG signing skipped: missing keyId, password, or gpg.homedir")
+        logger.warn("🔐 In-memory signing skipped: missing keyId, password, or GPG_ASC_ARMOR env var")
     }
 }
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
