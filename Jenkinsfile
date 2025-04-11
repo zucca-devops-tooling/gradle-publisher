@@ -31,23 +31,18 @@ pipeline {
                          export GNUPGHOME=\$(mktemp -d)
                          chmod 700 "\$GNUPGHOME"
 
-                         # Import GPG key
                          gpg --batch --yes --homedir "\$GNUPGHOME" --import "\$GPG_KEY_PATH"
 
-                         echo "🔍 GNUPGHOME set to: \$GNUPGHOME"
+                         echo "🔍 GNUPGHOME = \$GNUPGHOME"
                          echo '🚀 Running Gradle build with signing...'
 
-                         # Store it in a separate variable before passing it to Gradle
-                         GPG_HOME_FLAG="-Dgpg.homedir=\$GNUPGHOME"
-
                          ./gradlew clean build --refresh-dependencies --info \\
-                             "\$GPG_HOME_FLAG" \\
-                             "-Psigning.keyId=\$GPG_KEY_ID" \\
-                             "-Psigning.password=\$GPG_KEY_PASS" \\
-                             "-PmavenCentralUsername=\$OSSRH_USER" \\
-                             "-PmavenCentralPassword=\$OSSRH_PASS" \\
-                             "-PjfrogUser=\$JFROG_USER" \\
-                             "-PjfrogPassword=\$JFROG_PASS"
+                             -Psigning.keyId=\$GPG_KEY_ID \\
+                             -Psigning.password=\$GPG_KEY_PASS \\
+                             -PmavenCentralUsername=\$OSSRH_USER \\
+                             -PmavenCentralPassword=\$OSSRH_PASS \\
+                             -PjfrogUser=\$JFROG_USER \\
+                             -PjfrogPassword=\$JFROG_PASS
 
                          echo '🧹 Cleaning up GPG keyring...'
                          rm -rf "\$GNUPGHOME"
@@ -67,22 +62,17 @@ pipeline {
                     sh """#!/bin/bash
                         set -euo pipefail
 
-                        echo '🔐 Importing GPG key into temporary keyring...'
-
-                        # Create a temporary GPG keyring directory
                         export GNUPGHOME=\$(mktemp -d)
                         chmod 700 "\$GNUPGHOME"
-
-                        # Import GPG key
                         gpg --batch --yes --homedir "\$GNUPGHOME" --import "\$GPG_KEY_PATH"
 
-                        echo "🔍 GNUPGHOME set to: \$GNUPGHOME"
-                        echo '🚀 Running Gradle publish with signing...'
+                        echo "🔍 GNUPGHOME = \$GNUPGHOME"
 
-                        # Construct the system property string
                         GPG_HOME_FLAG="-Dgpg.homedir=\$GNUPGHOME"
 
-                        ./gradlew publish publishToMavenCentralPortal --info \\
+                        echo "🔧 Running: ./gradlew publishToMavenCentralPortal \$GPG_HOME_FLAG"
+
+                        ./gradlew publishToMavenCentralPortal --info \\
                             "\$GPG_HOME_FLAG" \\
                             "-Psigning.keyId=\$GPG_KEY_ID" \\
                             "-Psigning.password=\$GPG_KEY_PASS" \\
@@ -90,9 +80,6 @@ pipeline {
                             "-PmavenCentralPassword=\$OSSRH_PASS" \\
                             "-PjfrogUser=\$JFROG_USER" \\
                             "-PjfrogPassword=\$JFROG_PASS"
-
-                        echo '🧹 Cleaning up GPG keyring...'
-                        rm -rf "\$GNUPGHOME"
                     """
                 }
             }
