@@ -46,7 +46,7 @@ pipeline {
                         export GPG_ASC_ARMOR="\$(cat \$GPG_KEY_PATH)"
 
 
-                        ./gradlew publish publishToMavenCentralPortal --info \\
+                        ./gradlew publish --info \\
                             "-Psigning.keyId=\$GPG_KEY_ID" \\
                             "-Psigning.password=\$GPG_KEY_PASS" \\
                             "-Psigning.secretKeyRingFile=\$GPG_KEY_PATH" \\
