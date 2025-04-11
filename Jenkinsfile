@@ -43,7 +43,7 @@ pipeline {
                         set -euo pipefail
 
                         echo "🔐 Reading secret key into memory..."
-                        export GPG_ASC_ARMOR="$(cat \$GPG_KEY_PATH)"
+                        export GPG_ASC_ARMOR="\$(cat \$GPG_KEY_PATH)"
 
 
                         ./gradlew publish publishToMavenCentralPortal --info \\
