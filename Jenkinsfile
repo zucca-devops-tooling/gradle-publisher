@@ -32,7 +32,7 @@ pipeline {
                         chmod 700 '${GNUPGHOME}'
 
                         # Import GPG key
-                        gpg --batch --homedir '${GNUPGHOME}' --import '$GPG_KEY_PATH'
+                        gpg --batch --homedir '${GNUPGHOME}' --import '${$GPG_KEY_PATH}'
 
                         echo '🚀 Running Gradle publish with signing...'
 
@@ -71,7 +71,7 @@ pipeline {
                             chmod 700 '${GNUPGHOME}'
 
                             # Import GPG key
-                            gpg --batch --homedir '${GNUPGHOME}' --import '$GPG_KEY_PATH'
+                            gpg --batch --homedir '${GNUPGHOME}' --import '${$GPG_KEY_PATH}'
 
                             echo '🚀 Running Gradle publish with signing...'
 
