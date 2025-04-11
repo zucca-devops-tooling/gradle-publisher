@@ -89,6 +89,14 @@ publishing {
         }
     }
 }
+afterEvaluate {
+    tasks.matching { it.name == "publishPluginMavenPublicationToLocalRepository" }.configureEach {
+        dependsOn("signMavenPublication")
+    }
+}
+tasks.named("publishMavenPublicationToLocalRepository") {
+    dependsOn("signPluginMavenPublication")
+}
 
 java {
     withJavadocJar()
@@ -104,10 +112,10 @@ publisher {
     }
     prod {
         target = "mavenCentral"
-        customGradleCommand = "publishToMavenRepository"
+        customGradleCommand = "publishToMavenCentralPortal"
     }
 
     usernameProperty = "mavenCentralUsername"
     passwordProperty = "mavenCentralPassword"
-    //releaseBranchPatterns = listOf("PR-6")
+    releaseBranchPatterns = listOf("PR-6")
 }
