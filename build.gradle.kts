@@ -3,7 +3,7 @@ import java.util.*
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "0.0.1-SNAPSHOT"
+    id("dev.zucca-ops.gradle-publisher") version "0.0.1-PR-6-SNAPSHOT"
     id("java-gradle-plugin")
     signing
 }
