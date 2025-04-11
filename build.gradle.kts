@@ -58,6 +58,9 @@ afterEvaluate {
                 signing.sign(this)
             }
         } else {
+            logger.lifecycle("signing.keyId = ${keyId}")
+            logger.lifecycle("signing.password = ${if (password.isNullOrBlank()) "MISSING" else "****"}")
+            logger.lifecycle("gpg.homedir = ${gpgHome}")
             logger.warn("🔐 GPG signing skipped: missing keyId, password, or gpg.homedir")
         }
     }
