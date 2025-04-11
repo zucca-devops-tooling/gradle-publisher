@@ -137,9 +137,9 @@ mavenCentral {
     // This property is optional and defaults to 60 seconds.
     maxWait = 60
 }
-project.afterEvaluate {
-    tasks.findByName("publishPluginMavenPublicationToLocalRepository")?.let { publishTask ->
-        publishTask.dependsOn("signMavenPublication")
+afterEvaluate {
+    tasks.matching { it.name == "publishPluginMavenPublicationToLocalRepository" }.configureEach {
+        dependsOn("signMavenPublication")
     }
 }
 tasks.named("publishMavenPublicationToLocalRepository") {
