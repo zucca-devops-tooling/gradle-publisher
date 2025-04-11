@@ -46,7 +46,6 @@ pipeline {
 
                         echo '🔐 Importing GPG key into temporary keyring...'
 
-                        export GNUPGHOME=$(mktemp -d)
                         chmod 700 "\$GNUPGHOME"
 
                         # Inject config to support pinentry-mode loopback
