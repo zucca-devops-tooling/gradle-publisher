@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,22 @@
  */
 package dev.zuccaops.configuration
 
+/**
+ * Default configuration values used throughout the Gradle Publisher plugin.
+ *
+ * These values serve as fallbacks in case users don't override them in their plugin configuration.
+ *
+ * @property TARGET Default repository target. `"local"` will publish to Maven Local.
+ * @property USER_PROPERTY Default Gradle property name used to fetch repository username.
+ * @property PASS_PROPERTY Default Gradle property name used to fetch repository password.
+ * @property GIT_FOLDER Default path to the root Git folder. `"."` means the current project directory.
+ * @property RELEASE_BRANCH_REGEXES Default regex patterns used to determine if a branch is a release branch.
+ * If a branch matches any of these patterns, it's considered a release:
+ * - `release/1.2.3`
+ * - `v1.2.3`
+ *
+ * @author Guido Zuccarelli
+ */
 object Defaults {
     const val TARGET = "local"
     const val USER_PROPERTY = "mavenUsername"

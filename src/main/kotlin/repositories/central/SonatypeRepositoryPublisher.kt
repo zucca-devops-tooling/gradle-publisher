@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,35 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 import java.io.FileNotFoundException
 import java.net.URL
 
-class CustomMavenCentralRepositoryPublisher(
+/**
+ * A repository publisher for Sonatype OSSRH (s01.oss.sonatype.org).
+ *
+ * This is used when `target = "nexus"` and a `customGradleCommand` is defined by the user.
+ *
+ * This publisher:
+ * - Does NOT apply the Nexus plugin (due to its complexity)
+ * - Disables all regular publish tasks
+ * - Reroutes `publish` to a user-defined Gradle command (e.g., `closeAndReleaseStagingRepositories`)
+ * - Always enforces signing
+ * - Publishes using the default Maven Central configuration
+ *
+ * @param project the Gradle project
+ * @param versionResolver logic for deciding version format
+ * @param gradleCommand the command to route publishing to
+ *
+ * @author Guido Zuccarelli
+ */
+class SonatypeRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,
     private val gradleCommand: String,
 ) : BaseRepositoryPublisher(project, versionResolver) {
+    /**
+     * Configures the publishing logic by disabling all regular publish tasks
+     * and rerouting the `publish` task to the user-defined `gradleCommand`.
+     *
+     * Only runs this configuration if the artifact is deemed publishable.
+     */
     override fun configurePublishingRepository() {
         super.configurePublishingRepository()
 
@@ -56,6 +80,14 @@ class CustomMavenCentralRepositoryPublisher(
         }
     }
 
+    /**
+     * Returns the Maven Central-style URI for this artifact, based on the
+     * group, artifact name, and resolved version.
+     *
+     * This is used to check if the artifact is already published.
+     *
+     * @return the full artifact URI
+     */
     private fun getUri(): String {
         val group = project.group.toString().replace(".", "/")
         val name = project.name.replace(".", "/")
@@ -63,6 +95,12 @@ class CustomMavenCentralRepositoryPublisher(
         return RepositoryConstants.MAVEN_CENTRAL_URL + group + "/" + name + "/" + versionResolver.getVersion()
     }
 
+    /**
+     * Performs a network check to determine whether the artifact has already been
+     * published to the remote repository.
+     *
+     * @return true if the artifact exists remotely, false otherwise
+     */
     private fun artifactAlreadyPublished(): Boolean {
         try {
             URL(getUri()).readBytes()
@@ -75,8 +113,20 @@ class CustomMavenCentralRepositoryPublisher(
 
     override fun isPublishable(): Boolean = !versionResolver.isRelease() || !artifactAlreadyPublished()
 
+    /**
+     * Always enables signing for this repository type (Sonatype-style publish).
+     *
+     * @return true (signing is required)
+     */
     override fun shouldSign(): Boolean = true
 
+    /**
+     * Configures the publishing repository to use Maven Central layout.
+     *
+     * Note: the actual upload is handled by the user-defined custom Gradle command.
+     *
+     * @param repositoryHandler the handler for configuring Maven repositories
+     */
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
         repositoryHandler.mavenCentral()
     }

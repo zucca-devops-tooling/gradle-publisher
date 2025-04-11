@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,20 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.kotlin.dsl.get
 import java.io.File
 
+/**
+ * Publisher for local Maven repository (`~/.m2/repository`).
+ *
+ * This implementation is useful for dry-runs, local caching, or plugin development.
+ *
+ * - For release builds, it checks if the artifact already exists and skips re-publishing if found.
+ * - It never applies signing.
+ * - It registers `mavenLocal()` as the publishing target.
+ *
+ * @param project The current Gradle project.
+ * @param versionResolver Utility to determine version and release state.
+ *
+ * @author Guido Zuccarelli
+ */
 class LocalRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,
@@ -42,8 +56,19 @@ class LocalRepositoryPublisher(
         return true
     }
 
+    /**
+     * Always disables GPG signing for local repository publishing.
+     *
+     * @return `false`
+     */
     override fun shouldSign(): Boolean = false
 
+    /**
+     * Configures the repository to use `mavenLocal()` and removes any preconfigured Sonatype repository
+     * that may be auto-injected by plugins like `nexus-publish`.
+     *
+     * @param repositoryHandler Gradle's repository handler for the publishing block.
+     */
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
         repositoryHandler.mavenLocal()
         repositoryHandler.removeIf { it.name == "sonatype" }

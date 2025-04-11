@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,21 @@ import java.io.FileNotFoundException
 import java.net.Authenticator
 import java.net.URL
 
+/**
+ * Publisher for remote Maven repositories (e.g., Artifactory, GitHub Packages).
+ *
+ * Responsible for:
+ * - Conditionally skipping publishing if a production version already exists (via HTTP check)
+ * - Configuring Maven repository credentials dynamically
+ * - Disabling Sonatype-related tasks unless explicitly configured
+ *
+ * @param project The Gradle project
+ * @param versionResolver Utility to resolve version based on Git and environment
+ * @param repositoryAuthenticator Provides credentials based on environment
+ * @param configuration Plugin configuration for dev/prod targets and credentials
+ *
+ * @author Guido Zuccarelli
+ */
 class RemoteRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,
@@ -50,6 +65,14 @@ class RemoteRepositoryPublisher(
 
     override fun shouldSign(): Boolean = if (versionResolver.isRelease()) configuration.prod.sign else configuration.dev.sign
 
+    /**
+     * Configures the Maven repository for publishing using the credentials and target URL
+     * defined for the current environment.
+     *
+     * Also disables Sonatype-specific tasks that may have been applied by other plugins.
+     *
+     * @param repositoryHandler Gradle's repository handler where the Maven repository is registered.
+     */
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
         val username: String?
         val password: String?
@@ -96,6 +119,12 @@ class RemoteRepositoryPublisher(
         return configuration.dev.target
     }
 
+    /**
+     * Builds the expected artifact URI used to verify if it already exists.
+     * This is used in the `isPublishable` logic.
+     *
+     * @return The full URL of the artifact path.
+     */
     private fun getUri(): String {
         val group = project.group.toString().replace(".", "/")
         val name = project.name.replace(".", "/")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,16 @@ package dev.zuccaops.helpers
 import org.gradle.api.Project
 import java.io.ByteArrayOutputStream
 
+/**
+ * Utility class that helps resolve Git branch information for use in versioning.
+ *
+ * Supports reading Git references even in detached HEAD states (e.g., CI builds).
+ *
+ * @param project the Gradle project used to execute Git commands
+ * @param gitFolder the folder where `.git` is located (typically project root)
+ *
+ * @author Guido Zuccarelli
+ */
 class GitHelper(
     private val project: Project,
     private val gitFolder: String,
@@ -24,6 +34,9 @@ class GitHelper(
     private val pointer = "&"
     private val separator = "#"
 
+    /**
+     * Gets the branch name for a specific Git revision using `git log`.
+     */
     private fun getBranchForRevision(rev: Int): String? {
         val gitOutput = ByteArrayOutputStream()
 
@@ -47,6 +60,9 @@ class GitHelper(
         return extractBranchName(output)
     }
 
+    /**
+     * Builds a custom Git decoration string to control formatting of Git ref names.
+     */
     private fun getDecoratorString(): String {
         val decorate =
             listOf(
@@ -73,6 +89,9 @@ class GitHelper(
             .firstOrNull()
     }
 
+    /**
+     * Attempts to resolve the branch name of the current commit or a previous one.
+     */
     fun getBranch(): String {
         var branch = getBranchForRevision(-1) // Based on current commit
 
@@ -83,11 +102,23 @@ class GitHelper(
         return branch ?: "HEAD"
     }
 
+    /**
+     * Checks if the given branch name is considered a "main" branch.
+     * Includes fallback to `main`, `master`, or the origin HEAD.
+     */
     fun isMainBranch(branch: String): Boolean {
         println("comparing " + branch + " with " + getMainBranchName())
         return getMainBranchName() == branch || listOf("main", "master").contains(branch)
     }
 
+    /**
+     * Tries to determine the main branch of the repository.
+     *
+     * Resolution order:
+     * 1. `git symbolic-ref refs/remotes/origin/HEAD`
+     * 2. `git remote show origin` output
+     * 3. Common CI environment variables (GITHUB_REF_NAME, etc.)
+     */
     private fun getMainBranchName(): String? {
         val gitOutput = ByteArrayOutputStream()
 

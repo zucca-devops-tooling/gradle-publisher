@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,11 +28,32 @@ import java.io.FileNotFoundException
 import java.net.URL
 import java.util.Base64
 
+/**
+ * Publisher that targets the new Maven Central (Central Portal) using the [flying-gradle-plugin](https://github.com/yananhub/flying-gradle-plugin).
+ *
+ * This class dynamically applies the plugin and configures it using reflection to avoid compile-time dependency.
+ * It uses `USER_MANAGED` publishing mode, so manual review and publishing is expected in the portal.
+ *
+ * For release branches, the plugin checks if the artifact already exists in Maven Central
+ * and skips publishing if it has already been released.
+ *
+ * Artifacts are always signed in this mode.
+ *
+ * @param project The Gradle project
+ * @param versionResolver Resolves version and release state
+ * @param repositoryAuthenticator Provides credentials for Maven Central
+ *
+ * @author Guido Zuccarelli
+ */
 class MavenCentralRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,
     private val repositoryAuthenticator: RepositoryAuthenticator,
 ) : BaseRepositoryPublisher(project, versionResolver) {
+    /**
+     * Applies the `flying-gradle-plugin` and configures its required extension using reflection.
+     * Also finalizes the `publish` task with `publishToMavenCentralPortal`.
+     */
     @Suppress("UNCHECKED_CAST")
     override fun configurePublishingRepository() {
         super.configurePublishingRepository()
@@ -90,6 +111,9 @@ class MavenCentralRepositoryPublisher(
         return RepositoryConstants.MAVEN_CENTRAL_URL + group + "/" + name + "/" + versionResolver.getVersion()
     }
 
+    /**
+     * Checks if the artifact already exists in Maven Central to avoid re-uploading.
+     */
     private fun artifactAlreadyPublished(): Boolean {
         try {
             URL(getUri()).readBytes()
@@ -102,8 +126,14 @@ class MavenCentralRepositoryPublisher(
 
     override fun isPublishable(): Boolean = !versionResolver.isRelease() || !artifactAlreadyPublished()
 
+    /**
+     * Always enable signing for Maven Central.
+     */
     override fun shouldSign(): Boolean = true
 
+    /**
+     * Register a local bundle directory that flying-gradle-plugin will zip and upload.
+     */
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
         repositoryHandler.maven {
             name = "Local"

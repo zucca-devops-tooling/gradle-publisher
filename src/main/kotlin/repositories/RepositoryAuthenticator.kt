@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,28 @@ import org.gradle.api.Project
 import java.net.Authenticator
 import java.net.PasswordAuthentication
 
+/**
+ * Authenticates against remote repositories by resolving credentials from
+ * project properties, using a fallback hierarchy for dev and prod environments.
+ *
+ * This class also integrates with `HttpURLConnection` when authentication
+ * is needed at runtime via `Authenticator.setDefault(...)`.
+ *
+ * @property project the current Gradle project
+ * @property configuration the plugin configuration containing credential keys
+ *
+ * @author Guido Zuccarelli
+ */
 class RepositoryAuthenticator(
     private val project: Project,
     private val configuration: PluginConfiguration,
 ) : Authenticator() {
+    /**
+     * Automatically invoked when a remote connection requires authentication.
+     * Provides production credentials by default.
+     *
+     * @return the password authentication object or null if credentials are missing
+     */
     override fun getPasswordAuthentication(): PasswordAuthentication? {
         val username: String? = getProdUsername()
         val password: String? = getProdPassword()

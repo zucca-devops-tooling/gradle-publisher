@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,17 @@ import dev.zuccaops.repositories.RepositoryPublisherFactory
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
+/**
+ * The main entry point for the Gradle Publisher plugin.
+ *
+ * This plugin:
+ * - Registers the `publisher` extension for user configuration.
+ * - Automatically applies the `maven-publish` plugin.
+ * - Ensures the `publish` task depends on `build`.
+ * - Delegates publishing logic to an environment-aware [RepositoryPublisher].
+ *
+ * @author Guido Zuccarelli
+ */
 class GradlePublisherPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         val configuration = target.extensions.create("publisher", PluginConfiguration::class.java)

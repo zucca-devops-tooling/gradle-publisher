@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,22 @@ import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
 import org.gradle.plugins.signing.Sign
 
+/**
+ * Abstract base class for repository publishing logic.
+ *
+ * Provides a common implementation for setting up a `MavenPublication`, assigning the resolved version,
+ * and configuring conditional logic for publishing and signing tasks.
+ *
+ * Subclasses must implement:
+ * - [isPublishable]: whether publishing should proceed in the current context
+ * - [shouldSign]: whether signing should be enabled
+ * - [registerRepository]: logic to register the appropriate Maven repository
+ *
+ * @param project The Gradle project
+ * @param versionResolver Handles version resolution based on Git and config
+ *
+ * @author Guido Zuccarelli
+ */
 abstract class BaseRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,

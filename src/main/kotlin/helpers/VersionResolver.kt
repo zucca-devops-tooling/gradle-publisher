@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,31 @@ package dev.zuccaops.helpers
 import dev.zuccaops.configuration.PluginConfiguration
 import org.gradle.api.Project
 
+/**
+ * Resolves the effective version of the project based on the current Git branch and plugin configuration.
+ *
+ * If the current branch matches a release pattern or is a main branch, the version is used as-is.
+ * Otherwise, it appends `-<branch>-SNAPSHOT` to the project version.
+ *
+ * Example:
+ * - `1.2.3` on `feature/foo` → `1.2.3-feature-foo-SNAPSHOT`
+ * - `1.2.3` on `main` → `1.2.3`
+ *
+ * @param project the Gradle project
+ * @param configuration the plugin configuration
+ *
+ * @author Guido Zuccarelli
+ */
 class VersionResolver(
     private val project: Project,
     private val configuration: PluginConfiguration,
 ) {
     private val gitHelper: GitHelper = GitHelper(project, configuration.gitFolder)
 
+    /**
+     * Returns the computed project version based on Git branch.
+     * Adds `-<branch>-SNAPSHOT` if not a release branch.
+     */
     fun getVersion(): String {
         val baseVersion = getProjectVersion()
 
@@ -34,8 +53,13 @@ class VersionResolver(
         return "$baseVersion-${getEscapedBranchName()}-SNAPSHOT"
     }
 
+    /** Escapes slashes in the branch name for safe use in versions. */
     private fun getEscapedBranchName(): String = gitHelper.getBranch().replace("/", "-")
 
+    /**
+     * Returns true if the current branch is a release branch.
+     * Uses either `releaseBranchPatterns` or defaults to checking if branch is main.
+     */
     fun isRelease(): Boolean {
         val currentBranch = gitHelper.getBranch()
         val releaseBranchPatterns = configuration.releaseBranchPatterns
@@ -51,5 +75,6 @@ class VersionResolver(
         return releaseBranchPatterns.any { currentBranch.matches(Regex(it)) }
     }
 
+    /** Returns the project version defined in `build.gradle[.kts]`. */
     private fun getProjectVersion(): String = project.version.toString()
 }
