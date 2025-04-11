@@ -19,7 +19,7 @@ pipeline {
                     file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH'),
                     string(credentialsId: 'GPG_KEY_ID', variable: 'GPG_KEY_ID'),
                     string(credentialsId: 'GPG_KEY_PASS', variable: 'GPG_KEY_PASS'),
-                    usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_CREDENTIALS_USR', passwordVariable: 'JFROG_CREDENTIALS_PSW'),
+                    usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASS'),
                     usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
                 ]) {
                      sh """#!/bin/bash
@@ -57,7 +57,7 @@ pipeline {
                     file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH'),
                     string(credentialsId: 'GPG_KEY_ID', variable: 'GPG_KEY_ID'),
                     string(credentialsId: 'GPG_KEY_PASS', variable: 'GPG_KEY_PASS'),
-                    usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_CREDENTIALS_USR', passwordVariable: 'JFROG_CREDENTIALS_PSW'),
+                    usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASS'),
                     usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
                 ]) {
                     sh """#!/bin/bash
