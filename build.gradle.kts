@@ -93,9 +93,9 @@ afterEvaluate {
     tasks.matching { it.name == "publishPluginMavenPublicationToLocalRepository" }.configureEach {
         dependsOn("signMavenPublication")
     }
-}
-tasks.named("publishMavenPublicationToLocalRepository") {
-    dependsOn("signPluginMavenPublication")
+    tasks.matching { it.name == "publishMavenPublicationToLocalRepository" }.configureEach {
+        dependsOn("signPluginMavenPublication")
+    }
 }
 
 java {
