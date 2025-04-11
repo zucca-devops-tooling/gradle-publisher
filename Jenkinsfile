@@ -28,7 +28,7 @@ pipeline {
                         echo '🔐 Importing GPG key into temporary keyring...'
 
                         # Use a temporary GPG home directory for clean import
-                        export GNUPGHOME=$(mktemp -d)
+                        export GNUPGHOME=\$(mktemp -d)
                         chmod 700 '${GNUPGHOME}'
 
                         # Import GPG key
@@ -67,7 +67,7 @@ pipeline {
                             echo '🔐 Importing GPG key into temporary keyring...'
 
                             # Use a temporary GPG home directory for clean import
-                            export GNUPGHOME=$(mktemp -d)
+                            export GNUPGHOME=\$(mktemp -d)
                             chmod 700 '${GNUPGHOME}'
 
                             # Import GPG key
