@@ -16,6 +16,8 @@ import org.gradle.api.file.DirectoryProperty
 class MavenCentralRepositoryPublisher(private val project: Project, private val versionResolver: VersionResolver,
                                       private val repositoryAuthenticator: RepositoryAuthenticator):
     BaseRepositoryPublisher(project, versionResolver) {
+
+    @Suppress("UNCHECKED_CAST")
     override fun configurePublishingRepository() {
         super.configurePublishingRepository()
 
@@ -26,18 +28,22 @@ class MavenCentralRepositoryPublisher(private val project: Project, private val 
         project.extensions.configure("mavenCentral", Action<Any> {
             val clazz = this.javaClass
 
-            val repoDir = project.layout.buildDirectory.dir("repos/bundles").get()
+            val repoDir = project.layout.buildDirectory.dir("repos/bundles")
 
             clazz.getMethod("getRepoDir")
                 .invoke(this)
                 .let { it as DirectoryProperty }
                 .set(repoDir)
 
-            @Suppress("UNCHECKED_CAST")
             clazz.getMethod("getAuthToken")
                 .invoke(this)
                 .let { it as Property<String> }
                 .set(encodedCredentials)
+
+            clazz.getMethod("getPublishingType")
+                .invoke(this)
+                .let { it as Property<String> }
+                .set("USER_MANAGED")
         })
 
         project.tasks.named("publish").configure {
