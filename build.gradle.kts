@@ -1,5 +1,3 @@
-import java.util.*
-
 plugins {
     kotlin("jvm") version "1.9.22"
     `kotlin-dsl`
@@ -117,5 +115,4 @@ publisher {
 
     usernameProperty = "mavenCentralUsername"
     passwordProperty = "mavenCentralPassword"
-    releaseBranchPatterns = listOf("PR-6")
 }
