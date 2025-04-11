@@ -46,18 +46,19 @@ gradlePlugin {
 }
 
 signing {
-    val signingKeyPath = findProperty("signing.secretKeyFile")?.toString()
-    val signingPassword = findProperty("signing.password") as String?
+    val keyId = findProperty("signing.keyId") as String?
+    val password = findProperty("signing.password") as String?
+    val gpgHome = findProperty("gpg.homedir")?.toString()
 
-    if (!signingKeyPath.isNullOrBlank() && !signingPassword.isNullOrBlank()) {
-        val keyContent = File(signingKeyPath).readText()
-        useInMemoryPgpKeys(keyContent, signingPassword)
+    if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !gpgHome.isNullOrBlank()) {
+        useGpgCmd()
+        // Environment variable for GPG CLI to pick up keyring
+        System.setProperty("GNUPGHOME", gpgHome)
         sign(publishing.publications["maven"])
     } else {
-        logger.warn("🔐 GPG signing skipped: missing key or password")
+        logger.warn("🔐 GPG signing skipped: missing keyId, password, or gpg.homedir")
     }
 }
-
 publishing {
     publications {
         create<MavenPublication>("maven") {
