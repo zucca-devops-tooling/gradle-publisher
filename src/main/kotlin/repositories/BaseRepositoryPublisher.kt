@@ -9,6 +9,7 @@ import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
+import org.gradle.plugins.signing.Sign
 
 abstract class BaseRepositoryPublisher(private val project: Project, private val versionResolver: VersionResolver): RepositoryPublisher {
 
@@ -31,9 +32,7 @@ abstract class BaseRepositoryPublisher(private val project: Project, private val
                     isPublishable()
                 }
             }
-            project.tasks.matching {
-                it.name in listOf("signMavenPublication", "signPluginMavenPublication")
-            }.configureEach {
+            project.tasks.withType(Sign::class.java).configureEach {
                 onlyIf {
                     shouldSign()
                 }

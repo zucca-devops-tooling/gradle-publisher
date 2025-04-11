@@ -30,7 +30,7 @@ pipeline {
                 }
             }
         }
-        stage('Publish to Maven Central') {
+        stage('Publish Artifacts') {
             steps {
                 withCredentials([
                     file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH'),
