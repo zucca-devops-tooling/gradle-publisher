@@ -11,7 +11,8 @@ The **Gradle Publisher Plugin** automates CI-based publishing of Gradle artifact
 - 🔑 Environment-specific credentials
 - 🔏 Optional GPG signing (with skip control per environment)
 - 🧠 Smart routing for Nexus or Maven Central publishing
-- 🧰 Automatically applies `maven-publish` — no need to apply it yourself
+- 🧰 Automatically applies and configures `maven-publish`
+- 🧾 Automatically sets up repository + MavenPublication block for basic cases
 
 ---
 
@@ -72,7 +73,7 @@ publisher {
 
     usernameProperty = "userProperty"
     passwordProperty = "passwordProperty"
-    releaseBranchPatterns = ["^release/\\d+\\.\\d+\\.\\d+$", "^v\\d+\\.\\d+\\.\\d+$"]
+    releaseBranchPatterns = ["^release/\\d+\\.\\d+\\.\\d+$", "^v\\d+\\.\\d+$"]
 }
 ```
 
@@ -133,11 +134,52 @@ sign = false
 
 ---
 
+## 🔧 Custom POM Configuration
+
+If you need a **custom POM**, configure it like this:
+
+```kotlin
+publishing {
+    publications.withType<MavenPublication>().configureEach {
+        pom {
+            name.set("...")
+            description.set("...")
+            url.set("...")
+
+            licenses {
+                license {
+                    name.set("...")
+                    url.set("...")
+                    distribution.set("...")
+                }
+            }
+
+            developers {
+                developer {
+                    id.set("...")
+                    name.set("...")
+                    email.set("...")
+                }
+            }
+
+            scm {
+                url.set("...")
+                connection.set("...")
+                developerConnection.set("...")
+            }
+        }
+    }
+}
+```
+
+---
+
 ## 📌 Notes
 
-- `maven-publish` is automatically applied for you
-- Use `customGradleCommand` to override the publish task per environment
-- Compatible with CI/CD systems like Jenkins, GitHub Actions, GitLab CI, etc.
+- ✅ `maven-publish` is automatically applied by the plugin
+- ✅ `MavenPublication` is created automatically (no need to create `create<MavenPublication>("maven") { ... }`)
+- ⚙️ If needed, override settings with `customGradleCommand`
+- 💡 Compatible with CI/CD systems like Jenkins, GitHub Actions, GitLab CI, etc.
 
 ---
 
