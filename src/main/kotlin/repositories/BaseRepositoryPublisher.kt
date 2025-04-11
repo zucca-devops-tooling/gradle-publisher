@@ -31,7 +31,9 @@ abstract class BaseRepositoryPublisher(private val project: Project, private val
                     isPublishable()
                 }
             }
-            project.tasks.matching { it.name == "signMavenPublication" }.configureEach {
+            project.tasks.matching {
+                it.name in listOf("signMavenPublication", "signPluginMavenPublication")
+            }.configureEach {
                 onlyIf {
                     shouldSign()
                 }
