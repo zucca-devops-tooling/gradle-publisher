@@ -54,7 +54,9 @@ signing {
         useGpgCmd()
         // Environment variable for GPG CLI to pick up keyring
         System.setProperty("GNUPGHOME", gpgHome)
-        sign(publishing.publications["maven"])
+        publishing.publications.withType<MavenPublication>().configureEach {
+            signing.sign(this)
+        }
     } else {
         logger.warn("🔐 GPG signing skipped: missing keyId, password, or gpg.homedir")
     }
@@ -67,40 +69,44 @@ publishing {
             version = project.version.toString()
 
             from(components["java"])
-
-            pom {
-                name.set("Gradle Publisher")
-                description.set("A Gradle plugin that simplifies publishing by detecting environment and routing to the correct repository with dynamic versions.")
-                url.set("https://github.com/zucca-devops-tooling/gradle-publisher")
-
-                licenses {
-                    license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-                        distribution.set("repo")
-                    }
-                }
-
-                developers {
-                    developer {
-                        id.set("zucca")
-                        name.set("Guido Zuccarelli")
-                        email.set("guidozuccarelli@hotmail.com")
-                    }
-                }
-
-                scm {
-                    url.set("https://github.com/zucca-devops-tooling/gradle-publisher")
-                    connection.set("scm:git:git://github.com/zucca-devops-tooling/gradle-publisher.git")
-                    developerConnection.set("scm:git:ssh://github.com/zucca-devops-tooling/gradle-publisher.git")
-                }
-            }
         }
         repositories {
             // Starting from version 1.3.0, it does not need to configure the repository
             maven {
                 name = "Local"
                 url = layout.buildDirectory.dir("repos/bundles").get().asFile.toURI()
+            }
+        }
+    }
+}
+
+publishing {
+    publications.withType<MavenPublication>().configureEach {
+        pom {
+            name.set("Gradle Publisher")
+            description.set("A Gradle plugin that simplifies publishing by detecting environment and routing to the correct repository with dynamic versions.")
+            url.set("https://github.com/zucca-devops-tooling/gradle-publisher")
+
+            licenses {
+                license {
+                    name.set("The Apache License, Version 2.0")
+                    url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    distribution.set("repo")
+                }
+            }
+
+            developers {
+                developer {
+                    id.set("zucca")
+                    name.set("Guido Zuccarelli")
+                    email.set("guidozuccarelli@hotmail.com")
+                }
+            }
+
+            scm {
+                url.set("https://github.com/zucca-devops-tooling/gradle-publisher")
+                connection.set("scm:git:git://github.com/zucca-devops-tooling/gradle-publisher.git")
+                developerConnection.set("scm:git:ssh://github.com/zucca-devops-tooling/gradle-publisher.git")
             }
         }
     }
