@@ -1,20 +1,36 @@
-package dev.zucca_ops.repositories.remote
+/*
+ * Copyright 2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package dev.zuccaops.repositories.remote
 
-import dev.zucca_ops.configuration.PluginConfiguration
-import dev.zucca_ops.helpers.VersionResolver
-import dev.zucca_ops.repositories.BaseRepositoryPublisher
-import dev.zucca_ops.repositories.RepositoryAuthenticator
+import dev.zuccaops.configuration.PluginConfiguration
+import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.repositories.BaseRepositoryPublisher
+import dev.zuccaops.repositories.RepositoryAuthenticator
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import java.io.FileNotFoundException
 import java.net.Authenticator
 import java.net.URL
 
-class RemoteRepositoryPublisher(private val project: Project,
-                                private val versionResolver: VersionResolver,
-                                private val repositoryAuthenticator: RepositoryAuthenticator,
-                                private val configuration: PluginConfiguration) : BaseRepositoryPublisher(project, versionResolver) {
-
+class RemoteRepositoryPublisher(
+    private val project: Project,
+    private val versionResolver: VersionResolver,
+    private val repositoryAuthenticator: RepositoryAuthenticator,
+    private val configuration: PluginConfiguration,
+) : BaseRepositoryPublisher(project, versionResolver) {
     override fun isPublishable(): Boolean {
         if (versionResolver.isRelease()) {
             Authenticator.setDefault(repositoryAuthenticator)
@@ -32,9 +48,7 @@ class RemoteRepositoryPublisher(private val project: Project,
         return true
     }
 
-    override fun shouldSign(): Boolean {
-        return if (versionResolver.isRelease()) configuration.prod.sign else configuration.dev.sign
-    }
+    override fun shouldSign(): Boolean = if (versionResolver.isRelease()) configuration.prod.sign else configuration.dev.sign
 
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
         val username: String?
@@ -63,7 +77,7 @@ class RemoteRepositoryPublisher(private val project: Project,
         }
 
         project.tasks
-            .matching {  it.name.contains("ToSonatypeRepository") || it.name.contains("SonatypeStaging") }
+            .matching { it.name.contains("ToSonatypeRepository") || it.name.contains("SonatypeStaging") }
             .configureEach {
                 onlyIf {
                     logger.lifecycle("❌ Skipping Nexus task: $name (disabled by publisher plugin)")

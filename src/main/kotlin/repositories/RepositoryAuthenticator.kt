@@ -1,12 +1,29 @@
-package dev.zucca_ops.repositories
+/*
+ * Copyright 2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package dev.zuccaops.repositories
 
-import dev.zucca_ops.configuration.PluginConfiguration
+import dev.zuccaops.configuration.PluginConfiguration
 import org.gradle.api.Project
 import java.net.Authenticator
 import java.net.PasswordAuthentication
 
-class RepositoryAuthenticator(private val project: Project, private val configuration: PluginConfiguration): Authenticator() {
-
+class RepositoryAuthenticator(
+    private val project: Project,
+    private val configuration: PluginConfiguration,
+) : Authenticator() {
     override fun getPasswordAuthentication(): PasswordAuthentication? {
         val username: String? = getProdUsername()
         val password: String? = getProdPassword()
@@ -18,45 +35,36 @@ class RepositoryAuthenticator(private val project: Project, private val configur
         return null
     }
 
-    fun getProdUsername(): String? {
-        return getUsernameOrFallback(configuration.prod.usernameProperty)
-    }
+    fun getProdUsername(): String? = getUsernameOrFallback(configuration.prod.usernameProperty)
 
-    fun getDevUsername(): String? {
-        return getUsernameOrFallback(configuration.dev.usernameProperty)
-    }
+    fun getDevUsername(): String? = getUsernameOrFallback(configuration.dev.usernameProperty)
 
-    fun getProdPassword(): String? {
-        return getPasswordOrFallback(configuration.prod.passwordProperty)
-    }
+    fun getProdPassword(): String? = getPasswordOrFallback(configuration.prod.passwordProperty)
 
-    fun getDevPassword(): String? {
-        return getPasswordOrFallback(configuration.dev.passwordProperty)
-    }
+    fun getDevPassword(): String? = getPasswordOrFallback(configuration.dev.passwordProperty)
 
-    private fun getUsernameOrFallback(usernamePropertyName: String?): String? {
-        return getPropertyOrFallback(usernamePropertyName) { getFallbackUsername() }
-    }
+    private fun getUsernameOrFallback(usernamePropertyName: String?): String? =
+        getPropertyOrFallback(usernamePropertyName) {
+            getFallbackUsername()
+        }
 
-    private fun getPasswordOrFallback(passwordPropertyName: String?): String? {
-        return getPropertyOrFallback(passwordPropertyName) { getFallbackPassword() }
-    }
+    private fun getPasswordOrFallback(passwordPropertyName: String?): String? =
+        getPropertyOrFallback(passwordPropertyName) {
+            getFallbackPassword()
+        }
 
-    private fun getFallbackUsername(): String? {
-        return getProperty(configuration.usernameProperty)
-    }
+    private fun getFallbackUsername(): String? = getProperty(configuration.usernameProperty)
 
-    private fun getFallbackPassword(): String? {
-        return getProperty(configuration.passwordProperty)
-    }
+    private fun getFallbackPassword(): String? = getProperty(configuration.passwordProperty)
 
-    private fun getPropertyOrFallback(propertyName: String?, fallbackFn: () -> String?): String? {
+    private fun getPropertyOrFallback(
+        propertyName: String?,
+        fallbackFn: () -> String?,
+    ): String? {
         val property: String? = getProperty(propertyName)
 
         return property ?: fallbackFn()
     }
 
-    private fun getProperty(propertyName: String?): String? {
-        return propertyName?.let { project.findProperty(it) as? String }
-    }
+    private fun getProperty(propertyName: String?): String? = propertyName?.let { project.findProperty(it) as? String }
 }

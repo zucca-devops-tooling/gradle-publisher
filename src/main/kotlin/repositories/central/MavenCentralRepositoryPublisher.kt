@@ -1,58 +1,84 @@
-package dev.zucca_ops.repositories.central
+/*
+ * Copyright 2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package dev.zuccaops.repositories.central
 
-import dev.zucca_ops.helpers.VersionResolver
-import dev.zucca_ops.repositories.BaseRepositoryPublisher
-import dev.zucca_ops.repositories.RepositoryAuthenticator
-import dev.zucca_ops.repositories.RepositoryConstants
+import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.repositories.BaseRepositoryPublisher
+import dev.zuccaops.repositories.RepositoryAuthenticator
+import dev.zuccaops.repositories.RepositoryConstants
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
 import java.io.FileNotFoundException
 import java.net.URL
-import java.util.*
-import org.gradle.api.provider.Property
-import org.gradle.api.file.DirectoryProperty
+import java.util.Base64
 
-class MavenCentralRepositoryPublisher(private val project: Project, private val versionResolver: VersionResolver,
-                                      private val repositoryAuthenticator: RepositoryAuthenticator):
-    BaseRepositoryPublisher(project, versionResolver) {
-
+class MavenCentralRepositoryPublisher(
+    private val project: Project,
+    private val versionResolver: VersionResolver,
+    private val repositoryAuthenticator: RepositoryAuthenticator,
+) : BaseRepositoryPublisher(project, versionResolver) {
     @Suppress("UNCHECKED_CAST")
     override fun configurePublishingRepository() {
         super.configurePublishingRepository()
 
         project.pluginManager.apply("tech.yanand.maven-central-publish")
-        val encodedCredentials = encodeBasicAuth(repositoryAuthenticator.getProdUsername()!!,
-            repositoryAuthenticator.getProdPassword()!!
+        val encodedCredentials =
+            encodeBasicAuth(
+                repositoryAuthenticator.getProdUsername()!!,
+                repositoryAuthenticator.getProdPassword()!!,
+            )
+        project.extensions.configure(
+            "mavenCentral",
+            Action<Any> {
+                val clazz = this.javaClass
+
+                val repoDir = project.layout.buildDirectory.dir("repos/bundles")
+
+                clazz
+                    .getMethod("getRepoDir")
+                    .invoke(this)
+                    .let { it as DirectoryProperty }
+                    .set(repoDir)
+
+                clazz
+                    .getMethod("getAuthToken")
+                    .invoke(this)
+                    .let { it as Property<String> }
+                    .set(encodedCredentials)
+
+                clazz
+                    .getMethod("getPublishingType")
+                    .invoke(this)
+                    .let { it as Property<String> }
+                    .set("USER_MANAGED")
+            },
         )
-        project.extensions.configure("mavenCentral", Action<Any> {
-            val clazz = this.javaClass
-
-            val repoDir = project.layout.buildDirectory.dir("repos/bundles")
-
-            clazz.getMethod("getRepoDir")
-                .invoke(this)
-                .let { it as DirectoryProperty }
-                .set(repoDir)
-
-            clazz.getMethod("getAuthToken")
-                .invoke(this)
-                .let { it as Property<String> }
-                .set(encodedCredentials)
-
-            clazz.getMethod("getPublishingType")
-                .invoke(this)
-                .let { it as Property<String> }
-                .set("USER_MANAGED")
-        })
 
         project.tasks.named("publish").configure {
             finalizedBy("publishToMavenCentralPortal")
         }
-
     }
 
-    private fun encodeBasicAuth(user: String, token: String): String {
+    private fun encodeBasicAuth(
+        user: String,
+        token: String,
+    ): String {
         val authString = "$user:$token"
         return Base64.getEncoder().encodeToString(authString.toByteArray(Charsets.UTF_8))
     }
@@ -65,7 +91,7 @@ class MavenCentralRepositoryPublisher(private val project: Project, private val 
     }
 
     private fun artifactAlreadyPublished(): Boolean {
-        try{
+        try {
             URL(getUri()).readBytes()
 
             return true
@@ -74,19 +100,19 @@ class MavenCentralRepositoryPublisher(private val project: Project, private val 
         }
     }
 
-    override fun isPublishable(): Boolean {
-        return !versionResolver.isRelease() || !artifactAlreadyPublished()
-    }
+    override fun isPublishable(): Boolean = !versionResolver.isRelease() || !artifactAlreadyPublished()
 
-    override fun shouldSign(): Boolean {
-        return true
-    }
+    override fun shouldSign(): Boolean = true
 
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
         repositoryHandler.maven {
             name = "Local"
-            url = project.layout.buildDirectory.dir("repos/bundles").get().asFile.toURI()
+            url =
+                project.layout.buildDirectory
+                    .dir("repos/bundles")
+                    .get()
+                    .asFile
+                    .toURI()
         }
     }
-
 }

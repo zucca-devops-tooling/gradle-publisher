@@ -1,21 +1,39 @@
-package dev.zucca_ops.helpers
+/*
+ * Copyright 2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package dev.zuccaops.helpers
 import org.gradle.api.Project
 import java.io.ByteArrayOutputStream
 
-class GitHelper(private val project: Project, private val gitFolder: String) {
-
-    private val POINTER = "&"
-    private val SEPARATOR = "#"
+class GitHelper(
+    private val project: Project,
+    private val gitFolder: String,
+) {
+    private val pointer = "&"
+    private val separator = "#"
 
     private fun getBranchForRevision(rev: Int): String? {
         val gitOutput = ByteArrayOutputStream()
 
-        val gitArgs = listOf(
-            "--git-dir=$gitFolder/.git",
-            "log",
-            rev.toString(),
-            "--pretty=%(decorate:${getDecoratorString()})"
-        )
+        val gitArgs =
+            listOf(
+                "--git-dir=$gitFolder/.git",
+                "log",
+                rev.toString(),
+                "--pretty=%(decorate:${getDecoratorString()})",
+            )
 
         println("gitargs $gitArgs")
 
@@ -30,12 +48,13 @@ class GitHelper(private val project: Project, private val gitFolder: String) {
     }
 
     private fun getDecoratorString(): String {
-        val decorate = listOf(
-            "prefix=", // Avoid the `(` prefix on references
-            "suffix=", // Avoid the `)` suffix on references
-            "separator=$SEPARATOR",
-            "pointer=$POINTER",
-        )
+        val decorate =
+            listOf(
+                "prefix=", // Avoid the `(` prefix on references
+                "suffix=", // Avoid the `)` suffix on references
+                "separator=$separator",
+                "pointer=$pointer",
+            )
 
         return decorate.joinToString(",")
     }
@@ -44,9 +63,10 @@ class GitHelper(private val project: Project, private val gitFolder: String) {
         val tagsRef = "refs/tags/*"
         println("revision output:$output")
 
-        val onlyBranches = if (output.contains(POINTER)) output.substringAfter(POINTER) else output
+        val onlyBranches = if (output.contains(pointer)) output.substringAfter(pointer) else output
 
-        return onlyBranches.split(SEPARATOR)
+        return onlyBranches
+            .split(separator)
             .filter { it.contains("/") } // These are branches
             .filter { it != tagsRef } // We don't consider tags
             .map { it.substringAfter("/") } // Get rid of `origin/`
