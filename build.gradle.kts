@@ -137,6 +137,9 @@ mavenCentral {
     // This property is optional and defaults to 60 seconds.
     maxWait = 60
 }
+tasks.named("publishMavenPublicationToLocalRepository") {
+    dependsOn(tasks.named("signPluginMavenPublication"))
+}
 
 /*
 publisher {
