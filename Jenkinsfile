@@ -70,8 +70,6 @@ pipeline {
 
                         GPG_HOME_FLAG="-Dgpg.homedir=\$GNUPGHOME"
 
-                        echo "🔧 Running: ./gradlew publishToMavenCentralPortal \$GPG_HOME_FLAG"
-
                         ./gradlew publishToMavenCentralPortal --info \\
                             "\$GPG_HOME_FLAG" \\
                             "-Psigning.keyId=\$GPG_KEY_ID" \\

@@ -48,7 +48,7 @@ afterEvaluate {
     signing {
         val keyId = findProperty("signing.keyId") as String?
         val password = findProperty("signing.password") as String?
-        val gpgHome = findProperty("gpg.homedir")?.toString()
+        val gpgHome = System.getProperty("gpg.homedir")?.toString()
 
         if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !gpgHome.isNullOrBlank()) {
             useGpgCmd()
