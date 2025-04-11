@@ -4,6 +4,7 @@ plugins {
     id("dev.zucca-ops.gradle-publisher") version "0.0.1-PR-6-SNAPSHOT"
     id("java-gradle-plugin")
     signing
+    id("com.diffplug.spotless") version "7.0.3"
 }
 
 group = "dev.zucca-ops"
@@ -32,10 +33,15 @@ kotlin {
 }
 
 gradlePlugin {
+    website = "https://github.com/zucca-devops-tooling/gradle-publisher"
+    vcsUrl = "https://github.com/zucca-devops-tooling/gradle-publisher.git"
     plugins {
         create("gradlePublisherPlugin") {
             id = "dev.zucca-ops.gradle-publisher"
-            implementationClass = "dev.zucca_ops.GradlePublisherPlugin"
+            implementationClass = "dev.zuccaops.GradlePublisherPlugin"
+            displayName = "Gradle Publisher Plugin"
+            tags = listOf("publishing", "ci", "gradle", "maven", "automation")
+            description = "A Gradle plugin that simplifies publishing by detecting environment and routing to the correct repository with dynamic versions."
         }
     }
 }
@@ -115,4 +121,30 @@ publisher {
 
     usernameProperty = "mavenCentralUsername"
     passwordProperty = "mavenCentralPassword"
+}
+
+spotless {
+    kotlin {
+        target("src/**/*.kt")
+        ktlint() // or prettier, diktat, etc.
+
+        licenseHeader(
+            """/*
+ * Copyright 2025 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+""".trimIndent()
+        )
+    }
 }

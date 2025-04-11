@@ -1,16 +1,38 @@
-package dev.zucca_ops
+/*
+ * Copyright 2025 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package dev.zuccaops
 
-import dev.zucca_ops.configuration.PluginConfiguration
-import dev.zucca_ops.helpers.VersionResolver
-import dev.zucca_ops.repositories.RepositoryPublisher
-import dev.zucca_ops.repositories.RepositoryPublisherFactory
+import dev.zuccaops.configuration.PluginConfiguration
+import dev.zuccaops.repositories.RepositoryPublisher
+import dev.zuccaops.repositories.RepositoryPublisherFactory
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.kotlin.dsl.configure
 
-class GradlePublisherPlugin(): Plugin<Project> {
-
+/**
+ * The main entry point for the Gradle Publisher plugin.
+ *
+ * This plugin:
+ * - Registers the `publisher` extension for user configuration.
+ * - Automatically applies the `maven-publish` plugin.
+ * - Ensures the `publish` task depends on `build`.
+ * - Delegates publishing logic to an environment-aware [RepositoryPublisher].
+ *
+ * @author Guido Zuccarelli
+ */
+class GradlePublisherPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         val configuration = target.extensions.create("publisher", PluginConfiguration::class.java)
 
