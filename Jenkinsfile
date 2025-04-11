@@ -49,6 +49,7 @@ pipeline {
                         ./gradlew publish publishToMavenCentralPortal --info \\
                             "-Psigning.keyId=\$GPG_KEY_ID" \\
                             "-Psigning.password=\$GPG_KEY_PASS" \\
+                            "-Psigning.secretKeyRingFile=\$GPG_KEY_PATH" \\
                             "-PmavenCentralUsername=\$OSSRH_USER" \\
                             "-PmavenCentralPassword=\$OSSRH_PASS" \\
                             "-PjfrogUser=\$JFROG_USER" \\

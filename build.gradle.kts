@@ -47,25 +47,18 @@ gradlePlugin {
 signing {
     val keyId = findProperty("signing.keyId") as String?
     val password = findProperty("signing.password") as String?
-    val rawKey = System.getenv("GPG_ASC_ARMOR")
+    val keyPath = findProperty("signing.secretKeyRingFile")?.toString()
 
-    if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !rawKey.isNullOrBlank()) {
-
-        val keyFile = File(rawKey)
-        logger.lifecycle("🔍 File exists: ${keyFile.exists()}")
-        logger.lifecycle("🔍 File size: ${keyFile.length()} bytes")
-        logger.lifecycle("🔍 First line: ${keyFile.useLines { it.firstOrNull() }}")
-        logger.lifecycle("🔐 Using in-memory GPG signing")
-        useInMemoryPgpKeys(keyId, rawKey, password)
-
+    if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !keyPath.isNullOrBlank()) {
+        logger.lifecycle("🔐 Using GPG secret key file at $keyPath")
+        useInMemoryPgpKeys(File(keyPath).readText(), password)
         publishing.publications.withType<MavenPublication>().configureEach {
             signing.sign(this)
         }
     } else {
-        logger.warn("🔐 In-memory signing skipped: missing keyId, password, or GPG_ASC_ARMOR env var")
+        logger.warn("🔐 File-based signing skipped: missing keyId, password, or key file")
     }
 }
-
 publishing {
     publications {
         create<MavenPublication>("maven") {
