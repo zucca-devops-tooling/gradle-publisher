@@ -50,6 +50,11 @@ signing {
     val rawKey = System.getenv("GPG_ASC_ARMOR")
 
     if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !rawKey.isNullOrBlank()) {
+
+        val keyFile = File(rawKey)
+        logger.lifecycle("🔍 File exists: ${keyFile.exists()}")
+        logger.lifecycle("🔍 File size: ${keyFile.length()} bytes")
+        logger.lifecycle("🔍 First line: ${keyFile.useLines { it.firstOrNull() }}")
         logger.lifecycle("🔐 Using in-memory GPG signing")
         useInMemoryPgpKeys(keyId, rawKey, password)
 
