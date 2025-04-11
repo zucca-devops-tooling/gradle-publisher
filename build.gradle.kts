@@ -121,6 +121,7 @@ publisher {
 
     usernameProperty = "mavenCentralUsername"
     passwordProperty = "mavenCentralPassword"
+    releaseBranchPatterns = listOf("main")
 }
 
 spotless {
