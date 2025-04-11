@@ -70,7 +70,7 @@ pipeline {
 
                         GPG_HOME_FLAG="-Dgpg.homedir=\$GNUPGHOME"
 
-                        ./gradlew publishToMavenCentralPortal --info \\
+                        ./gradlew publish publishToMavenCentralPortal --info \\
                             "\$GPG_HOME_FLAG" \\
                             "-Psigning.keyId=\$GPG_KEY_ID" \\
                             "-Psigning.password=\$GPG_KEY_PASS" \\
