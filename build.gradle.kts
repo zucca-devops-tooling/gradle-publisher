@@ -100,6 +100,7 @@ publisher {
         target = "https://zucca.jfrog.io/artifactory/publisher-libs-snapshot"
         usernameProperty = "jfrogUser"
         passwordProperty = "jfrogPassword"
+        sign = false
     }
     prod {
         target = "mavenCentral"
