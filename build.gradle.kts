@@ -41,7 +41,7 @@ gradlePlugin {
         }
     }
 }
-
+/*
 signing {
     val keyId = findProperty("signing.keyId") as String?
     val password = findProperty("signing.password") as String?
@@ -56,7 +56,7 @@ signing {
     } else {
         logger.warn("🔐 File-based signing skipped: missing keyId, password, or key file")
     }
-}
+}*/
 
 publishing {
     publications.withType<MavenPublication>().configureEach {
