@@ -33,13 +33,18 @@ pipeline {
         stage('Publish to Maven Central') {
             steps {
                 withCredentials([
-                    string(credentialsId: 'GPG_ASC_ARMOR', variable: 'GPG_ASC_ARMOR'),
+                    file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH'),
                     string(credentialsId: 'GPG_KEY_ID', variable: 'GPG_KEY_ID'),
                     string(credentialsId: 'GPG_KEY_PASS', variable: 'GPG_KEY_PASS'),
                     usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASS'),
                     usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
                 ]) {
                     sh """#!/bin/bash
+                        set -euo pipefail
+
+                        echo "🔐 Reading secret key into memory..."
+                        export GPG_ASC_ARMOR="$(cat $GPG_KEY_PATH)"
+
 
                         ./gradlew publish publishToMavenCentralPortal --info \\
                             "-Psigning.keyId=\$GPG_KEY_ID" \\
