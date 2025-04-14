@@ -12,7 +12,7 @@ pipeline {
             }
         }
 
-        stage('Build & Test') {
+        stage('Build') {
             steps {
 
                 withCredentials([
@@ -21,13 +21,18 @@ pipeline {
                 ]) {
                      sh """#!/bin/bash
 
-                         ./gradlew clean build --refresh-dependencies --info \\
+                         ./gradlew clean build -x test --refresh-dependencies --info \\
                              -PmavenCentralUsername=\$OSSRH_USER \\
                              -PmavenCentralPassword=\$OSSRH_PASS \\
                              -PjfrogUser=\$JFROG_USER \\
                              -PjfrogPassword=\$JFROG_PASS
                      """
                 }
+            }
+        }
+        stage('test') {
+            steps {
+                sh "./gradlew test"
             }
         }
         stage('Publish Artifacts') {

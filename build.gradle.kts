@@ -19,6 +19,9 @@ repositories {
 
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("io.mockk:mockk:1.13.7")
+    testImplementation("io.mockk:mockk-agent-jvm:1.13.7")
     implementation(gradleApi())
     implementation(localGroovy())
     implementation("tech.yanand.maven-central-publish:tech.yanand.maven-central-publish.gradle.plugin:1.2.0")
@@ -128,7 +131,7 @@ spotless {
     kotlin {
         target("src/**/*.kt")
         ktlint() // or prettier, diktat, etc.
-
+        targetExclude("src/test/**/*.kt")
         licenseHeader(
             """/*
  * Copyright 2025 the original author or authors.

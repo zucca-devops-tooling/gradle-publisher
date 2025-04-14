@@ -36,9 +36,5 @@ object Defaults {
     const val USER_PROPERTY = "mavenUsername"
     const val PASS_PROPERTY = "mavenPassword"
     const val GIT_FOLDER = "."
-    val RELEASE_BRANCH_REGEXES =
-        listOf(
-            """^release/\d+\.\d+\.\d+$""",
-            """^v\d+\.\d+\.\d+$""",
-        )
+    val RELEASE_BRANCH_REGEXES: List<String> = emptyList()
 }
