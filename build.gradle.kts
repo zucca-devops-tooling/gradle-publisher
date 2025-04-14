@@ -22,6 +22,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     testImplementation("io.mockk:mockk:1.13.7")
     testImplementation("io.mockk:mockk-agent-jvm:1.13.7")
+    testImplementation("org.junit-pioneer:junit-pioneer:2.2.0")
     implementation(gradleApi())
     implementation(localGroovy())
     implementation("tech.yanand.maven-central-publish:tech.yanand.maven-central-publish.gradle.plugin:1.2.0")

@@ -63,7 +63,6 @@ class GitHelper(
 
     private fun extractBranchName(output: String): String? {
         val tagsRef = "refs/tags/*"
-        println("revision output:$output")
 
         val onlyBranches = if (output.contains(pointer)) output.substringAfter(pointer) else output
 
@@ -93,8 +92,13 @@ class GitHelper(
      * Includes fallback to `main`, `master`, or the origin HEAD.
      */
     fun isMainBranch(branch: String): Boolean {
-        println("comparing " + branch + " with " + getMainBranchName())
-        return getMainBranchName() == branch || listOf("main", "master").contains(branch)
+        val mainBranchName = getMainBranchName()
+
+        if (mainBranchName != null) {
+            return mainBranchName == branch
+        }
+
+        return listOf("main", "master").contains(branch)
     }
 
     /**
@@ -109,7 +113,7 @@ class GitHelper(
         // Try git symbolic-ref --short refs/remotes/origin/HEAD method
         val symbolicOutput = executeGitCommand(listOf("--git-dir=$gitFolder/.git", "symbolic-ref", "refs/remotes/origin/HEAD"))
         if (symbolicOutput.startsWith("refs/remotes/origin/")) {
-            return symbolicOutput.substringAfterLast("/")
+            return symbolicOutput.substringAfter("refs/remotes/origin/")
         }
 
         // Fallback: git remote show origin
@@ -120,12 +124,14 @@ class GitHelper(
 
         // Fallback: common CI env vars
         val envVars = System.getenv()
+        println(envVars)
         return envVars["GITHUB_BASE_REF"]
             ?: envVars["GITHUB_REF_NAME"]
             ?: envVars["CI_DEFAULT_BRANCH"]
     }
 
-    private fun executeGitCommand(options: List<String>): String {
+    @VisibleForTesting
+    internal fun executeGitCommand(options: List<String>): String {
         val output = ByteArrayOutputStream()
 
         project.exec {
