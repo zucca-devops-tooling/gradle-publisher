@@ -32,7 +32,7 @@ pipeline {
         }
         stage('test') {
             steps {
-                sh "./gradlew test"
+                sh "./gradlew test -Dci=true"
             }
         }
         stage('Publish Artifacts') {
