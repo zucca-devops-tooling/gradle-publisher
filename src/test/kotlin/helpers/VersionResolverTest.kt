@@ -10,7 +10,7 @@ import io.mockk.unmockkAll
 import org.gradle.api.Project
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
-import kotlin.test.Test
+import org.junit.jupiter.api.Test
 
 class VersionResolverTest {
 
