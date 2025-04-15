@@ -21,6 +21,7 @@ import dev.zuccaops.repositories.BaseRepositoryPublisher
 import dev.zuccaops.repositories.RepositoryAuthenticator
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
 import java.io.FileNotFoundException
 import java.net.Authenticator
 import java.net.URL
@@ -125,11 +126,13 @@ class RemoteRepositoryPublisher(
      *
      * @return The full URL of the artifact path.
      */
-    private fun getUri(): String {
+    @VisibleForTesting
+    fun getUri(): String {
         val group = project.group.toString().replace(".", "/")
         val name = project.name.replace(".", "/")
+        val version = versionResolver.getVersion()
 
         val baseUrl = getRepoUrl().let { if (it.endsWith("/")) it else "$it/" }
-        return "$baseUrl$group/$name"
+        return "$baseUrl$group/$name/$version"
     }
 }

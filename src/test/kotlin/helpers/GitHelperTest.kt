@@ -4,7 +4,7 @@ import dev.zuccaops.helpers.GitHelper
 import io.mockk.*
 import org.gradle.api.Project
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junitpioneer.jupiter.SetEnvironmentVariable
 
@@ -42,7 +42,7 @@ class GitHelperTest {
         val result = gitHelper.isMainBranch("some-custom-main-branch")
 
         // then
-        assertEquals(true, result)
+        assertTrue(result)
     }
 
     @Test
@@ -56,7 +56,7 @@ class GitHelperTest {
         val result = gitHelper.isMainBranch("main")
 
         // then
-        assertEquals(false, result)
+        assertFalse(result)
     }
 
     @Test
@@ -91,7 +91,7 @@ class GitHelperTest {
         val result = gitHelper.isMainBranch("some-custom-main-branch")
 
         // then
-        assertEquals(true, result)
+        assertTrue(result)
     }
 
     @Test
@@ -111,7 +111,7 @@ class GitHelperTest {
         val result = gitHelper.isMainBranch("main")
 
         // then
-        assertEquals(false, result)
+        assertFalse(result)
     }
     @Test
     @SetEnvironmentVariable(key = "GITHUB_REF_NAME", value = "dev")
@@ -125,7 +125,7 @@ class GitHelperTest {
         val result = gitHelper.isMainBranch("dev")
 
         // then
-        assertEquals(true, result)
+        assertTrue(result)
     }
 
     @Test
@@ -140,7 +140,7 @@ class GitHelperTest {
         val result = gitHelper.isMainBranch("main")
 
         // then
-        assertEquals(false, result)
+        assertFalse(result)
     }
 
     @Test
@@ -154,6 +154,6 @@ class GitHelperTest {
         val result = gitHelper.isMainBranch("master")
 
         // then
-        assertEquals(true, result)
+        assertTrue(result)
     }
 }

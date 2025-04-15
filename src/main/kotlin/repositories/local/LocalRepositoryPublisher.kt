@@ -50,7 +50,7 @@ class LocalRepositoryPublisher(
 
             val artifactPath = File(m2Repo, "$groupPath/$artifactId/$version/$artifactId-$version.jar")
 
-            return artifactPath.exists()
+            return !artifactPath.exists()
         }
 
         return true

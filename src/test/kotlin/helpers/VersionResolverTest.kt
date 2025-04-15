@@ -9,7 +9,7 @@ import io.mockk.mockkConstructor
 import io.mockk.unmockkAll
 import org.gradle.api.Project
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import kotlin.test.Test
 
 class VersionResolverTest {
@@ -39,7 +39,7 @@ class VersionResolverTest {
 
         // then
         assertEquals("1.2.3-feature-cool-feature-SNAPSHOT", version) // branch should be escaped as well (no slash allowed)
-        assertEquals(false, isRelease)
+        assertFalse(isRelease)
     }
 
     @Test
@@ -60,7 +60,7 @@ class VersionResolverTest {
 
         // then
         assertEquals("2.0.0", version)
-        assertEquals(true, isRelease)
+        assertTrue(isRelease)
     }
 
     @Test
@@ -79,7 +79,7 @@ class VersionResolverTest {
         val isRelease = resolver.isRelease()
 
         // then
-        assertEquals(true, isRelease)
+        assertTrue(isRelease)
     }
 
     @Test
@@ -98,6 +98,6 @@ class VersionResolverTest {
         val isRelease = resolver.isRelease()
 
         // then
-        assertEquals(false, isRelease)
+        assertFalse(isRelease)
     }
 }

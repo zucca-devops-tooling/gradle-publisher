@@ -15,6 +15,7 @@
  */
 package dev.zuccaops.helpers
 import org.gradle.api.Project
+import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
 import java.io.ByteArrayOutputStream
 
 /**
