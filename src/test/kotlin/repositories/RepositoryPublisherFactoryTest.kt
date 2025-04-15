@@ -3,9 +3,11 @@ package repositories
 import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.configuration.RepositoryConfig
 import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.repositories.RepositoryConstants
 import dev.zuccaops.repositories.RepositoryPublisherFactory
 import dev.zuccaops.repositories.central.MavenCentralRepositoryPublisher
 import dev.zuccaops.repositories.central.SonatypeRepositoryPublisher
+import dev.zuccaops.repositories.local.LocalRepositoryPublisher
 import dev.zuccaops.repositories.remote.RemoteRepositoryPublisher
 import io.mockk.every
 import io.mockk.mockk
@@ -52,7 +54,7 @@ class RepositoryPublisherFactoryTest {
             every { target } returns "dev"
         }
         val prodConfig = mockk<RepositoryConfig> {
-            every { target } returns "mavenCentral"
+            every { target } returns RepositoryConstants.MAVEN_CENTRAL_COMMAND
         }
 
         val config = mockk<PluginConfiguration> {
@@ -78,7 +80,7 @@ class RepositoryPublisherFactoryTest {
             every { target } returns "dev"
         }
         val prodConfig = mockk<RepositoryConfig> {
-            every { target } returns "nexus"
+            every { target } returns RepositoryConstants.SONATYPE_COMMAND
             every { customGradleCommand } returns "closeAndReleaseStagingRepositories"
         }
 
@@ -96,5 +98,34 @@ class RepositoryPublisherFactoryTest {
 
         // then
         assertTrue(publisher is SonatypeRepositoryPublisher)
+    }
+
+
+
+    @Test
+    fun `should return SonatypeRepositoryPublisher when target is local`() {
+        // given
+        val devConfig = mockk<RepositoryConfig> {
+            every { target } returns RepositoryConstants.LOCAL_TARGET_COMMAND
+        }
+        val prodConfig = mockk<RepositoryConfig> {
+            every { target } returns RepositoryConstants.SONATYPE_COMMAND
+            every { customGradleCommand } returns "closeAndReleaseStagingRepositories"
+        }
+
+        val config = mockk<PluginConfiguration> {
+            every { dev } returns devConfig
+            every { prod } returns prodConfig
+            every { gitFolder } returns "."
+        }
+
+        mockkConstructor(VersionResolver::class)
+        every { anyConstructed<VersionResolver>().isRelease() } returns false
+
+        // when
+        val publisher = RepositoryPublisherFactory.get(project, config)
+
+        // then
+        assertTrue(publisher is LocalRepositoryPublisher)
     }
 }
