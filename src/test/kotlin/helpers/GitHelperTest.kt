@@ -160,7 +160,9 @@ class GitHelperTest {
         assertTrue(result)
     }
 
-    fun isRunningOnCi(): Boolean {
+    private fun isRunningOnCi(): Boolean {
+        println("ci configured")
+        println(System.getProperty("ci"))
         return System.getProperty("ci") == "true"
     }
 }
