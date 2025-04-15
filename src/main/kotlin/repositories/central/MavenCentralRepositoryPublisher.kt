@@ -18,7 +18,6 @@ package dev.zuccaops.repositories.central
 import dev.zuccaops.helpers.VersionResolver
 import dev.zuccaops.repositories.BaseRepositoryPublisher
 import dev.zuccaops.repositories.RepositoryAuthenticator
-import dev.zuccaops.repositories.RepositoryConstants
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactRepositoryContainer.MAVEN_CENTRAL_URL
