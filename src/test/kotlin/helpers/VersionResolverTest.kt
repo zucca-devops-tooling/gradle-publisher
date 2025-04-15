@@ -23,38 +23,49 @@ class VersionResolverTest {
 
     @Test
     fun `adds snapshot suffix for non-release branches`() {
+        // given
         every { project.version } returns "1.2.3"
-
         val mockConfig = mockk<PluginConfiguration>(relaxed = true)
-        every { mockConfig.releaseBranchPatterns } returns listOf("^main$", "^release/\\d+\\.\\d+\\.\\d+$")
 
+        every { mockConfig.releaseBranchPatterns } returns listOf("^main$", "^release/\\d+\\.\\d+\\.\\d+$")
         mockkConstructor(GitHelper::class)
         every { anyConstructed<GitHelper>().getBranch() } returns "feature/cool-feature"
 
         val resolver = VersionResolver(project, mockConfig)
 
+        //when
         val version = resolver.getVersion()
+        val isRelease = resolver.isRelease()
+
+        // then
         assertEquals("1.2.3-feature-cool-feature-SNAPSHOT", version) // branch should be escaped as well (no slash allowed)
+        assertEquals(false, isRelease)
     }
 
     @Test
     fun `should keep version as-is on release branch`() {
+        // given
         every { project.version } returns "2.0.0"
         val mockConfig = mockk<PluginConfiguration>(relaxed = true)
+
         every { mockConfig.releaseBranchPatterns } returns listOf("^main$", "^release/\\d+\\.\\d+\\.\\d+$")
-
-
         mockkConstructor(GitHelper::class)
         every { anyConstructed<GitHelper>().getBranch() } returns "release/2.0.0"
 
         val resolver = VersionResolver(project, mockConfig)
 
+        //when
         val version = resolver.getVersion()
+        val isRelease = resolver.isRelease()
+
+        // then
         assertEquals("2.0.0", version)
+        assertEquals(true, isRelease)
     }
 
     @Test
     fun `should consider main a branch release when no releaseBranchPatterns supplied`() {
+        // given
         val mockConfig = mockk<PluginConfiguration>(relaxed = true)
         every { mockConfig.releaseBranchPatterns } returns emptyList()
 
@@ -64,12 +75,16 @@ class VersionResolverTest {
 
         val resolver = VersionResolver(project, mockConfig)
 
+        // when
         val isRelease = resolver.isRelease()
+
+        // then
         assertEquals(true, isRelease)
     }
 
     @Test
     fun `should not consider the branch as release when no branch pattern supplied and branch is not main`() {
+        // given
         val mockConfig = mockk<PluginConfiguration>(relaxed = true)
         every { mockConfig.releaseBranchPatterns } returns emptyList()
 
@@ -79,7 +94,10 @@ class VersionResolverTest {
 
         val resolver = VersionResolver(project, mockConfig)
 
+        // when
         val isRelease = resolver.isRelease()
+
+        // then
         assertEquals(false, isRelease)
     }
 }
