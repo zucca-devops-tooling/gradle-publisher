@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2025 GuidoZuccarelli
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
+import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
@@ -73,9 +74,11 @@ abstract class BaseRepositoryPublisher(
         }
     }
 
-    protected abstract fun isPublishable(): Boolean
+    @VisibleForTesting
+    abstract fun isPublishable(): Boolean
 
-    protected abstract fun shouldSign(): Boolean
+    @VisibleForTesting
+    abstract fun shouldSign(): Boolean
 
     protected abstract fun registerRepository(repositoryHandler: RepositoryHandler)
 }

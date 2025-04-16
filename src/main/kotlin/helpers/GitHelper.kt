@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2025 GuidoZuccarelli
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package dev.zuccaops.helpers
 import org.gradle.api.Project
+import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
 import java.io.ByteArrayOutputStream
 
 /**
@@ -38,32 +39,7 @@ class GitHelper(
      * Gets the branch name for a specific Git revision using `git log`.
      */
     private fun getBranchForRevision(rev: Int): String? {
-        val gitOutput = ByteArrayOutputStream()
-
-        val gitArgs =
-            listOf(
-                "--git-dir=$gitFolder/.git",
-                "log",
-                rev.toString(),
-                "--pretty=%(decorate:${getDecoratorString()})",
-            )
-
-        println("gitargs $gitArgs")
-
-        project.exec {
-            executable = "git"
-            args = gitArgs
-            standardOutput = gitOutput
-        }
-
-        val output = gitOutput.toString().trim()
-        return extractBranchName(output)
-    }
-
-    /**
-     * Builds a custom Git decoration string to control formatting of Git ref names.
-     */
-    private fun getDecoratorString(): String {
+        // Custom decorator for easier parse
         val decorate =
             listOf(
                 "prefix=", // Avoid the `(` prefix on references
@@ -72,12 +48,21 @@ class GitHelper(
                 "pointer=$pointer",
             )
 
-        return decorate.joinToString(",")
+        val gitArgs =
+            listOf(
+                "--git-dir=$gitFolder/.git",
+                "log",
+                rev.toString(),
+                "--pretty=%(decorate:${decorate.joinToString(",")})",
+            )
+
+        val output = executeGitCommand(gitArgs)
+
+        return extractBranchName(output)
     }
 
     private fun extractBranchName(output: String): String? {
         val tagsRef = "refs/tags/*"
-        println("revision output:$output")
 
         val onlyBranches = if (output.contains(pointer)) output.substringAfter(pointer) else output
 
@@ -107,8 +92,13 @@ class GitHelper(
      * Includes fallback to `main`, `master`, or the origin HEAD.
      */
     fun isMainBranch(branch: String): Boolean {
-        println("comparing " + branch + " with " + getMainBranchName())
-        return getMainBranchName() == branch || listOf("main", "master").contains(branch)
+        val mainBranchName = getMainBranchName()
+
+        if (mainBranchName != null) {
+            return mainBranchName == branch
+        }
+
+        return listOf("main", "master").contains(branch)
     }
 
     /**
@@ -120,38 +110,51 @@ class GitHelper(
      * 3. Common CI environment variables (GITHUB_REF_NAME, etc.)
      */
     private fun getMainBranchName(): String? {
-        val gitOutput = ByteArrayOutputStream()
-
-        // Try symbolic-ref method
-        project.exec {
-            executable = "git"
-            args = listOf("--git-dir=$gitFolder/.git", "symbolic-ref", "refs/remotes/origin/HEAD")
-            standardOutput = gitOutput
-            isIgnoreExitValue = true
-        }
-
-        val symbolicOutput = gitOutput.toString().trim()
+        // Try git symbolic-ref --short refs/remotes/origin/HEAD method
+        val symbolicOutput = executeGitCommand(listOf("--git-dir=$gitFolder/.git", "symbolic-ref", "refs/remotes/origin/HEAD"))
         if (symbolicOutput.startsWith("refs/remotes/origin/")) {
-            return symbolicOutput.substringAfterLast("/")
+            return symbolicOutput.substringAfter("refs/remotes/origin/")
         }
 
         // Fallback: git remote show origin
-        gitOutput.reset()
-        project.exec {
-            executable = "git"
-            args = listOf("remote", "show", "origin")
-            standardOutput = gitOutput
-            isIgnoreExitValue = true
-        }
+        val remoteOutput = executeGitCommand(listOf("remote", "show", "origin"))
 
-        val remoteOutput = gitOutput.toString().trim()
         val match = Regex("HEAD branch: (\\S+)").find(remoteOutput)
         if (match != null) return match.groupValues[1]
 
         // Fallback: common CI env vars
+        return getDefaultBranchByCIEnv()
+    }
+
+    @VisibleForTesting
+    fun getDefaultBranchByCIEnv(): String? {
         val envVars = System.getenv()
-        return envVars["GITHUB_BASE_REF"]
-            ?: envVars["GITHUB_REF_NAME"]
-            ?: envVars["CI_DEFAULT_BRANCH"]
+
+        // Gitlab CI default branch envVar
+        if (envVars.containsKey("CI_DEFAULT_BRANCH")) {
+            return envVars["CI_DEFAULT_BRANCH"]
+        }
+
+        // Jenkins might have `BRANCH_IS_PRIMARY` which tells you current branch is default one
+        // TODO: Move this to isMainBranch()
+        if (envVars.containsKey("BRANCH_IS_PRIMARY") && envVars["BRANCH_IS_PRIMARY"] == "true") {
+            return envVars["BRANCH_NAME"]
+        }
+
+        return null
+    }
+
+    @VisibleForTesting
+    internal fun executeGitCommand(options: List<String>): String {
+        val output = ByteArrayOutputStream()
+
+        project.exec {
+            executable = "git"
+            args = options
+            standardOutput = output
+            isIgnoreExitValue = true
+        }
+
+        return output.toString().trim()
     }
 }

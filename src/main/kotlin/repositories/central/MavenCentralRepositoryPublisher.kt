@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2025 GuidoZuccarelli
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ package dev.zuccaops.repositories.central
 import dev.zuccaops.helpers.VersionResolver
 import dev.zuccaops.repositories.BaseRepositoryPublisher
 import dev.zuccaops.repositories.RepositoryAuthenticator
-import dev.zuccaops.repositories.RepositoryConstants
 import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ArtifactRepositoryContainer.MAVEN_CENTRAL_URL
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
+import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
 import java.io.FileNotFoundException
 import java.net.URL
 import java.util.Base64
@@ -104,11 +105,12 @@ class MavenCentralRepositoryPublisher(
         return Base64.getEncoder().encodeToString(authString.toByteArray(Charsets.UTF_8))
     }
 
-    private fun getUri(): String {
+    @VisibleForTesting
+    fun getUri(): String {
         val group = project.group.toString().replace(".", "/")
         val name = project.name.replace(".", "/")
 
-        return RepositoryConstants.MAVEN_CENTRAL_URL + group + "/" + name + "/" + versionResolver.getVersion()
+        return MAVEN_CENTRAL_URL + group + "/" + name + "/" + versionResolver.getVersion()
     }
 
     /**

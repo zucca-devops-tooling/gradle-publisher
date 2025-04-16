@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2025 GuidoZuccarelli
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ package dev.zuccaops.repositories
  * @author Guido Zuccarelli
  */
 object RepositoryConstants {
-    const val MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2/"
     const val LOCAL_TARGET_COMMAND = "local"
     const val MAVEN_CENTRAL_COMMAND = "mavenCentral"
     const val LOCAL_MAVEN_PATH = ".m2/repository"

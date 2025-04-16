@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2025 GuidoZuccarelli
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,5 @@ object Defaults {
     const val USER_PROPERTY = "mavenUsername"
     const val PASS_PROPERTY = "mavenPassword"
     const val GIT_FOLDER = "."
-    val RELEASE_BRANCH_REGEXES =
-        listOf(
-            """^release/\d+\.\d+\.\d+$""",
-            """^v\d+\.\d+\.\d+$""",
-        )
+    val RELEASE_BRANCH_REGEXES: List<String> = emptyList()
 }

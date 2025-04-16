@@ -18,7 +18,9 @@ repositories {
 }
 
 dependencies {
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("io.mockk:mockk:1.13.7")
+    testImplementation("io.mockk:mockk-agent-jvm:1.13.7")
     implementation(gradleApi())
     implementation(localGroovy())
     implementation("tech.yanand.maven-central-publish:tech.yanand.maven-central-publish.gradle.plugin:1.2.0")
@@ -27,6 +29,7 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
 
 kotlin {
     jvmToolchain(17)
@@ -128,10 +131,10 @@ spotless {
     kotlin {
         target("src/**/*.kt")
         ktlint() // or prettier, diktat, etc.
-
+        targetExclude("src/test/**/*.kt")
         licenseHeader(
             """/*
- * Copyright 2025 the original author or authors.
+ * Copyright 2025 GuidoZuccarelli
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

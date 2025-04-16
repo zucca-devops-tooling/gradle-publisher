@@ -12,7 +12,7 @@ The **Gradle Publisher Plugin** automates CI-based publishing of Gradle artifact
 - 🔏 Optional GPG signing (with skip control per environment)
 - 🧠 Smart routing for Nexus or Maven Central publishing
 - 🧰 Automatically applies and configures `maven-publish`
-- 🧾 Automatically sets up repository + MavenPublication block for basic cases
+- 🧾 Automatically configures publishing extension
 
 ---
 
@@ -42,7 +42,9 @@ publisher {
         passwordProperty = "prodPasswordProperty"
     }
 
-    releaseBranchPatterns = ["^release/\\d+\\.\\d+\\.\\d+$", "^v\\d+\\.\\d+\\.\\d+$"]
+    gitFolder = "some/path/to/.git" // defaulted to "." 
+
+    releaseBranchPatterns = ["^release/\d+\.\d+\.\d+$", "^v\d+\.\d+\.\d+$"] // optional, default to main branch
 }
 ```
 
@@ -55,6 +57,8 @@ project.version = 1.5.3 → 1.5.3-<branch-name>-SNAPSHOT
 ```
 
 If the branch matches a release pattern, the version is kept as-is.
+
+If `releaseBranchPatterns` is not defined, the plugin will attempt to detect the default branch (e.g., `main`, `master`) from Git configuration.
 
 ---
 
@@ -73,7 +77,7 @@ publisher {
 
     usernameProperty = "userProperty"
     passwordProperty = "passwordProperty"
-    releaseBranchPatterns = ["^release/\\d+\\.\\d+\\.\\d+$", "^v\\d+\\.\\d+$"]
+    releaseBranchPatterns = ["^release/\d+\.\d+\.\d+$", "^v\d+\.\d+$"]
 }
 ```
 
@@ -124,7 +128,22 @@ You may override it with your own custom task.
 
 ---
 
-## ❌ Skipping GPG Signing
+## 📦 Local Publishing
+
+To publish to your local `.m2` repository (e.g. for testing):
+
+```kotlin
+dev {
+    target = "local"
+}
+```
+
+This will skip signing and publish directly to `~/.m2/repository`.
+Signing is automatically disabled in this mode.
+
+---
+
+## 🔏 Skipping GPG Signing
 
 If you have signing configured but want to **skip it in a specific environment**, simply add:
 
@@ -176,10 +195,10 @@ publishing {
 
 ## 📌 Notes
 
-- ✅ `maven-publish` is automatically applied by the plugin
-- ✅ `MavenPublication` is created automatically (no need to create `create<MavenPublication>("maven") { ... }`)
-- ⚙️ If needed, override settings with `customGradleCommand`
-- 💡 Compatible with CI/CD systems like Jenkins, GitHub Actions, GitLab CI, etc.
+- `maven-publish` is automatically applied for you
+- No need to manually configure `MavenPublication` unless customizing
+- Use `customGradleCommand` to override the publish task per environment
+- Compatible with CI/CD systems like Jenkins, GitHub Actions, GitLab CI, etc.
 
 ---
 
@@ -195,4 +214,3 @@ Let the plugin handle the logic — based on your current branch, it will:
 - Apply the correct version suffix
 - Use the right credentials
 - Execute the correct publish command
-
