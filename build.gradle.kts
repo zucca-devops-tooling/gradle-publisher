@@ -57,7 +57,7 @@ signing {
 
     if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !keyPath.isNullOrBlank()) {
         logger.lifecycle("🔐 Using GPG secret key file at $keyPath")
-        useInMemoryPgpKeys(keyId, File(keyPath).readText(), password)
+        useInMemoryPgpKeys(File(keyPath).readText(), password)
         publishing.publications.withType<MavenPublication>().configureEach {
             signing.sign(this)
         }
