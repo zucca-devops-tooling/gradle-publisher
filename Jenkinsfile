@@ -32,10 +32,15 @@ pipeline {
         }
         stage('test') {
             steps {
-                sh "./gradlew test -Dci=true"
+                sh "./gradlew test"
             }
         }
         stage('Publish Artifacts') {
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 withCredentials([
                     file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH'),
@@ -61,6 +66,18 @@ pipeline {
                             "-PjfrogPassword=\$JFROG_PASS"
                     """
                 }
+            }
+        }
+        stage('Publish plugin to gradle portal') {
+            when {
+                branch 'main'
+            }
+            environment {
+                GRADLE_PUBLISH_KEY = credentials('GRADLE_PUBLISH_KEY')
+                GRADLE_PUBLISH_SECRET = credentials('GRADLE_PUBLISH_SECRET')
+            }
+            steps {
+                sh './gradlew publishPlugins'
             }
         }
     }

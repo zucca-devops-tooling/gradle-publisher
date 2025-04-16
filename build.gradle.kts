@@ -1,10 +1,11 @@
 plugins {
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "2.1.20"
     `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "0.0.1-PR-6-SNAPSHOT"
+    id("dev.zucca-ops.gradle-publisher") version "0.0.1-PR-20-SNAPSHOT"
     id("java-gradle-plugin")
     signing
     id("com.diffplug.spotless") version "7.0.3"
+    id("com.gradle.plugin-publish") version "1.2.1"
 }
 
 group = "dev.zucca-ops"
@@ -124,7 +125,7 @@ publisher {
 
     usernameProperty = "mavenCentralUsername"
     passwordProperty = "mavenCentralPassword"
-    releaseBranchPatterns = listOf("main")
+    releaseBranchPatterns = listOf("main", "^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
 }
 
 spotless {
