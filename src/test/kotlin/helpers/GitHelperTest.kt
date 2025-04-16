@@ -5,9 +5,7 @@ import io.mockk.*
 import org.gradle.api.Project
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Assumptions.assumeFalse
 import org.junit.jupiter.api.Test
-import org.junitpioneer.jupiter.SetEnvironmentVariable
 
 class GitHelperTest {
     private val project = mockk<Project>(relaxed = true)
@@ -115,13 +113,12 @@ class GitHelperTest {
         assertFalse(result)
     }
     @Test
-    @SetEnvironmentVariable(key = "GITHUB_REF_NAME", value = "dev")
     fun `isMainBranch should return true when fallback to CI env vars that match`() {
         // given
         every {
             gitHelper.executeGitCommand(any())
         } returns ""
-        assumeFalse(isRunningOnCi(), "Skipping CI-unstable test")
+        every { gitHelper.getDefaultBranchByCIEnv() } returns "dev"
 
         // when
         val result = gitHelper.isMainBranch("dev")
@@ -131,13 +128,12 @@ class GitHelperTest {
     }
 
     @Test
-    @SetEnvironmentVariable(key = "CI_DEFAULT_BRANCH", value = "dev")
     fun `isMainBranch should return false when fallback to CI env vars that don't match`() {
         // given
         every {
             gitHelper.executeGitCommand(any())
         } returns ""
-        assumeFalse(isRunningOnCi(), "Skipping CI-unstable test")
+        every { gitHelper.getDefaultBranchByCIEnv() } returns "dev"
 
         // when
         val result = gitHelper.isMainBranch("main")
@@ -158,11 +154,5 @@ class GitHelperTest {
 
         // then
         assertTrue(result)
-    }
-
-    private fun isRunningOnCi(): Boolean {
-        println("ci configured")
-        println(System.getProperty("ci"))
-        return System.getProperty("ci") == "true"
     }
 }

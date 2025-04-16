@@ -123,11 +123,25 @@ class GitHelper(
         if (match != null) return match.groupValues[1]
 
         // Fallback: common CI env vars
+        return getDefaultBranchByCIEnv()
+    }
+
+    @VisibleForTesting
+    fun getDefaultBranchByCIEnv(): String? {
         val envVars = System.getenv()
-        println(envVars)
-        return envVars["GITHUB_BASE_REF"]
-            ?: envVars["GITHUB_REF_NAME"]
-            ?: envVars["CI_DEFAULT_BRANCH"]
+
+        // Gitlab CI default branch envVar
+        if (envVars.containsKey("CI_DEFAULT_BRANCH")) {
+            return envVars["CI_DEFAULT_BRANCH"]
+        }
+
+        // Jenkins might have `BRANCH_IS_PRIMARY` which tells you current branch is default one
+        // TODO: Move this to isMainBranch()
+        if (envVars.containsKey("BRANCH_IS_PRIMARY") && envVars["BRANCH_IS_PRIMARY"] == "true") {
+            return envVars["BRANCH_NAME"]
+        }
+
+        return null
     }
 
     @VisibleForTesting
