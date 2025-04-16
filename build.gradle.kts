@@ -57,9 +57,9 @@ signing {
 
     if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !keyPath.isNullOrBlank()) {
         logger.lifecycle("🔐 Using GPG secret key file at $keyPath")
-        useInMemoryPgpKeys(File(keyPath).readText(), password)
-        afterEvaluate {
-            sign(publishing.publications)
+        useInMemoryPgpKeys(keyId, File(keyPath).readText(), password)
+        publishing.publications.withType<MavenPublication>().configureEach {
+            signing.sign(this)
         }
     } else {
         logger.warn("🔐 File-based signing skipped: missing keyId, password, or key file")
