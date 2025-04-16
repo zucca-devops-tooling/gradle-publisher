@@ -59,41 +59,47 @@ class MavenCentralRepositoryPublisher(
     override fun configurePublishingRepository() {
         super.configurePublishingRepository()
 
-        project.pluginManager.apply("tech.yanand.maven-central-publish")
-        val encodedCredentials =
-            encodeBasicAuth(
-                repositoryAuthenticator.getProdUsername()!!,
-                repositoryAuthenticator.getProdPassword()!!,
+        if (repositoryAuthenticator.getProdUsername() != null && repositoryAuthenticator.getProdPassword() != null) {
+
+            project.pluginManager.apply("tech.yanand.maven-central-publish")
+
+            val encodedCredentials =
+                encodeBasicAuth(
+                    repositoryAuthenticator.getProdUsername()!!,
+                    repositoryAuthenticator.getProdPassword()!!,
+                )
+            project.extensions.configure(
+                "mavenCentral",
+                Action<Any> {
+                    val clazz = this.javaClass
+
+                    val repoDir = project.layout.buildDirectory.dir("repos/bundles")
+
+                    clazz
+                        .getMethod("getRepoDir")
+                        .invoke(this)
+                        .let { it as DirectoryProperty }
+                        .set(repoDir)
+
+                    clazz
+                        .getMethod("getAuthToken")
+                        .invoke(this)
+                        .let { it as Property<String> }
+                        .set(encodedCredentials)
+
+                    clazz
+                        .getMethod("getPublishingType")
+                        .invoke(this)
+                        .let { it as Property<String> }
+                        .set("USER_MANAGED")
+                },
             )
-        project.extensions.configure(
-            "mavenCentral",
-            Action<Any> {
-                val clazz = this.javaClass
 
-                val repoDir = project.layout.buildDirectory.dir("repos/bundles")
-
-                clazz
-                    .getMethod("getRepoDir")
-                    .invoke(this)
-                    .let { it as DirectoryProperty }
-                    .set(repoDir)
-
-                clazz
-                    .getMethod("getAuthToken")
-                    .invoke(this)
-                    .let { it as Property<String> }
-                    .set(encodedCredentials)
-
-                clazz
-                    .getMethod("getPublishingType")
-                    .invoke(this)
-                    .let { it as Property<String> }
-                    .set("USER_MANAGED")
-            },
-        )
-
-        project.tasks.named("publish").configure {
-            finalizedBy("publishToMavenCentralPortal")
+            project.tasks.named("publish").configure {
+                finalizedBy("publishToMavenCentralPortal")
+            }
+        } else {
+            project.logger.lifecycle("Cannot publish to mavenCentral, credentials not found")
         }
     }
 
