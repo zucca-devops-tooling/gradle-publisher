@@ -32,7 +32,7 @@ pipeline {
         }
         stage('test') {
             steps {
-                sh "./gradlew clean --no-daemon test"
+                sh "./gradlew clean --no-daemon test --stacktrace"
             }
         }
         stage('Publish Artifacts') {
