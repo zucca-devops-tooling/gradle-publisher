@@ -58,7 +58,9 @@ signing {
     if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !keyPath.isNullOrBlank()) {
         logger.lifecycle("🔐 Using GPG secret key file at $keyPath")
         useInMemoryPgpKeys(File(keyPath).readText(), password)
-        sign(publishing.publications)
+        afterEvaluate {
+            sign(publishing.publications)
+        }
     } else {
         logger.warn("🔐 File-based signing skipped: missing keyId, password, or key file")
     }
