@@ -125,7 +125,7 @@ publisher {
 
     usernameProperty = "mavenCentralUsername"
     passwordProperty = "mavenCentralPassword"
-    releaseBranchPatterns = listOf("^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
+    releaseBranchPatterns = listOf("PR-20","^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
 }
 
 spotless {
