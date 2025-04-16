@@ -58,9 +58,7 @@ signing {
     if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !keyPath.isNullOrBlank()) {
         logger.lifecycle("🔐 Using GPG secret key file at $keyPath")
         useInMemoryPgpKeys(File(keyPath).readText(), password)
-        publishing.publications.withType<MavenPublication>().configureEach {
-            signing.sign(this)
-        }
+        sign(publishing.publications)
     } else {
         logger.warn("🔐 File-based signing skipped: missing keyId, password, or key file")
     }
@@ -125,7 +123,7 @@ publisher {
 
     usernameProperty = "mavenCentralUsername"
     passwordProperty = "mavenCentralPassword"
-    releaseBranchPatterns = listOf("main", "^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
+    releaseBranchPatterns = listOf("gradle-portal-publish", "^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
 }
 
 spotless {

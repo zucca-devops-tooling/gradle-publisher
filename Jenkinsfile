@@ -38,7 +38,7 @@ pipeline {
         stage('Publish Artifacts') {
             when {
                 not {
-                    branch 'main'
+                    branch 'gradle-portal-publish'
                 }
             }
             steps {
@@ -70,14 +70,18 @@ pipeline {
         }
         stage('Publish plugin to gradle portal') {
             when {
-                branch 'main'
-            }
-            environment {
-                GRADLE_PUBLISH_KEY = credentials('GRADLE_PUBLISH_KEY')
-                GRADLE_PUBLISH_SECRET = credentials('GRADLE_PUBLISH_SECRET')
+                branch 'gradle-portal-publish'
             }
             steps {
-                sh './gradlew publishPlugins'
+                withCredentials([
+                    file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH'),
+                    string(credentialsId: 'GPG_KEY_ID', variable: 'GPG_KEY_ID'),
+                    string(credentialsId: 'GPG_KEY_PASS', variable: 'GPG_KEY_PASS'),
+                    string(credentialsId: 'GRADLE_PUBLISH_KEY', variable: 'GRADLE_PUBLISH_KEY'),
+                    string(credentialsId: 'GRADLE_PUBLISH_SECRET', variable: 'GRADLE_PUBLISH_SECRET')
+                ]) {
+                    sh './gradlew publishPlugins'
+                }
             }
         }
     }
