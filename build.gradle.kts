@@ -5,6 +5,7 @@ plugins {
     id("java-gradle-plugin")
     signing
     id("com.diffplug.spotless") version "7.0.3"
+    id("com.gradle.plugin-publish") version "1.2.1"
 }
 
 group = "dev.zucca-ops"
