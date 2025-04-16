@@ -59,9 +59,7 @@ signing {
         logger.lifecycle("🔐 Using GPG secret key file at $keyPath")
         useInMemoryPgpKeys(keyId, File(keyPath).readText(), password)
         publishing.publications.withType<MavenPublication>().configureEach {
-            if (name != "gradlePublisherPluginPluginMarker") {
-                signing.sign(this)
-            }
+            signing.sign(this)
         }
     } else {
         logger.warn("🔐 File-based signing skipped: missing keyId, password, or key file")
@@ -105,9 +103,6 @@ afterEvaluate {
     }
     tasks.matching { it.name == "publishMavenPublicationToLocalRepository" }.configureEach {
         dependsOn("signPluginMavenPublication")
-    }
-    tasks.matching { it.name == "signGradlePublisherPluginPluginMarkerMavenPublication" }.configureEach {
-        dependsOn("configSigning")
     }
 }
 

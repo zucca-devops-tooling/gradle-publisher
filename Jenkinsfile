@@ -80,7 +80,18 @@ pipeline {
                     string(credentialsId: 'GRADLE_PUBLISH_KEY', variable: 'GRADLE_PUBLISH_KEY'),
                     string(credentialsId: 'GRADLE_PUBLISH_SECRET', variable: 'GRADLE_PUBLISH_SECRET')
                 ]) {
-                    sh './gradlew publishPlugins'
+                    sh """#!/bin/bash
+                        set -euo pipefail
+
+                        echo "🔐 Reading secret key into memory..."
+                        export GPG_ASC_ARMOR="\$(cat \$GPG_KEY_PATH)"
+
+
+                        ./gradlew publishPlugins --info \\
+                            "-Psigning.keyId=\$GPG_KEY_ID" \\
+                            "-Psigning.password=\$GPG_KEY_PASS" \\
+                            "-Psigning.secretKeyRingFile=\$GPG_KEY_PATH" \\
+                    """
                 }
             }
         }
