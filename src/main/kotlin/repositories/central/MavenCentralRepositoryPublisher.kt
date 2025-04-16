@@ -60,7 +60,6 @@ class MavenCentralRepositoryPublisher(
         super.configurePublishingRepository()
 
         if (repositoryAuthenticator.getProdUsername() != null && repositoryAuthenticator.getProdPassword() != null) {
-
             project.pluginManager.apply("tech.yanand.maven-central-publish")
 
             val encodedCredentials =
