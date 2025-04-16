@@ -63,5 +63,14 @@ pipeline {
                 }
             }
         }
+        stage('Publish plugin to gradle portal') {
+            environment {
+                GRADLE_PUBLISH_KEY = credentials('GRADLE_PUBLISH_KEY')
+                GRADLE_PUBLISH_SECRET = credentials('GRADLE_PUBLISH_SECRET')
+            }
+            steps {
+                sh './gradlew publishPlugins'
+            }
+        }
     }
 }
