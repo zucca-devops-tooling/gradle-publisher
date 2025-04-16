@@ -32,7 +32,7 @@ pipeline {
         }
         stage('test') {
             steps {
-                sh "./gradlew test -Dci=true"
+                sh "./gradlew clean --no-daemon test"
             }
         }
         stage('Publish Artifacts') {
@@ -56,7 +56,7 @@ pipeline {
                         export GPG_ASC_ARMOR="\$(cat \$GPG_KEY_PATH)"
 
 
-                        ./gradlew publish --info \\
+                        ./gradlew clean --no-daemon publish --info \\
                             "-Psigning.keyId=\$GPG_KEY_ID" \\
                             "-Psigning.password=\$GPG_KEY_PASS" \\
                             "-Psigning.secretKeyRingFile=\$GPG_KEY_PATH" \\
