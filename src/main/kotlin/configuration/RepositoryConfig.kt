@@ -52,8 +52,8 @@ open class RepositoryConfig {
     var customGradleCommand: String? = null
     var sign: Boolean = true
 
-    override fun toString(): String {
-        return buildString {
+    override fun toString(): String =
+        buildString {
             appendLine("RepositoryConfig(")
             appendLine("    target = $target")
             appendLine("    usernameProperty = $usernameProperty")
@@ -64,5 +64,4 @@ open class RepositoryConfig {
             }
             append(")")
         }
-    }
 }

@@ -48,11 +48,12 @@ class VersionResolver(
     fun getVersion(): String {
         if (finalVersion == null) {
             val baseVersion = getProjectVersion()
-            finalVersion = if (isRelease()) {
-                baseVersion
-            } else {
-                "$baseVersion-${getEscapedBranchName()}-SNAPSHOT"
-            }
+            finalVersion =
+                if (isRelease()) {
+                    baseVersion
+                } else {
+                    "$baseVersion-${getEscapedBranchName()}-SNAPSHOT"
+                }
             project.logger.lifecycle("Calculated version: $finalVersion")
         }
 
@@ -72,12 +73,13 @@ class VersionResolver(
             project.logger.info("Detected branch: $currentBranch")
             val patterns = configuration.releaseBranchPatterns
 
-            isRelease = if (patterns.isEmpty()) {
-                project.logger.debug("No patterns configured, checking if $currentBranch is a default branch")
-                currentBranch != "HEAD" && gitHelper.isMainBranch(currentBranch)
-            } else {
-                patterns.any { currentBranch.matches(Regex(it)) }
-            }
+            isRelease =
+                if (patterns.isEmpty()) {
+                    project.logger.debug("No patterns configured, checking if $currentBranch is a default branch")
+                    currentBranch != "HEAD" && gitHelper.isMainBranch(currentBranch)
+                } else {
+                    patterns.any { currentBranch.matches(Regex(it)) }
+                }
 
             val environment = if (isRelease!!) "prod" else "dev"
             project.logger.lifecycle("Detected environment: $environment (branch: $currentBranch)")

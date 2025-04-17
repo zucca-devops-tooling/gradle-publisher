@@ -80,8 +80,8 @@ open class PluginConfiguration
         /** List of regex patterns to identify release branches */
         var releaseBranchPatterns: List<String> = Defaults.RELEASE_BRANCH_REGEXES
 
-        override fun toString(): String {
-            return buildString {
+        override fun toString(): String =
+            buildString {
                 appendLine("PluginConfiguration(")
                 appendLine("  dev = $dev")
                 appendLine("  prod = $dev")
@@ -91,5 +91,4 @@ open class PluginConfiguration
                 appendLine("  gitFolder = $gitFolder")
                 append(")")
             }
-        }
     }
