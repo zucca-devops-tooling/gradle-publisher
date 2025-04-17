@@ -69,14 +69,27 @@ open class PluginConfiguration
         }
 
         /** Global fallback username property (used if not defined in `dev` or `prod`) */
-        var usernameProperty: String? = Defaults.USER_PROPERTY
+        var usernameProperty: String = Defaults.USER_PROPERTY
 
         /** Global fallback password property (used if not defined in `dev` or `prod`) */
-        var passwordProperty: String? = Defaults.PASS_PROPERTY
+        var passwordProperty: String = Defaults.PASS_PROPERTY
 
         /** Folder containing the `.git` directory (relative to project root) */
         var gitFolder: String = Defaults.GIT_FOLDER
 
         /** List of regex patterns to identify release branches */
         var releaseBranchPatterns: List<String> = Defaults.RELEASE_BRANCH_REGEXES
+
+        override fun toString(): String {
+            return buildString {
+                appendLine("PluginConfiguration(")
+                appendLine("  dev = $dev")
+                appendLine("  prod = $dev")
+                appendLine("  usernameProperty = $usernameProperty")
+                appendLine("  passwordProperty = $passwordProperty")
+                appendLine("  releaseBranchPatterns = $releaseBranchPatterns")
+                appendLine("  gitFolder = $gitFolder")
+                append(")")
+            }
+        }
     }
