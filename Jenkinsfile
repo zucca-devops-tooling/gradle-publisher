@@ -38,7 +38,7 @@ pipeline {
         stage('Publish Artifacts') {
             when {
                 not {
-                    branch 'gradle-portal-publish'
+                    branch 'main'
                 }
             }
             steps {
@@ -70,7 +70,7 @@ pipeline {
         }
         stage('Publish plugin to gradle portal') {
             when {
-                branch 'gradle-portal-publish'
+                branch 'main'
             }
             steps {
                 withCredentials([
