@@ -2,7 +2,6 @@ package helpers
 
 import dev.zuccaops.helpers.GitHelper
 import io.mockk.*
-import org.gradle.api.Project
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

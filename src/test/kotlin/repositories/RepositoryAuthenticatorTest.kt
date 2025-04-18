@@ -4,7 +4,6 @@ import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.repositories.RepositoryAuthenticator
 import io.mockk.every
 import io.mockk.mockk
-import org.gradle.api.Project
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import testutil.TestProjectFactory

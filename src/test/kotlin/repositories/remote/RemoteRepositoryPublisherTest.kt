@@ -7,7 +7,6 @@ import dev.zuccaops.repositories.remote.RemoteRepositoryPublisher
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
-import org.gradle.api.Project
 import org.gradle.internal.impldep.org.junit.Assert.assertTrue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals

@@ -1,6 +1,5 @@
 package repositories.central
 
-import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.helpers.VersionResolver
 import dev.zuccaops.repositories.RepositoryAuthenticator
 import dev.zuccaops.repositories.central.MavenCentralRepositoryPublisher
