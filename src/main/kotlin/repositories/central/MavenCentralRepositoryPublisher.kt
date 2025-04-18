@@ -16,17 +16,12 @@
 package dev.zuccaops.repositories.central
 
 import dev.zuccaops.helpers.VersionResolver
-import dev.zuccaops.repositories.BaseRepositoryPublisher
 import dev.zuccaops.repositories.RepositoryAuthenticator
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.artifacts.ArtifactRepositoryContainer.MAVEN_CENTRAL_URL
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
-import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
-import java.io.FileNotFoundException
-import java.net.URL
 import java.util.Base64
 
 /**
@@ -51,7 +46,6 @@ class MavenCentralRepositoryPublisher(
     private val versionResolver: VersionResolver,
     private val repositoryAuthenticator: RepositoryAuthenticator,
 ) : SonatypeRepositoryPublisher(project, versionResolver) {
-
     /**
      * Applies the `flying-gradle-plugin` and configures it.
      * Also finalizes the `publish` task with `publishToMavenCentralPortal`.
@@ -96,7 +90,6 @@ class MavenCentralRepositoryPublisher(
         val authString = "$user:$token"
         return Base64.getEncoder().encodeToString(authString.toByteArray(Charsets.UTF_8))
     }
-
 
     override fun isPublishable(): Boolean = !versionResolver.isRelease() || !artifactAlreadyPublished()
 
@@ -156,5 +149,4 @@ class MavenCentralRepositoryPublisher(
             },
         )
     }
-
 }

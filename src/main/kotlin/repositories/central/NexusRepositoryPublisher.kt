@@ -16,13 +16,8 @@
 package dev.zuccaops.repositories.central
 
 import dev.zuccaops.helpers.VersionResolver
-import dev.zuccaops.repositories.BaseRepositoryPublisher
 import org.gradle.api.Project
-import org.gradle.api.artifacts.ArtifactRepositoryContainer.MAVEN_CENTRAL_URL
 import org.gradle.api.artifacts.dsl.RepositoryHandler
-import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
-import java.io.FileNotFoundException
-import java.net.URL
 
 /**
  * A repository publisher for Sonatype OSSRH (s01.oss.sonatype.org).
@@ -57,8 +52,9 @@ class NexusRepositoryPublisher(
         super.configurePublishingRepository()
 
         if (isPublishable()) {
-            val disabledTasks = project.tasks
-                .matching { it.name.startsWith("publish") && it.name.contains("To") && it.name != gradleCommand }
+            val disabledTasks =
+                project.tasks
+                    .matching { it.name.startsWith("publish") && it.name.contains("To") && it.name != gradleCommand }
 
             if (!disabledTasks.isEmpty()) {
                 project.logger.info("Disabling conflicting publish tasks (Sonatype rerouting in effect):")
