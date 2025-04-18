@@ -34,14 +34,19 @@ import org.gradle.api.Project
  */
 class GradlePublisherPlugin : Plugin<Project> {
     override fun apply(target: Project) {
+        target.logger.lifecycle("Applying Gradle Publisher Plugin")
         val configuration = target.extensions.create("publisher", PluginConfiguration::class.java)
 
+        target.logger.info("Applying 'maven-publish' plugin")
         target.plugins.apply("maven-publish")
+
         target.tasks.named("publish") {
+            logger.debug("Ensuring 'publish' depends on 'build'")
             dependsOn(target.tasks.named("build"))
         }
 
         target.afterEvaluate {
+            logger.info("Plugin configuration: $configuration")
             val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
 
             repositoryPublisher.configurePublishingRepository()

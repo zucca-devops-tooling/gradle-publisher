@@ -49,10 +49,18 @@ class LocalRepositoryPublisher(
             val version = versionResolver.getVersion()
 
             val artifactPath = File(m2Repo, "$groupPath/$artifactId/$version/$artifactId-$version.jar")
+            project.logger.info("Checking if artifact exists at: $artifactPath")
 
-            return !artifactPath.exists()
+            if (artifactPath.exists()) {
+                project.logger.lifecycle("Production version already published, skipping tasks")
+                return false
+            } else {
+                project.logger.lifecycle("Production version not published yet, proceeding with publication")
+                return true
+            }
         }
 
+        project.logger.lifecycle("Snapshot version detected, proceeding with publication")
         return true
     }
 
@@ -70,7 +78,13 @@ class LocalRepositoryPublisher(
      * @param repositoryHandler Gradle's repository handler for the publishing block.
      */
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
+        project.logger.info("Setting repository to mavenLocal")
         repositoryHandler.mavenLocal()
-        repositoryHandler.removeIf { it.name == "sonatype" }
+
+        project.logger.debug("Checking for sonatype configured repositories to disable them")
+        val removed = repositoryHandler.removeIf { it.name == "sonatype" }
+        if (removed) {
+            project.logger.info("Removed 'sonatype' repository from configuration")
+        }
     }
 }
