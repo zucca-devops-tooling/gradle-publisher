@@ -19,7 +19,7 @@ import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.configuration.RepositoryConfig
 import dev.zuccaops.helpers.VersionResolver
 import dev.zuccaops.repositories.central.MavenCentralRepositoryPublisher
-import dev.zuccaops.repositories.central.SonatypeRepositoryPublisher
+import dev.zuccaops.repositories.central.NexusRepositoryPublisher
 import dev.zuccaops.repositories.local.LocalRepositoryPublisher
 import dev.zuccaops.repositories.remote.RemoteRepositoryPublisher
 import org.gradle.api.Project
@@ -34,7 +34,7 @@ import org.gradle.api.Project
  * Based on the selected configuration, it delegates to one of:
  * - [LocalRepositoryPublisher] (local testing/dev)
  * - [MavenCentralRepositoryPublisher] (via flying-gradle-plugin)
- * - [SonatypeRepositoryPublisher] (custom Gradle task for central)
+ * - [NexusRepositoryPublisher] (custom Gradle task for central)
  * - [RemoteRepositoryPublisher] (for Artifactory, Nexus, etc.)
  *
  * @author Guido Zuccarelli
@@ -53,7 +53,7 @@ object RepositoryPublisherFactory {
             RepositoryConstants.LOCAL_TARGET_COMMAND -> LocalRepositoryPublisher(project, versionResolver)
             RepositoryConstants.MAVEN_CENTRAL_COMMAND -> MavenCentralRepositoryPublisher(project, versionResolver, repositoryAuthenticator)
             RepositoryConstants.SONATYPE_COMMAND ->
-                SonatypeRepositoryPublisher(
+                NexusRepositoryPublisher(
                     project,
                     versionResolver,
                     repositoryConfig.customGradleCommand!!,

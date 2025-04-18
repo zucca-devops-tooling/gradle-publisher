@@ -48,27 +48,36 @@ abstract class BaseRepositoryPublisher(
     private val versionResolver: VersionResolver,
 ) : RepositoryPublisher {
     override fun configurePublishingRepository() {
+        project.logger.lifecycle("Configuring Publishing extension")
         project.configure<PublishingExtension> {
             publications {
+                project.logger.info("Creating maven publication")
                 create<MavenPublication>("maven") {
                     groupId = project.group.toString()
                     artifactId = project.name
                     from(project.components["java"])
                     version = versionResolver.getVersion()
+                    project.logger.debug("Configured publication [group: $groupId, artifact: $artifactId, version: $version]")
                 }
             }
-
+            project.logger.info("Registering repositories")
             registerRepository(this.repositories)
 
             project.version = versionResolver.getVersion()
-            project.tasks.withType(PublishToMavenRepository::class.java).configureEach {
-                onlyIf {
-                    isPublishable()
+            if (!isPublishable()) {
+                project.logger.info("Version not publishable, disabling the following tasks:")
+                project.tasks.withType(PublishToMavenRepository::class.java).configureEach {
+                    project.logger.info("  ⛔ ${this.name}")
+                    onlyIf { false }
                 }
             }
-            project.tasks.withType(Sign::class.java).configureEach {
-                onlyIf {
-                    shouldSign()
+
+            val signTasks = project.tasks.withType(Sign::class.java)
+            if (!shouldSign() && signTasks.isNotEmpty()) {
+                project.logger.info("Version not signable, disabling the following tasks:")
+                project.tasks.withType(Sign::class.java).configureEach {
+                    project.logger.info("  ⛔ ${this.name}")
+                    onlyIf { false }
                 }
             }
         }

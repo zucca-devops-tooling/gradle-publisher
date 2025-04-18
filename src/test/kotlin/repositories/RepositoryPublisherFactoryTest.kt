@@ -6,7 +6,7 @@ import dev.zuccaops.helpers.VersionResolver
 import dev.zuccaops.repositories.RepositoryConstants
 import dev.zuccaops.repositories.RepositoryPublisherFactory
 import dev.zuccaops.repositories.central.MavenCentralRepositoryPublisher
-import dev.zuccaops.repositories.central.SonatypeRepositoryPublisher
+import dev.zuccaops.repositories.central.NexusRepositoryPublisher
 import dev.zuccaops.repositories.local.LocalRepositoryPublisher
 import dev.zuccaops.repositories.remote.RemoteRepositoryPublisher
 import io.mockk.every
@@ -97,7 +97,7 @@ class RepositoryPublisherFactoryTest {
         val publisher = RepositoryPublisherFactory.get(project, config)
 
         // then
-        assertTrue(publisher is SonatypeRepositoryPublisher)
+        assertTrue(publisher is NexusRepositoryPublisher)
     }
 
 
