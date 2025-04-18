@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import testutil.TestProjectFactory
 
 class MavenCentralRepositoryPublisherTest {
-
 
     private lateinit var mockProject: Project
     private lateinit var mockVersionResolver: VersionResolver
@@ -22,7 +22,7 @@ class MavenCentralRepositoryPublisherTest {
 
     @BeforeEach
     fun setUp() {
-        mockProject = mockk(relaxed = true)
+        mockProject = TestProjectFactory.create()
         mockVersionResolver = mockk(relaxed = true)
         mockAuthenticator = mockk(relaxed = true)
     }
@@ -47,9 +47,6 @@ class MavenCentralRepositoryPublisherTest {
 
     @Test
     fun `getUri should construct the correct string for the project`() {
-        every { mockProject.group } returns "dev.zucca-ops"
-        every { mockProject.name } returns "my-plugin"
-
         val resolver = mockk<VersionResolver> {
             every { isRelease() } returns true
             every { getVersion() } returns "1.0.0"

@@ -15,11 +15,12 @@ import io.mockk.mockkConstructor
 import org.gradle.api.Project
 import org.gradle.internal.impldep.org.junit.Assert.assertTrue
 import org.junit.jupiter.api.Test
+import testutil.TestProjectFactory
 
 class RepositoryPublisherFactoryTest {
 
 
-    private val project = mockk<Project>(relaxed = true)
+    private val project = TestProjectFactory.create()
 
     @Test
     fun `should return RemoteRepositoryPublisher in dev mode`() {

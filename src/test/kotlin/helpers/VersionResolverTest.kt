@@ -11,10 +11,11 @@ import org.gradle.api.Project
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import testutil.TestProjectFactory
 
 class VersionResolverTest {
 
-    private val project = mockk<Project>(relaxed = true)
+    private val project = TestProjectFactory.create()
 
     @AfterEach
     fun cleanup() {
