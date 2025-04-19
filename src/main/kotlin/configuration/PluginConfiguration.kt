@@ -80,7 +80,10 @@ open class PluginConfiguration
         /** List of regex patterns to identify release branches */
         var releaseBranchPatterns: List<String> = Defaults.RELEASE_BRANCH_REGEXES
 
-        override fun toString(): String =
+        /** If true, the plugin modifies the project version on non-release branches */
+        var alterProjectVersion: Boolean = Defaults.ALTER_PROJECT_VERSION
+
+    override fun toString(): String =
             buildString {
                 appendLine("PluginConfiguration(")
                 appendLine("  dev = $dev")
@@ -89,6 +92,7 @@ open class PluginConfiguration
                 appendLine("  passwordProperty = $passwordProperty")
                 appendLine("  releaseBranchPatterns = $releaseBranchPatterns")
                 appendLine("  gitFolder = $gitFolder")
+                appendLine("  alterProjectVersion = $alterProjectVersion")
                 append(")")
             }
     }

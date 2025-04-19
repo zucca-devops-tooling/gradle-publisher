@@ -49,7 +49,7 @@ class VersionResolver(
         if (finalVersion == null) {
             val baseVersion = getProjectVersion()
             finalVersion =
-                if (isRelease()) {
+                if (isRelease() || !configuration.alterProjectVersion) {
                     baseVersion
                 } else {
                     "$baseVersion-${getEscapedBranchName()}-SNAPSHOT"

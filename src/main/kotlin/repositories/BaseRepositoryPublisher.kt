@@ -64,6 +64,7 @@ abstract class BaseRepositoryPublisher(
             registerRepository(this.repositories)
 
             project.version = versionResolver.getVersion()
+
             if (!isPublishable()) {
                 project.logger.info("Version not publishable, disabling the following tasks:")
                 project.tasks.withType(PublishToMavenRepository::class.java).configureEach {
