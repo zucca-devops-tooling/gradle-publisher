@@ -107,7 +107,6 @@ class RepositoryAuthenticator(
         return null
     }
 
-    private fun isDefaultProperty(propertyName: String): Boolean {
-        return propertyName == Defaults.USER_PROPERTY || propertyName == Defaults.PASS_PROPERTY
-    }
+    private fun isDefaultProperty(propertyName: String): Boolean =
+        propertyName == Defaults.USER_PROPERTY || propertyName == Defaults.PASS_PROPERTY
 }
