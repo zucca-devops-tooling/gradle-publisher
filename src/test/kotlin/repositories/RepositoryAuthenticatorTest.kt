@@ -39,6 +39,7 @@ class RepositoryAuthenticatorTest {
         // given
         every { project.findProperty("globalUser") } returns "globaluser"
         every { project.findProperty("globalPass") } returns "globalpass"
+        every { project.findProperty("") } returns null
 
         val config = mockk<PluginConfiguration>(relaxed = true) {
             every { prod.usernameProperty } returns ""
