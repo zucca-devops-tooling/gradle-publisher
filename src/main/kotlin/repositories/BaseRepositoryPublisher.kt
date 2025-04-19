@@ -66,17 +66,22 @@ abstract class BaseRepositoryPublisher(
             project.version = versionResolver.getVersionForProject()
 
             if (!isPublishable()) {
-                project.logger.info("Version not publishable, disabling the following tasks:")
-                project.tasks.withType(PublishToMavenRepository::class.java).configureEach {
+                val publishTasks = project.tasks.withType(PublishToMavenRepository::class.java)
+                publishTasks.configureEach {
+                    if (this.name == publishTasks.first().name) { // only log once
+                        project.logger.info("Version not publishable, disabling the following tasks:")
+                    }
                     project.logger.info("  ⛔ ${this.name}")
                     onlyIf { false }
                 }
             }
 
-            val signTasks = project.tasks.withType(Sign::class.java)
-            if (!shouldSign() && signTasks.isNotEmpty()) {
-                project.logger.info("Version not signable, disabling the following tasks:")
+            if (!shouldSign()) {
+                val signTasks = project.tasks.withType(Sign::class.java)
                 project.tasks.withType(Sign::class.java).configureEach {
+                    if (this.name == signTasks.first().name) {
+                        project.logger.info("Version not signable, disabling the following tasks:")
+                    }
                     project.logger.info("  ⛔ ${this.name}")
                     onlyIf { false }
                 }

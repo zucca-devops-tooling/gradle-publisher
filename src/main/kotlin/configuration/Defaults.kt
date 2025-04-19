@@ -25,6 +25,7 @@ package dev.zuccaops.configuration
  * @property PASS_PROPERTY Default Gradle property name used to fetch repository password.
  * @property GIT_FOLDER Default path to the root Git folder. `"."` means the current project directory.
  * @property RELEASE_BRANCH_REGEXES Default regex patterns used to determine if a branch is a release branch.
+ * @property ALTER_PROJECT_VERSION Default behaviour the plugin modifies the project version on non-release branches
  * If a branch matches any of these patterns, it's considered a release:
  * - `release/1.2.3`
  * - `v1.2.3`
@@ -37,5 +38,6 @@ object Defaults {
     const val PASS_PROPERTY = "mavenPassword"
     const val GIT_FOLDER = "."
     const val ALTER_PROJECT_VERSION = true
+    const val NEXUS_GRADLE_COMMAND = "closeAndReleaseStagingRepositories"
     val RELEASE_BRANCH_REGEXES: List<String> = emptyList()
 }

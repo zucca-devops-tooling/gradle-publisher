@@ -15,7 +15,9 @@
  */
 package dev.zuccaops.repositories.central
 
+import dev.zuccaops.configuration.Defaults
 import dev.zuccaops.helpers.VersionResolver
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 
@@ -40,7 +42,7 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 class NexusRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,
-    private val gradleCommand: String,
+    private var gradleCommand: String,
 ) : SonatypeRepositoryPublisher(project, versionResolver) {
     /**
      * Configures the publishing logic by disabling all regular publish tasks
@@ -52,22 +54,31 @@ class NexusRepositoryPublisher(
         super.configurePublishingRepository()
 
         if (isPublishable()) {
+            if (gradleCommand.isBlank()) {
+                project.logger.info("Gradle command not configured. Using Nexus default: '${Defaults.NEXUS_GRADLE_COMMAND}'")
+                gradleCommand = Defaults.NEXUS_GRADLE_COMMAND
+            }
+
+            if (!project.tasks.names.contains(gradleCommand)) {
+                project.logger.error("❌ Gradle task '$gradleCommand' not found")
+
+                if (gradleCommand == Defaults.NEXUS_GRADLE_COMMAND) {
+                    project.logger.error("Make sure the Nexus Publish Plugin is applied and the task is registered")
+                }
+
+                throw GradleException("Could not find Gradle task '$gradleCommand'. Please check your configuration or plugin setup.")
+            }
+
             val disabledTasks =
                 project.tasks
                     .matching { it.name.startsWith("publish") && it.name.contains("To") && it.name != gradleCommand }
 
-            if (!disabledTasks.isEmpty()) {
-                project.logger.info("Disabling conflicting publish tasks (Sonatype rerouting in effect):")
-                disabledTasks.configureEach {
-                    enabled = false
-                    project.logger.info("  ⛔ ${this.name}")
+            disabledTasks.configureEach {
+                if (this.name == disabledTasks.first().name) {
+                    project.logger.info("Disabling conflicting publish tasks (Sonatype rerouting in effect):")
                 }
-            } else {
-                project.logger.debug("No conflicting publish tasks found to disable")
-            }
-
-            if (!project.tasks.names.contains(gradleCommand)) {
-                project.logger.warn("⚠️ gradleCommand '$gradleCommand' not found — rerouting may fail")
+                enabled = false
+                project.logger.info("  ⛔ ${this.name}")
             }
 
             // Dynamically register a rerouter task

@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.1.20"
     `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "0.0.2-develop-SNAPSHOT"
+    id("dev.zucca-ops.gradle-publisher") version "0.1.0"
     id("java-gradle-plugin")
     signing
     id("com.diffplug.spotless") version "7.0.3"

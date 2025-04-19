@@ -46,6 +46,22 @@ class MavenCentralRepositoryPublisher(
     private val versionResolver: VersionResolver,
     private val repositoryAuthenticator: RepositoryAuthenticator,
 ) : SonatypeRepositoryPublisher(project, versionResolver) {
+    companion object {
+        // Plugin routing details
+        const val ROUTING_COMMAND = "publishToMavenCentralPortal"
+        const val ROUTING_PLUGIN_ID = "tech.yanand.maven-central-publish"
+
+        // Extension and reflection method names
+        const val MAVEN_CENTRAL_EXTENSION_NAME = "mavenCentral"
+        const val METHOD_GET_REPO_DIR = "getRepoDir"
+        const val METHOD_GET_AUTH_TOKEN = "getAuthToken"
+        const val METHOD_GET_PUBLISHING_TYPE = "getPublishingType"
+
+        // Other constants
+        const val DEFAULT_REPO_DIR_PATH = "repos/bundles"
+        const val PUBLISHING_TYPE_USER_MANAGED = "USER_MANAGED"
+    }
+
     /**
      * Applies the `flying-gradle-plugin` and configures it.
      * Also finalizes the `publish` task with `publishToMavenCentralPortal`.
@@ -75,15 +91,15 @@ class MavenCentralRepositoryPublisher(
             return
         }
 
-        project.logger.lifecycle("Applying tech.yanand.maven-central-publish plugin")
-        project.pluginManager.apply("tech.yanand.maven-central-publish")
+        project.logger.lifecycle("Applying $ROUTING_PLUGIN_ID plugin")
+        project.pluginManager.apply(ROUTING_PLUGIN_ID)
 
         val encodedCredentials = encodeBasicAuth(username, password)
         configureMavenCentralExtension(encodedCredentials)
 
         project.tasks.named("publish").configure {
-            project.logger.lifecycle("⚙️ Routing 'publish' to 'publishToMavenCentralPortal' after finish")
-            finalizedBy("publishToMavenCentralPortal")
+            project.logger.lifecycle("⚙️ Routing 'publish' to '$ROUTING_COMMAND' after finish")
+            finalizedBy(ROUTING_COMMAND)
         }
     }
 
@@ -123,32 +139,29 @@ class MavenCentralRepositoryPublisher(
     private fun configureMavenCentralExtension(encodedCredentials: String) {
         project.logger.info("Configuring mavenCentral extension")
         project.extensions.configure(
-            "mavenCentral",
+            MAVEN_CENTRAL_EXTENSION_NAME,
             Action<Any> {
                 val clazz = this.javaClass
 
-                project.logger.debug("Setting repoDir to repos/bundles")
-                val repoDir = project.layout.buildDirectory.dir("repos/bundles")
+                project.logger.debug("Setting repoDir to $DEFAULT_REPO_DIR_PATH")
+                val repoDir = project.layout.buildDirectory.dir(DEFAULT_REPO_DIR_PATH)
 
                 clazz
-                    .getMethod("getRepoDir")
+                    .getMethod(METHOD_GET_REPO_DIR)
                     .invoke(this)
-                    .let { it as DirectoryProperty }
-                    .set(repoDir)
+                    .let { (it as DirectoryProperty).set(repoDir) }
 
                 project.logger.debug("Setting authToken with encoded credentials")
                 clazz
-                    .getMethod("getAuthToken")
+                    .getMethod(METHOD_GET_AUTH_TOKEN)
                     .invoke(this)
-                    .let { it as Property<String> }
-                    .set(encodedCredentials)
+                    .let { (it as Property<String>).set(encodedCredentials) }
 
-                project.logger.debug("Setting publishingType to USER_MANAGED")
+                project.logger.debug("Setting publishingType to $PUBLISHING_TYPE_USER_MANAGED")
                 clazz
-                    .getMethod("getPublishingType")
+                    .getMethod(METHOD_GET_PUBLISHING_TYPE)
                     .invoke(this)
-                    .let { it as Property<String> }
-                    .set("USER_MANAGED")
+                    .let { (it as Property<String>).set(PUBLISHING_TYPE_USER_MANAGED) }
             },
         )
     }
