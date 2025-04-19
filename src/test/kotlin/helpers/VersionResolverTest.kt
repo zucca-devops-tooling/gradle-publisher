@@ -43,6 +43,50 @@ class VersionResolverTest {
     }
 
     @Test
+    fun `resolves final project version for non-release branches`() {
+        // given
+        every { project.version } returns "1.2.3"
+        val mockConfig = mockk<PluginConfiguration>(relaxed = true)
+
+        every { mockConfig.releaseBranchPatterns } returns listOf("^main$", "^release/\\d+\\.\\d+\\.\\d+$")
+        every { mockConfig.alterProjectVersion } returns true
+        mockkConstructor(GitHelper::class)
+        every { anyConstructed<GitHelper>().getBranch() } returns "feature/cool-feature"
+
+        val resolver = VersionResolver(project, mockConfig)
+
+        //when
+        val version = resolver.getVersionForProject()
+        val isRelease = resolver.isRelease()
+
+        // then
+        assertEquals("1.2.3-feature-cool-feature-SNAPSHOT", version) // branch should be escaped as well (no slash allowed)
+        assertFalse(isRelease)
+    }
+
+    @Test
+    fun `prevents project version modification when alterProjectVersion set to false`() {
+        // given
+        every { project.version } returns "1.2.3"
+        val mockConfig = mockk<PluginConfiguration>(relaxed = true)
+
+        every { mockConfig.releaseBranchPatterns } returns listOf("^main$", "^release/\\d+\\.\\d+\\.\\d+$")
+        every { mockConfig.alterProjectVersion } returns false
+        mockkConstructor(GitHelper::class)
+        every { anyConstructed<GitHelper>().getBranch() } returns "feature/cool-feature"
+
+        val resolver = VersionResolver(project, mockConfig)
+
+        //when
+        val version = resolver.getVersionForProject()
+        val isRelease = resolver.isRelease()
+
+        // then
+        assertEquals("1.2.3", version) // branch should be escaped as well (no slash allowed)
+        assertFalse(isRelease)
+    }
+
+    @Test
     fun `should keep version as-is on release branch`() {
         // given
         every { project.version } returns "2.0.0"

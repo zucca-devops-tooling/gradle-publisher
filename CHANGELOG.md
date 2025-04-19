@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- New configuration option: `alterProjectVersion` which when set to false prevents the plugin to modify the project version
 
 ## [0.0.2] - 2025-04-19
 ### Added

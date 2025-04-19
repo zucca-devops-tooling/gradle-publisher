@@ -51,6 +51,12 @@ class MavenCentralRepositoryPublisher(
      * Also finalizes the `publish` task with `publishToMavenCentralPortal`.
      */
     override fun configurePublishingRepository() {
+        super.configurePublishingRepository()
+
+        if (!isPublishable()) {
+            return
+        }
+
         val username = repositoryAuthenticator.getProdUsername()
         val password = repositoryAuthenticator.getProdPassword()
 
@@ -66,9 +72,8 @@ class MavenCentralRepositoryPublisher(
 
         if (!versionResolver.isRelease()) {
             project.logger.error("Maven Central is not allowing snapshots yet, please configure a different target for dev environments")
+            return
         }
-
-        super.configurePublishingRepository()
 
         project.logger.lifecycle("Applying tech.yanand.maven-central-publish plugin")
         project.pluginManager.apply("tech.yanand.maven-central-publish")
