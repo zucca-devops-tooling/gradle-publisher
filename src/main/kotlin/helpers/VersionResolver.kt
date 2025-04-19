@@ -49,7 +49,7 @@ class VersionResolver(
         if (finalVersion == null) {
             val baseVersion = getProjectVersion()
             finalVersion =
-                if (isRelease() || !configuration.alterProjectVersion) {
+                if (isRelease()) {
                     baseVersion
                 } else {
                     "$baseVersion-${getEscapedBranchName()}-SNAPSHOT"
@@ -58,6 +58,15 @@ class VersionResolver(
         }
 
         return finalVersion!!
+    }
+
+    /**
+     * Returns the project version to use for publication.
+     * If version modification is enabled, returns the computed version (e.g., with branch suffix).
+     * Otherwise, returns the original project version as defined in build.gradle.
+     */
+    fun getVersionForProject(): String {
+        return if (configuration.alterProjectVersion) getVersion() else getProjectVersion()
     }
 
     /** Escapes slashes in the branch name for safe use in versions. */

@@ -63,7 +63,7 @@ abstract class BaseRepositoryPublisher(
             project.logger.info("Registering repositories")
             registerRepository(this.repositories)
 
-            project.version = versionResolver.getVersion()
+            project.version = versionResolver.getVersionForProject()
 
             if (!isPublishable()) {
                 project.logger.info("Version not publishable, disabling the following tasks:")
