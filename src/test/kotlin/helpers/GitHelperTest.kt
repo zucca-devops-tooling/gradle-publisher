@@ -148,6 +148,7 @@ class GitHelperTest {
         every {
             gitHelper.executeGitCommand(any())
         } returns ""
+        every { gitHelper.getDefaultBranchByCIEnv() } returns null
 
         // when
         val result = gitHelper.isMainBranch("master")
