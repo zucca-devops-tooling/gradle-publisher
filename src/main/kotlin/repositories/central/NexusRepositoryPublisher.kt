@@ -73,14 +73,12 @@ class NexusRepositoryPublisher(
                 project.tasks
                     .matching { it.name.startsWith("publish") && it.name.contains("To") && it.name != gradleCommand }
 
-            if (!disabledTasks.isEmpty()) {
-                project.logger.info("Disabling conflicting publish tasks (Sonatype rerouting in effect):")
-                disabledTasks.configureEach {
-                    enabled = false
-                    project.logger.info("  ⛔ ${this.name}")
+            disabledTasks.configureEach {
+                if (this.name == disabledTasks.first().name) {
+                    project.logger.info("Disabling conflicting publish tasks (Sonatype rerouting in effect):")
                 }
-            } else {
-                project.logger.debug("No conflicting publish tasks found to disable")
+                enabled = false
+                project.logger.info("  ⛔ ${this.name}")
             }
 
             // Dynamically register a rerouter task

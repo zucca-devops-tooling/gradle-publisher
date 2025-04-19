@@ -105,14 +105,19 @@ class RemoteRepositoryPublisher(
             }
         }
 
-        project.tasks
-            .matching { it.name.contains("ToSonatypeRepository") || it.name.contains("SonatypeStaging") }
-            .configureEach {
-                onlyIf {
-                    logger.lifecycle("❌ Skipping Nexus task: $name (disabled by publisher plugin)")
-                    false
-                }
+        val nexusTasks =
+            project.tasks
+                .matching { it.name.contains("ToSonatypeRepository") || it.name.contains("SonatypeStaging") }
+
+        nexusTasks.configureEach {
+            if (this.name == nexusTasks.first().name) {
+                project.logger.info("Disabling nexus tasks (by publisher plugin):")
             }
+            onlyIf {
+                false
+            }
+            project.logger.info("  ⛔ ${this.name}")
+        }
     }
 
     private fun getRepoUrl(): String {
