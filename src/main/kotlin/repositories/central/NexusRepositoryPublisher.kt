@@ -87,8 +87,6 @@ class NexusRepositoryPublisher(
         }
     }
 
-    override fun isPublishable(): Boolean = !versionResolver.isRelease() || !artifactAlreadyPublished()
-
     /**
      * Always enables signing for this repository type (Sonatype-style publish).
      *

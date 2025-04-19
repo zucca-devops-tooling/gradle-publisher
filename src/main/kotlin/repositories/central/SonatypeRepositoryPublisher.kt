@@ -27,10 +27,13 @@ abstract class SonatypeRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,
 ) : BaseRepositoryPublisher(project, versionResolver) {
+
+    private var isPublishable: Boolean? = null
+
     /**
      * Checks if the artifact already exists in Maven Central to avoid re-uploading.
      */
-    protected fun artifactAlreadyPublished(): Boolean {
+    private fun artifactAlreadyPublished(): Boolean {
         try {
             project.logger.info("Checking if artifact exists at: ${getUri()}")
             URL(getUri()).readBytes()
@@ -60,5 +63,13 @@ abstract class SonatypeRepositoryPublisher(
         val name = project.name.replace(".", "/")
 
         return "${ArtifactRepositoryContainer.MAVEN_CENTRAL_URL}$group/$name/${versionResolver.getVersion()}"
+    }
+
+    override fun isPublishable(): Boolean {
+        if (isPublishable == null) {
+            isPublishable = !versionResolver.isRelease() || !artifactAlreadyPublished()
+        }
+
+        return isPublishable!!
     }
 }
