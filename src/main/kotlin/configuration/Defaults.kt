@@ -38,5 +38,6 @@ object Defaults {
     const val PASS_PROPERTY = "mavenPassword"
     const val GIT_FOLDER = "."
     const val ALTER_PROJECT_VERSION = true
+    const val NEXUS_GRADLE_COMMAND = "closeAndReleaseStagingRepositories"
     val RELEASE_BRANCH_REGEXES: List<String> = emptyList()
 }
