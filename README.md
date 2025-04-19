@@ -25,7 +25,7 @@ Ideal for multi-environment workflows and Maven Central/Nexus publishing.
 
 ```kotlin
 plugins {
-    id("dev.zucca-ops.gradle-publisher") version "0.0.1"
+    id("dev.zucca-ops.gradle-publisher") version "0.1.0"
 }
 ```
 
