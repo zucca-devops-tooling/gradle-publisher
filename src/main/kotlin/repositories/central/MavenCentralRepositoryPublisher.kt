@@ -91,8 +91,6 @@ class MavenCentralRepositoryPublisher(
         return Base64.getEncoder().encodeToString(authString.toByteArray(Charsets.UTF_8))
     }
 
-    override fun isPublishable(): Boolean = !versionResolver.isRelease() || !artifactAlreadyPublished()
-
     /**
      * Always enable signing for Maven Central.
      */
