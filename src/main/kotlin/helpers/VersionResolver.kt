@@ -62,11 +62,17 @@ class VersionResolver(
 
     /**
      * Returns the project version to use for publication.
-     * If version modification is enabled, returns the computed version (e.g., with branch suffix).
+     * If version modification is enabled, returns the computed version (e.g., with a branch suffix).
      * Otherwise, returns the original project version as defined in build.gradle.
      */
     fun getVersionForProject(): String {
-        return if (configuration.alterProjectVersion) getVersion() else getProjectVersion()
+        if (configuration.alterProjectVersion) {
+            project.logger.lifecycle("Setting project version to computed value")
+            return getVersion()
+        }
+
+        project.logger.info("alterProjectVersion is false, skipping project version modification")
+        return getProjectVersion()
     }
 
     /** Escapes slashes in the branch name for safe use in versions. */
