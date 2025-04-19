@@ -38,19 +38,26 @@ class VersionResolver(
     private val configuration: PluginConfiguration,
 ) {
     private val gitHelper: GitHelper = GitHelper(project, configuration.gitFolder)
+    private var finalVersion: String? = null
+    private var isRelease: Boolean? = null
 
     /**
      * Returns the computed project version based on Git branch.
      * Adds `-<branch>-SNAPSHOT` if not a release branch.
      */
     fun getVersion(): String {
-        val baseVersion = getProjectVersion()
-
-        if (isRelease()) {
-            return baseVersion
+        if (finalVersion == null) {
+            val baseVersion = getProjectVersion()
+            finalVersion =
+                if (isRelease()) {
+                    baseVersion
+                } else {
+                    "$baseVersion-${getEscapedBranchName()}-SNAPSHOT"
+                }
+            project.logger.lifecycle("Calculated version: $finalVersion")
         }
 
-        return "$baseVersion-${getEscapedBranchName()}-SNAPSHOT"
+        return finalVersion!!
     }
 
     /** Escapes slashes in the branch name for safe use in versions. */
@@ -61,18 +68,24 @@ class VersionResolver(
      * Uses either `releaseBranchPatterns` or defaults to checking if branch is main.
      */
     fun isRelease(): Boolean {
-        val currentBranch = gitHelper.getBranch()
-        val releaseBranchPatterns = configuration.releaseBranchPatterns
+        if (isRelease == null) {
+            val currentBranch = gitHelper.getBranch()
+            project.logger.info("Detected branch: $currentBranch")
+            val patterns = configuration.releaseBranchPatterns
 
-        if (releaseBranchPatterns.isEmpty()) {
-            if (currentBranch == "HEAD") {
-                return false
-            }
+            isRelease =
+                if (patterns.isEmpty()) {
+                    project.logger.debug("No patterns configured, checking if $currentBranch is a default branch")
+                    currentBranch != "HEAD" && gitHelper.isMainBranch(currentBranch)
+                } else {
+                    patterns.any { currentBranch.matches(Regex(it)) }
+                }
 
-            return gitHelper.isMainBranch(currentBranch)
+            val environment = if (isRelease!!) "prod" else "dev"
+            project.logger.lifecycle("Detected environment: $environment (branch: $currentBranch)")
         }
 
-        return releaseBranchPatterns.any { currentBranch.matches(Regex(it)) }
+        return isRelease!!
     }
 
     /** Returns the project version defined in `build.gradle[.kts]`. */

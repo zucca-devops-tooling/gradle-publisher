@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.1.20"
     `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "0.0.1-PR-20-SNAPSHOT"
+    id("dev.zucca-ops.gradle-publisher") version "0.0.1-develop-SNAPSHOT"
     id("java-gradle-plugin")
     signing
     id("com.diffplug.spotless") version "7.0.3"
@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "dev.zucca-ops"
-version = "0.0.1"
+version = "0.0.2"
 
 repositories {
     mavenCentral()
@@ -44,7 +44,7 @@ gradlePlugin {
             id = "dev.zucca-ops.gradle-publisher"
             implementationClass = "dev.zuccaops.GradlePublisherPlugin"
             displayName = "Gradle Publisher Plugin"
-            tags = listOf("publishing", "ci", "gradle", "maven", "automation")
+            tags = listOf("publishing", "ci", "versioning", "maven", "automation", "maven-central", "release")
             description = "A Gradle plugin that simplifies publishing by detecting environment and routing to the correct repository with dynamic versions."
         }
     }

@@ -49,18 +49,20 @@ class RemoteRepositoryPublisher(
 ) : BaseRepositoryPublisher(project, versionResolver) {
     override fun isPublishable(): Boolean {
         if (versionResolver.isRelease()) {
+            project.logger.info("Checking if artifact exists at: ${getUri()}")
             Authenticator.setDefault(repositoryAuthenticator)
 
             try {
                 URL(getUri()).readBytes()
-
+                project.logger.lifecycle("Production version not published yet, proceeding with publication")
                 return true
             } catch (e: FileNotFoundException) {
-                println("RemoteRepository: production version already published")
+                project.logger.lifecycle("Production version already published, skipping tasks")
                 return false
             }
         }
 
+        project.logger.lifecycle("Snapshot version detected, proceeding with publication")
         return true
     }
 
@@ -87,12 +89,15 @@ class RemoteRepositoryPublisher(
         }
 
         repositoryHandler.maven {
-            this.url = project.uri(getRepoUrl())
+            url = project.uri(getRepoUrl())
+            project.logger.info("Setting url: $url to Publication Repository")
             if (username != null && password != null) {
                 credentials {
                     this.username = username
                     this.password = password
                 }
+            } else {
+                project.logger.warn("No credentials found for this publication")
             }
             metadataSources {
                 mavenPom()
@@ -112,11 +117,9 @@ class RemoteRepositoryPublisher(
 
     private fun getRepoUrl(): String {
         if (versionResolver.isRelease()) {
-            println("RemoteRepository: returning prod target url")
             return configuration.prod.target
         }
 
-        println("RemoteRepository: returning dev target url")
         return configuration.dev.target
     }
 

@@ -4,19 +4,15 @@ import dev.zuccaops.helpers.VersionResolver
 import dev.zuccaops.repositories.local.LocalRepositoryPublisher
 import io.mockk.every
 import io.mockk.mockk
-import org.gradle.api.Project
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import testutil.TestProjectFactory
 
 class LocalRepositoryPublisherTest {
 
     @Test
     fun `isPublishable should return false if artifact does not exist in local m2`() {
-        val mockProject = mockk<Project> {
-            every { group } returns "com.example"
-            every { name } returns "my-lib"
-        }
+        val mockProject = TestProjectFactory.create()
 
         val mockResolver = mockk<VersionResolver> {
             every { isRelease() } returns true

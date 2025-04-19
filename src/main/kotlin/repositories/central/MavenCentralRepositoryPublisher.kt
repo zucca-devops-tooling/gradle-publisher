@@ -16,17 +16,12 @@
 package dev.zuccaops.repositories.central
 
 import dev.zuccaops.helpers.VersionResolver
-import dev.zuccaops.repositories.BaseRepositoryPublisher
 import dev.zuccaops.repositories.RepositoryAuthenticator
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.artifacts.ArtifactRepositoryContainer.MAVEN_CENTRAL_URL
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
-import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
-import java.io.FileNotFoundException
-import java.net.URL
 import java.util.Base64
 
 /**
@@ -50,55 +45,40 @@ class MavenCentralRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,
     private val repositoryAuthenticator: RepositoryAuthenticator,
-) : BaseRepositoryPublisher(project, versionResolver) {
+) : SonatypeRepositoryPublisher(project, versionResolver) {
     /**
-     * Applies the `flying-gradle-plugin` and configures its required extension using reflection.
+     * Applies the `flying-gradle-plugin` and configures it.
      * Also finalizes the `publish` task with `publishToMavenCentralPortal`.
      */
-    @Suppress("UNCHECKED_CAST")
     override fun configurePublishingRepository() {
+        val username = repositoryAuthenticator.getProdUsername()
+        val password = repositoryAuthenticator.getProdPassword()
+
+        if (username == null || password == null) {
+            if (username == null) {
+                project.logger.error("Username needs to be configured for Maven Central publications")
+            }
+            if (password == null) {
+                project.logger.error("Password needs to be configured for Maven Central publications")
+            }
+            return
+        }
+
+        if (!versionResolver.isRelease()) {
+            project.logger.error("Maven Central is not allowing snapshots yet, please configure a different target for dev environments")
+        }
+
         super.configurePublishingRepository()
 
-        if (repositoryAuthenticator.getProdUsername() != null && repositoryAuthenticator.getProdPassword() != null) {
-            project.pluginManager.apply("tech.yanand.maven-central-publish")
+        project.logger.lifecycle("Applying tech.yanand.maven-central-publish plugin")
+        project.pluginManager.apply("tech.yanand.maven-central-publish")
 
-            val encodedCredentials =
-                encodeBasicAuth(
-                    repositoryAuthenticator.getProdUsername()!!,
-                    repositoryAuthenticator.getProdPassword()!!,
-                )
-            project.extensions.configure(
-                "mavenCentral",
-                Action<Any> {
-                    val clazz = this.javaClass
+        val encodedCredentials = encodeBasicAuth(username, password)
+        configureMavenCentralExtension(encodedCredentials)
 
-                    val repoDir = project.layout.buildDirectory.dir("repos/bundles")
-
-                    clazz
-                        .getMethod("getRepoDir")
-                        .invoke(this)
-                        .let { it as DirectoryProperty }
-                        .set(repoDir)
-
-                    clazz
-                        .getMethod("getAuthToken")
-                        .invoke(this)
-                        .let { it as Property<String> }
-                        .set(encodedCredentials)
-
-                    clazz
-                        .getMethod("getPublishingType")
-                        .invoke(this)
-                        .let { it as Property<String> }
-                        .set("USER_MANAGED")
-                },
-            )
-
-            project.tasks.named("publish").configure {
-                finalizedBy("publishToMavenCentralPortal")
-            }
-        } else {
-            project.logger.lifecycle("Cannot publish to mavenCentral, credentials not found")
+        project.tasks.named("publish").configure {
+            project.logger.lifecycle("⚙️ Routing 'publish' to 'publishToMavenCentralPortal' after finish")
+            finalizedBy("publishToMavenCentralPortal")
         }
     }
 
@@ -106,32 +86,10 @@ class MavenCentralRepositoryPublisher(
         user: String,
         token: String,
     ): String {
+        project.logger.info("Encoding Maven Central credentials for auth token")
         val authString = "$user:$token"
         return Base64.getEncoder().encodeToString(authString.toByteArray(Charsets.UTF_8))
     }
-
-    @VisibleForTesting
-    fun getUri(): String {
-        val group = project.group.toString().replace(".", "/")
-        val name = project.name.replace(".", "/")
-
-        return MAVEN_CENTRAL_URL + group + "/" + name + "/" + versionResolver.getVersion()
-    }
-
-    /**
-     * Checks if the artifact already exists in Maven Central to avoid re-uploading.
-     */
-    private fun artifactAlreadyPublished(): Boolean {
-        try {
-            URL(getUri()).readBytes()
-
-            return true
-        } catch (e: FileNotFoundException) {
-            return false
-        }
-    }
-
-    override fun isPublishable(): Boolean = !versionResolver.isRelease() || !artifactAlreadyPublished()
 
     /**
      * Always enable signing for Maven Central.
@@ -151,5 +109,42 @@ class MavenCentralRepositoryPublisher(
                     .asFile
                     .toURI()
         }
+    }
+
+    /**
+     * Configures `flying-gradle-plugin` extension using reflection
+     */
+    @Suppress("UNCHECKED_CAST")
+    private fun configureMavenCentralExtension(encodedCredentials: String) {
+        project.logger.info("Configuring mavenCentral extension")
+        project.extensions.configure(
+            "mavenCentral",
+            Action<Any> {
+                val clazz = this.javaClass
+
+                project.logger.debug("Setting repoDir to repos/bundles")
+                val repoDir = project.layout.buildDirectory.dir("repos/bundles")
+
+                clazz
+                    .getMethod("getRepoDir")
+                    .invoke(this)
+                    .let { it as DirectoryProperty }
+                    .set(repoDir)
+
+                project.logger.debug("Setting authToken with encoded credentials")
+                clazz
+                    .getMethod("getAuthToken")
+                    .invoke(this)
+                    .let { it as Property<String> }
+                    .set(encodedCredentials)
+
+                project.logger.debug("Setting publishingType to USER_MANAGED")
+                clazz
+                    .getMethod("getPublishingType")
+                    .invoke(this)
+                    .let { it as Property<String> }
+                    .set("USER_MANAGED")
+            },
+        )
     }
 }

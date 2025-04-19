@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.2] - 2025-04-19
+### Added
+- Logging across all major plugin operations (e.g. version resolution, repository setup, task routing)
+- Internal efficiency improvements through caching and memoization
+
 ## [0.0.1] - 2025-04-16
 ### Added
 - Initial release with Git Flow setup.
 - CHANGELOG.md added.
 
-[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.0.2...HEAD
+[0.0.2]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/zucca-devops-tooling/gradle-publisher/releases/tag/v0.0.1

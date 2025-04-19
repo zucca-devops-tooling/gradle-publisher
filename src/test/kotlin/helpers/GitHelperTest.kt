@@ -2,13 +2,13 @@ package helpers
 
 import dev.zuccaops.helpers.GitHelper
 import io.mockk.*
-import org.gradle.api.Project
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import testutil.TestProjectFactory
 
 class GitHelperTest {
-    private val project = mockk<Project>(relaxed = true)
+    private val project = TestProjectFactory.create()
     private val gitFolder = "."
 
     private val gitHelper = spyk(GitHelper(project, gitFolder))
@@ -148,6 +148,7 @@ class GitHelperTest {
         every {
             gitHelper.executeGitCommand(any())
         } returns ""
+        every { gitHelper.getDefaultBranchByCIEnv() } returns null
 
         // when
         val result = gitHelper.isMainBranch("master")

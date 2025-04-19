@@ -1,6 +1,9 @@
 # Gradle Publisher Plugin
 
-The **Gradle Publisher Plugin** automates CI-based publishing of Gradle artifacts. It manages versioning and intelligently routes artifacts to the appropriate repository based on the Git branch and environment.
+The Gradle Publisher Plugin automates CI-based publishing of Gradle artifacts.
+It dynamically manages versions and routes publications based on Git branches and environments.
+
+Ideal for multi-environment workflows and Maven Central/Nexus publishing.
 
 ---
 
@@ -48,6 +51,9 @@ publisher {
 }
 ```
 
+💡 Note: **usernameProperty** and **passwordProperty** refer to project properties or environment variables, not raw strings. Example:
+`./gradlew publish -PprodUserProperty=jfrog_user -PprodPasswordProperty=jfrog_pass`
+
 ### 3. Version Behavior
 
 If the current Git branch **does not match** any `releaseBranchPatterns`, the plugin modifies your version:
@@ -59,6 +65,8 @@ project.version = 1.5.3 → 1.5.3-<branch-name>-SNAPSHOT
 If the branch matches a release pattern, the version is kept as-is.
 
 If `releaseBranchPatterns` is not defined, the plugin will attempt to detect the default branch (e.g., `main`, `master`) from Git configuration.
+
+This happens automatically at runtime, no need to modify `project.version` manually.
 
 ---
 
@@ -189,6 +197,16 @@ publishing {
         }
     }
 }
+```
+
+---
+
+## 🐞 Debugging
+
+Run with `--info` or `--debug` to see detailed resolution logs:
+
+```bash
+./gradlew publish --info
 ```
 
 ---

@@ -7,15 +7,15 @@ import dev.zuccaops.repositories.remote.RemoteRepositoryPublisher
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
-import org.gradle.api.Project
 import org.gradle.internal.impldep.org.junit.Assert.assertTrue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import testutil.TestProjectFactory
 
 class RemoteRepositoryPublisherTest {
 
-    val project = mockk<Project>(relaxed = true)
+    val project = TestProjectFactory.create()
 
     @AfterEach
     fun cleanUp() {
@@ -39,9 +39,6 @@ class RemoteRepositoryPublisherTest {
 
     @Test
     fun `getUri should construct the correct string for the project`() {
-        every { project.group } returns "dev.zucca-ops"
-        every { project.name } returns "my-plugin"
-
         val resolver = mockk<VersionResolver> {
             every { isRelease() } returns true
             every { getVersion() } returns "1.0.0"

@@ -93,10 +93,13 @@ class GitHelper(
      */
     fun isMainBranch(branch: String): Boolean {
         val mainBranchName = getMainBranchName()
+        project.logger.info("Comparing current branch '$branch' to detected default '$mainBranchName'")
 
         if (mainBranchName != null) {
+            project.logger.info("Detected default branch is $mainBranchName")
             return mainBranchName == branch
         }
+        project.logger.info("Default branch could not be detected, defaulting to main/master")
 
         return listOf("main", "master").contains(branch)
     }
@@ -110,17 +113,23 @@ class GitHelper(
      * 3. Common CI environment variables (GITHUB_REF_NAME, etc.)
      */
     private fun getMainBranchName(): String? {
+        project.logger.info("Detecting main branch")
         // Try git symbolic-ref --short refs/remotes/origin/HEAD method
         val symbolicOutput = executeGitCommand(listOf("--git-dir=$gitFolder/.git", "symbolic-ref", "refs/remotes/origin/HEAD"))
         if (symbolicOutput.startsWith("refs/remotes/origin/")) {
+            project.logger.debug("Detected default branch with symbolic refs: $symbolicOutput")
             return symbolicOutput.substringAfter("refs/remotes/origin/")
         }
 
         // Fallback: git remote show origin
+        project.logger.debug("Falling back to 'git remote show origin'")
         val remoteOutput = executeGitCommand(listOf("remote", "show", "origin"))
 
         val match = Regex("HEAD branch: (\\S+)").find(remoteOutput)
-        if (match != null) return match.groupValues[1]
+        if (match != null) {
+            project.logger.debug("Detected default branch with remote show $remoteOutput")
+            return match.groupValues[1]
+        }
 
         // Fallback: common CI env vars
         return getDefaultBranchByCIEnv()
@@ -128,24 +137,29 @@ class GitHelper(
 
     @VisibleForTesting
     fun getDefaultBranchByCIEnv(): String? {
+        project.logger.debug("Checking env vars to detect possible default branch")
         val envVars = System.getenv()
 
         // Gitlab CI default branch envVar
         if (envVars.containsKey("CI_DEFAULT_BRANCH")) {
+            project.logger.debug("`CI_DEFAULT_BRANCH` found")
             return envVars["CI_DEFAULT_BRANCH"]
         }
 
         // Jenkins might have `BRANCH_IS_PRIMARY` which tells you current branch is default one
         // TODO: Move this to isMainBranch()
         if (envVars.containsKey("BRANCH_IS_PRIMARY") && envVars["BRANCH_IS_PRIMARY"] == "true") {
+            project.logger.debug("`BRANCH_IS_PRIMARY` found")
             return envVars["BRANCH_NAME"]
         }
 
+        project.logger.debug("No envVars found")
         return null
     }
 
     @VisibleForTesting
     internal fun executeGitCommand(options: List<String>): String {
+        project.logger.debug("Executing git command with {}", options)
         val output = ByteArrayOutputStream()
 
         project.exec {

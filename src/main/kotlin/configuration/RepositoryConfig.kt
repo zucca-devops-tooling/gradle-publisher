@@ -51,4 +51,17 @@ open class RepositoryConfig {
     var passwordProperty: String = Defaults.PASS_PROPERTY
     var customGradleCommand: String? = null
     var sign: Boolean = true
+
+    override fun toString(): String =
+        buildString {
+            appendLine("RepositoryConfig(")
+            appendLine("    target = $target")
+            appendLine("    usernameProperty = $usernameProperty")
+            appendLine("    passwordProperty = $passwordProperty")
+            appendLine("    signingEnabled = $sign")
+            if (!customGradleCommand.isNullOrBlank()) {
+                appendLine("    customGradleCommand = $customGradleCommand")
+            }
+            append(")")
+        }
 }
