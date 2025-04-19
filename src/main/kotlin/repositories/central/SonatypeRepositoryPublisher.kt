@@ -27,7 +27,6 @@ abstract class SonatypeRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,
 ) : BaseRepositoryPublisher(project, versionResolver) {
-
     private var isPublishable: Boolean? = null
 
     /**
