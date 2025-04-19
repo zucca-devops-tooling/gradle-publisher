@@ -1,27 +1,24 @@
 # Gradle Publisher Plugin
 
-The Gradle Publisher Plugin automates CI-based publishing of Gradle artifacts.
-It dynamically manages versions and routes publications based on Git branches and environments.
-
-Ideal for multi-environment workflows and Maven Central/Nexus publishing.
+The Gradle Publisher Plugin automates CI-based publishing of Gradle artifacts, dynamically managing versions and routing publications based on Git branches and environments. Ideal for multi-environment workflows, Maven Central, and Nexus publishing.
 
 ---
 
 ## ✨ Features
 
-- 🔀 Automatically changes version names depending on your Git branch
-- 📦 Supports separate dev and prod repository targets
+- 🔀 Dynamic version names based on Git branches
+- 📦 Separate dev/prod repository targets
 - 🔑 Environment-specific credentials
-- 🔏 Optional GPG signing (with skip control per environment)
-- 🧠 Smart routing for Nexus or Maven Central publishing
-- 🧰 Automatically applies and configures `maven-publish`
-- 🧾 Automatically configures publishing extension
+- 🔏 Optional GPG signing (with per-environment toggle)
+- 🧠 Intelligent routing to Nexus or Maven Central
+- 🧰 Auto-application/configuration of `maven-publish`
+- 🧾 Automatic publishing extension configuration
 
 ---
 
-## 🚀 Usage
+## 🚀 Quick Start
 
-### 1. Apply the Plugin
+Apply the plugin:
 
 ```kotlin
 plugins {
@@ -29,141 +26,115 @@ plugins {
 }
 ```
 
-### 2. Configure the Publisher
+Minimal configuration (defaults `dev` to `local` if omitted):
 
 ```kotlin
 publisher {
-    dev {
-        target = "https://zucca.jfrog.io/artifactory/publisher-libs-snapshot"
-        usernameProperty = "devUserProperty"
-        passwordProperty = "devPasswordProperty"
-        sign = false // optional: disable signing in dev
-    }
-    prod {
-        target = "https://zucca.jfrog.io/artifactory/publisher-libs-release"
-        usernameProperty = "prodUserProperty"
-        passwordProperty = "prodPasswordProperty"
-    }
-
-    gitFolder = "some/path/to/.git" // defaulted to "." 
-
-    releaseBranchPatterns = ["^release/\d+\.\d+\.\d+$", "^v\d+\.\d+\.\d+$"] // optional, default to main branch
+    prod { target = "https://your-prod-repo-url" }
 }
 ```
 
-💡 Note: **usernameProperty** and **passwordProperty** refer to project properties or environment variables, not raw strings. Example:
-`./gradlew publish -PprodUserProperty=jfrog_user -PprodPasswordProperty=jfrog_pass`
+Then simply run:
 
-### 3. Version Behavior
-
-If the current Git branch **does not match** any `releaseBranchPatterns`, the plugin modifies your version:
-
-```
-project.version = 1.5.3 → 1.5.3-<branch-name>-SNAPSHOT
+```bash
+./gradlew publish
 ```
 
-If the branch matches a release pattern, the version is kept as-is.
-
-If `releaseBranchPatterns` is not defined, the plugin will attempt to detect the default branch (e.g., `main`, `master`) from Git configuration.
-
-This happens automatically at runtime, no need to modify `project.version` manually.
+The plugin automatically handles versions, targets, and credentials.
 
 ---
 
-## 🔐 Global Credentials Example
+## 🔍 Detailed Usage
 
-You can also define credentials globally:
+### Version Behavior
+
+- If the current Git branch matches `releaseBranchPatterns`, the original version is preserved:
+  ```
+  project.version = 1.5.3 → 1.5.3
+  ```
+- If not, the branch name and `-SNAPSHOT` suffix are appended:
+  ```
+  project.version = 1.5.3 → 1.5.3-feature-branch-SNAPSHOT
+  ```
+- Default branches (`main`, `master`) are auto-detected if no patterns are provided.
+
+### Credentials Configuration
+
+Credentials can be defined globally or per environment. Environment-specific credentials take precedence over global ones.
+
+Example:
 
 ```kotlin
 publisher {
-    dev {
-        target = "https://zucca.jfrog.io/artifactory/publisher-libs-snapshot"
-    }
-    prod {
-        target = "https://zucca.jfrog.io/artifactory/publisher-libs-release"
-    }
+    usernameProperty = "globalUser"
+    passwordProperty = "globalPass"
 
-    usernameProperty = "userProperty"
-    passwordProperty = "passwordProperty"
-    releaseBranchPatterns = ["^release/\d+\.\d+\.\d+$", "^v\d+\.\d+$"]
+    dev { target = "https://dev-repo-url" }
+    prod { target = "https://prod-repo-url" }
 }
+```
+
+Passing credentials via CLI:
+
+```bash
+./gradlew publish -PglobalUser=user -PglobalPass=pass
 ```
 
 ---
 
 ## 🧪 Special Cases
 
-### ➕ Publishing to Nexus
+### Publishing to Nexus
 
-For **Sonatype OSSRH/Nexus**, set:
+When publishing to Sonatype OSSRH/Nexus, manually apply **and configure** the [Nexus Publish Plugin](https://github.com/gradle-nexus/publish-plugin). Define the task required for publication:
 
 ```kotlin
 prod {
     target = "nexus"
-    usernameProperty = "ossrhUserProperty"
-    passwordProperty = "ossrhPassProperty"
+    usernameProperty = "ossrhUser"
+    passwordProperty = "ossrhPass"
     customGradleCommand = "closeAndReleaseStagingRepositories"
 }
 ```
 
-⚠️ You must manually apply and configure the [Nexus Publish Plugin](https://github.com/gradle-nexus/publish-plugin).
+### Publishing to Maven Central (New Portal)
 
-You can define any custom publishing task that will be triggered when running:
-
-```bash
-./gradlew publish
-```
-
-### ☁️ Publishing to Maven Central (New Portal)
-
-Set the target to:
+Automatically uses the task `publishToMavenCentralPortal`, powered by [flying-gradle-plugin](https://github.com/yananhub/flying-gradle-plugin):
 
 ```kotlin
-prod {
-    target = "mavenCentral"
-}
+prod { target = "mavenCentral" }
 ```
 
-This uses [flying-gradle-plugin](https://github.com/yananhub/flying-gradle-plugin) under the hood.
+**Note:** `customGradleCommand` applies exclusively to Nexus publishing.
 
-By default, this sets:
+### Local Publishing
+
+Publish to your local `.m2` repository for testing purposes:
 
 ```kotlin
-customGradleCommand = "publishToMavenCentralPortal"
+dev { target = "local" }
 ```
 
-You may override it with your own custom task.
+Automatically disables signing and publishes to `~/.m2/repository`.
 
 ---
 
-## 📦 Local Publishing
+## 🔧 Advanced Configuration
 
-To publish to your local `.m2` repository (e.g. for testing):
+### Skipping GPG Signing
+
+Disable GPG signing for environments where signing isn't required, typically dev or local:
 
 ```kotlin
 dev {
-    target = "local"
+    target = "dev-repo-url"
+    sign = false
 }
 ```
 
-This will skip signing and publish directly to `~/.m2/repository`.
-Signing is automatically disabled in this mode.
+### Custom POM Configuration
 
----
-
-## 🔏 Skipping GPG Signing
-
-If you have signing configured but want to **skip it in a specific environment**, simply add:
-
-```kotlin
-sign = false
-```
-
----
-
-## 🔧 Custom POM Configuration
-
-If you need a **custom POM**, configure it like this:
+Customizing the POM is necessary when publishing to repositories like Maven Central:
 
 ```kotlin
 publishing {
@@ -172,38 +143,31 @@ publishing {
             name.set("...")
             description.set("...")
             url.set("...")
-
-            licenses {
-                license {
-                    name.set("...")
-                    url.set("...")
-                    distribution.set("...")
-                }
-            }
-
-            developers {
-                developer {
-                    id.set("...")
-                    name.set("...")
-                    email.set("...")
-                }
-            }
-
-            scm {
-                url.set("...")
-                connection.set("...")
-                developerConnection.set("...")
-            }
+            licenses { /*...*/ }
+            developers { /*...*/ }
+            scm { /*...*/ }
         }
     }
 }
 ```
 
+### Altering Project Version
+
+To prevent the plugin from modifying `project.version` directly, set `alterProjectVersion` to `false`:
+
+```kotlin
+publisher {
+    alterProjectVersion = false
+}
+```
+
+This allows the plugin to compute a version internally without altering the project's version, useful for `afterEvaluate` scenarios.
+
 ---
 
 ## 🐞 Debugging
 
-Run with `--info` or `--debug` to see detailed resolution logs:
+Run with detailed logs for troubleshooting:
 
 ```bash
 ./gradlew publish --info
@@ -211,24 +175,11 @@ Run with `--info` or `--debug` to see detailed resolution logs:
 
 ---
 
-## 📌 Notes
+## 📌 Important Notes
 
-- `maven-publish` is automatically applied for you
-- No need to manually configure `MavenPublication` unless customizing
-- Use `customGradleCommand` to override the publish task per environment
-- Compatible with CI/CD systems like Jenkins, GitHub Actions, GitLab CI, etc.
+- Automatically applies `maven-publish`
+- Defaults to `mavenLocal` if no targets configured
+- `customGradleCommand` is exclusive to `target="nexus"`
+- Credentials default to `mavenUsername` and `mavenPassword` if unspecified
+- Compatible with CI/CD tools (Jenkins, GitHub Actions, GitLab CI, etc.)
 
----
-
-## 📎 Example CLI
-
-```bash
-./gradlew publish
-```
-
-Let the plugin handle the logic — based on your current branch, it will:
-
-- Route to dev or prod
-- Apply the correct version suffix
-- Use the right credentials
-- Execute the correct publish command
