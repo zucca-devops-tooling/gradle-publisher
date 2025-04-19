@@ -83,7 +83,7 @@ open class PluginConfiguration
         /** If true, the plugin modifies the project version on non-release branches */
         var alterProjectVersion: Boolean = Defaults.ALTER_PROJECT_VERSION
 
-    override fun toString(): String =
+        override fun toString(): String =
             buildString {
                 appendLine("PluginConfiguration(")
                 appendLine("  dev = $dev")
