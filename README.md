@@ -22,15 +22,15 @@ Apply the plugin:
 
 ```kotlin
 plugins {
-    id("dev.zucca-ops.gradle-publisher") version "0.1.0"
+  id("dev.zucca-ops.gradle-publisher") version "0.1.1"
 }
 ```
 
-Minimal configuration (defaults `dev` to `local` if omitted):
+Minimal configuration (defaults `target` to `local` if omitted):
 
 ```kotlin
 publisher {
-    prod { target = "https://your-prod-repo-url" }
+  prod { target = "https://your-prod-repo-url" }
 }
 ```
 
@@ -66,11 +66,11 @@ Example:
 
 ```kotlin
 publisher {
-    usernameProperty = "globalUser"
-    passwordProperty = "globalPass"
+  usernameProperty = "globalUser"
+  passwordProperty = "globalPass"
 
-    dev { target = "https://dev-repo-url" }
-    prod { target = "https://prod-repo-url" }
+  dev { target = "https://dev-repo-url" }
+  prod { target = "https://prod-repo-url" }
 }
 ```
 
@@ -78,6 +78,26 @@ Passing credentials via CLI:
 
 ```bash
 ./gradlew publish -PglobalUser=user -PglobalPass=pass
+```
+
+### Git Folder Configuration
+
+Specify the path to your Git folder (defaults to current directory):
+
+```kotlin
+publisher {
+    gitFolder = "some/path/to/.git"
+}
+```
+
+### Release Branch Patterns
+
+Define patterns to identify release branches. Versions on matching branches remain unchanged:
+
+```kotlin
+publisher {
+    releaseBranchPatterns = ["^release/\\d+\\.\\d+\\.\\d+$", "^v\\d+\\.\\d+$"]
+}
 ```
 
 ---
@@ -182,4 +202,33 @@ Run with detailed logs for troubleshooting:
 - `customGradleCommand` is exclusive to `target="nexus"`
 - Credentials default to `mavenUsername` and `mavenPassword` if unspecified
 - Compatible with CI/CD tools (Jenkins, GitHub Actions, GitLab CI, etc.)
+
+---
+
+## 🛠️ Complete Configuration Example
+
+A comprehensive configuration example:
+
+```kotlin
+publisher {
+    gitFolder = "."
+    alterProjectVersion = true
+
+    usernameProperty = "globalUser"
+    passwordProperty = "globalPass"
+
+    releaseBranchPatterns = ["^release/\\d+\\.\\d+\\.\\d+$", "^v\\d+\\.\\d+$"]
+
+    dev {
+        target = "local"
+        sign = false
+    }
+
+    prod {
+        target = "mavenCentral"
+        usernameProperty = "prodUser"
+        passwordProperty = "prodPass"
+    }
+}
+```
 
