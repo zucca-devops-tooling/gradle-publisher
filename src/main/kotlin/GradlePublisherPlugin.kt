@@ -18,8 +18,10 @@ package dev.zuccaops
 import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.repositories.RepositoryPublisher
 import dev.zuccaops.repositories.RepositoryPublisherFactory
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.execution.TaskExecutionGraph
 
 /**
  * The main entry point for the Gradle Publisher plugin.
@@ -41,15 +43,19 @@ class GradlePublisherPlugin : Plugin<Project> {
         target.plugins.apply("maven-publish")
 
         target.tasks.named("publish") {
-            logger.debug("Ensuring 'publish' depends on 'build'")
-            dependsOn(target.tasks.named("build"))
+            logger.debug("Ensuring 'publish' depends on 'assemble'")
+            dependsOn(target.tasks.named("assemble"))
         }
 
         target.afterEvaluate {
-            logger.info("Plugin configuration: $configuration")
-            val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
+            val requestedTasks = gradle.startParameter.taskNames
 
-            repositoryPublisher.configurePublishingRepository()
+            if (requestedTasks.any { it.contains("publish", ignoreCase = true) }) {
+                logger.info("Plugin configuration: $configuration")
+                val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
+
+                repositoryPublisher.configurePublishingRepository()
+            }
         }
     }
 }
