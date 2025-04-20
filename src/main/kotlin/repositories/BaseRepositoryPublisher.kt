@@ -17,6 +17,7 @@ package dev.zuccaops.repositories
 
 import dev.zuccaops.helpers.VersionResolver
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
@@ -49,6 +50,8 @@ abstract class BaseRepositoryPublisher(
 ) : RepositoryPublisher {
     override fun configurePublishingRepository() {
         project.logger.lifecycle("Configuring Publishing extension")
+
+        val computedVersion = versionResolver.getVersion()
         project.configure<PublishingExtension> {
             publications {
                 project.logger.info("Creating maven publication")
@@ -56,37 +59,42 @@ abstract class BaseRepositoryPublisher(
                     groupId = project.group.toString()
                     artifactId = project.name
                     from(project.components["java"])
-                    version = versionResolver.getVersion()
+                    version = computedVersion
                     project.logger.debug("Configured publication [group: $groupId, artifact: $artifactId, version: $version]")
                 }
             }
             project.logger.info("Registering repositories")
             registerRepository(this.repositories)
+        }
 
-            project.version = versionResolver.getVersionForProject()
+        // Check if skipping publish
+        skipTasks(PublishToMavenRepository::class.java, !isPublishable(), "Version not publishable")
+        // Check if skipping sign
+        skipTasks(Sign::class.java, !shouldSign(), "Version not signable")
 
-            if (!isPublishable()) {
-                val publishTasks = project.tasks.withType(PublishToMavenRepository::class.java)
-                publishTasks.configureEach {
-                    if (this.name == publishTasks.first().name) { // only log once
-                        project.logger.info("Version not publishable, disabling the following tasks:")
-                    }
-                    project.logger.info("  ⛔ ${this.name}")
-                    onlyIf { false }
+        project.logger.lifecycle("Setting computed project version {} for publish task", computedVersion)
+        project.version = computedVersion
+    }
+
+    /**
+     * Select a set of tasks from the project to conditionally skip them
+     */
+    private fun <T : Task> skipTasks(taskType: Class<T>, shouldSkip: Boolean, headerText: String) {
+        project.logger.debug("Checking if {} tasks should be disabled", taskType)
+        if (shouldSkip) {
+            val tasks = project.tasks.withType(taskType)
+            tasks.configureEach {
+                if (this.name == tasks.first().name) {
+                    project.logger.info("$headerText, disabling the following tasks:")
                 }
-            }
-
-            if (!shouldSign()) {
-                val signTasks = project.tasks.withType(Sign::class.java)
-                project.tasks.withType(Sign::class.java).configureEach {
-                    if (this.name == signTasks.first().name) {
-                        project.logger.info("Version not signable, disabling the following tasks:")
-                    }
-                    project.logger.info("  ⛔ ${this.name}")
-                    onlyIf { false }
-                }
+                project.logger.info("  ⛔ ${this.name}")
+                onlyIf { false }
             }
         }
+    }
+
+    override fun setProjectVersion() {
+        project.version = versionResolver.getVersionForProject()
     }
 
     @VisibleForTesting

@@ -120,7 +120,6 @@ publisher {
         target = "mavenCentral"
     }
 
-    alterProjectVersion = false
     usernameProperty = "mavenCentralUsername"
     passwordProperty = "mavenCentralPassword"
     releaseBranchPatterns = listOf("^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
