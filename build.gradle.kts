@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.1.20"
     `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "0.1.1"
+    id("dev.zucca-ops.gradle-publisher") version "0.1.1-develop-SNAPSHOT"
     id("java-gradle-plugin")
     signing
     id("com.diffplug.spotless") version "7.0.3"
@@ -118,19 +118,18 @@ publisher {
     }
     prod {
         target = "mavenCentral"
-        customGradleCommand = "publishToMavenCentralPortal"
     }
 
+    alterProjectVersion = false
     usernameProperty = "mavenCentralUsername"
     passwordProperty = "mavenCentralPassword"
-    releaseBranchPatterns = listOf("main", "^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
+    releaseBranchPatterns = listOf("^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
 }
 
 spotless {
     kotlin {
         target("src/**/*.kt")
         ktlint() // or prettier, diktat, etc.
-        targetExclude("src/test/**/*.kt")
         licenseHeader(
             """/*
  * Copyright 2025 GuidoZuccarelli

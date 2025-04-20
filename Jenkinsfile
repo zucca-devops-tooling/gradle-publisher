@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         GRADLE_OPTS = '-Dorg.gradle.jvmargs="-Xmx2g -XX:+HeapDumpOnOutOfMemoryError"'
+
+        JFROG_CREDENTIALS  = credentials('jfrog-credentials')
     }
 
     stages {
@@ -14,84 +16,83 @@ pipeline {
 
         stage('Build') {
             steps {
-
-                withCredentials([
-                    usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASS'),
-                    usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
-                ]) {
-                     sh """#!/bin/bash
-
-                         ./gradlew clean build -x test --refresh-dependencies --info \\
-                             -PmavenCentralUsername=\$OSSRH_USER \\
-                             -PmavenCentralPassword=\$OSSRH_PASS \\
-                             -PjfrogUser=\$JFROG_USER \\
-                             -PjfrogPassword=\$JFROG_PASS
-                     """
-                }
+                sh '''
+                    set -euo pipefail
+                    ./gradlew clean assemble --refresh-dependencies --info \
+                        -PjfrogUser=$JFROG_CREDENTIALS_USR \
+                        -PjfrogPassword=$JFROG_CREDENTIALS_PSW \
+                '''
             }
         }
-        stage('test') {
+
+        stage('Spotless') {
             steps {
-                sh "./gradlew test"
+                sh './gradlew check'
             }
         }
-        stage('Publish Artifacts') {
-            when {
-                not {
-                    branch 'main'
-                }
+
+
+        stage('Test') {
+            steps {
+                sh './gradlew test'
+            }
+        }
+
+        stage('Publish to Maven repository') {
+            environment {
+                GPG_KEY_ID    = credentials('GPG_KEY_ID')
+                GPG_KEY_PASS  = credentials('GPG_KEY_PASS')
+
+                OSSRH_CREDENTIALS  = credentials('OSSRH_CREDENTIALS')
             }
             steps {
                 withCredentials([
-                    file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH'),
-                    string(credentialsId: 'GPG_KEY_ID', variable: 'GPG_KEY_ID'),
-                    string(credentialsId: 'GPG_KEY_PASS', variable: 'GPG_KEY_PASS'),
-                    usernamePassword(credentialsId: 'jfrog-credentials', usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASS'),
-                    usernamePassword(credentialsId: 'OSSRH_CREDENTIALS', usernameVariable: 'OSSRH_USER', passwordVariable: 'OSSRH_PASS')
+                    file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH')
                 ]) {
-                    sh """#!/bin/bash
+                    sh '''
                         set -euo pipefail
 
-                        echo "🔐 Reading secret key into memory..."
-                        export GPG_ASC_ARMOR="\$(cat \$GPG_KEY_PATH)"
+                        export GPG_ASC_ARMOR="$(cat $GPG_KEY_PATH)"
 
-
-                        ./gradlew publish --info \\
-                            "-Psigning.keyId=\$GPG_KEY_ID" \\
-                            "-Psigning.password=\$GPG_KEY_PASS" \\
-                            "-Psigning.secretKeyRingFile=\$GPG_KEY_PATH" \\
-                            "-PmavenCentralUsername=\$OSSRH_USER" \\
-                            "-PmavenCentralPassword=\$OSSRH_PASS" \\
-                            "-PjfrogUser=\$JFROG_USER" \\
-                            "-PjfrogPassword=\$JFROG_PASS"
-                    """
+                        ./gradlew publish --info \
+                            -Psigning.keyId=$GPG_KEY_ID \
+                            -Psigning.password=$GPG_KEY_PASS \
+                            -Psigning.secretKeyRingFile=$GPG_KEY_PATH \
+                            -PjfrogUser=$JFROG_CREDENTIALS_USR \
+                            -PjfrogPassword=$JFROG_CREDENTIALS_PSW \
+                            -PmavenCentralUsername=$OSSRH_CREDENTIALS_USR \
+                            -PmavenCentralPassword=$OSSRH_CREDENTIALS_PSW
+                    '''
                 }
             }
         }
-        stage('Publish plugin to gradle portal') {
+
+        stage('Publish to Gradle Plugin Portal') {
             when {
                 branch 'main'
             }
+            environment {
+                GPG_KEY_ID            = credentials('GPG_KEY_ID')
+                GPG_KEY_PASS          = credentials('GPG_KEY_PASS')
+                GRADLE_PORTAL_KEY     = credentials('GRADLE_PUBLISH_KEY')
+                GRADLE_PORTAL_SECRET  = credentials('GRADLE_PUBLISH_SECRET')
+            }
             steps {
                 withCredentials([
-                    file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH'),
-                    string(credentialsId: 'GPG_KEY_ID', variable: 'GPG_KEY_ID'),
-                    string(credentialsId: 'GPG_KEY_PASS', variable: 'GPG_KEY_PASS'),
-                    string(credentialsId: 'GRADLE_PUBLISH_KEY', variable: 'GRADLE_PUBLISH_KEY'),
-                    string(credentialsId: 'GRADLE_PUBLISH_SECRET', variable: 'GRADLE_PUBLISH_SECRET')
+                    file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH')
                 ]) {
-                    sh """#!/bin/bash
+                    sh '''
                         set -euo pipefail
 
-                        echo "🔐 Reading secret key into memory..."
-                        export GPG_ASC_ARMOR="\$(cat \$GPG_KEY_PATH)"
+                        export GPG_ASC_ARMOR="$(cat $GPG_KEY_PATH)"
 
-
-                        ./gradlew publishPlugins --info \\
-                            "-Psigning.keyId=\$GPG_KEY_ID" \\
-                            "-Psigning.password=\$GPG_KEY_PASS" \\
-                            "-Psigning.secretKeyRingFile=\$GPG_KEY_PATH" \\
-                    """
+                        ./gradlew publishPlugins --info \
+                            -Psigning.keyId=$GPG_KEY_ID \
+                            -Psigning.password=$GPG_KEY_PASS \
+                            -Psigning.secretKeyRingFile=$GPG_KEY_PATH \
+                            -Pgradle.publish.key=$GRADLE_PORTAL_KEY \
+                            -Pgradle.publish.secret=$GRADLE_PORTAL_SECRET
+                    '''
                 }
             }
         }
