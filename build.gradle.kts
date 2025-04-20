@@ -128,7 +128,7 @@ publisher {
 
 spotless {
     kotlin {
-        target("src/**/*.kt")
+        target("src/main/**/*.kt")
         ktlint() // or prettier, diktat, etc.
         licenseHeader(
             """/*
