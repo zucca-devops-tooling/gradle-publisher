@@ -13,32 +13,53 @@ pipeline {
                 checkout scm
             }
         }
-
         stage('Build') {
             steps {
-                sh '''#!/bin/bash
+                script {
+                    pullRequest.createStatus('PENDING', 'Building the project...', 'build')
+                    try {
+                        sh '''#!/bin/bash
 
-                    set -euo pipefail
-                    ./gradlew clean assemble --refresh-dependencies --info \
-                        -PjfrogUser=$JFROG_CREDENTIALS_USR \
-                        -PjfrogPassword=$JFROG_CREDENTIALS_PSW \
-                '''
+                            set -euo pipefail
+                            ./gradlew clean assemble --refresh-dependencies --info --no-daemon \
+                                -PjfrogUser=$JFROG_CREDENTIALS_USR \
+                                -PjfrogPassword=$JFROG_CREDENTIALS_PSW \
+                        '''
+                        pullRequest.createStatus('SUCCESS', 'Build succeeded', 'build')
+                    } catch (Exception e) {
+                        pullRequest.createStatus('FAILURE', 'Build failed', 'build')
+                        throw e
+                    }
             }
         }
-
         stage('Spotless') {
             steps {
-                sh './gradlew check'
+                script {
+                    pullRequest?.createStatus('PENDING', 'Checking code format...', 'spotless')
+                    try {
+                        sh './gradlew check --no-daemon'
+                        pullRequest?.createStatus('SUCCESS', 'Spotless passed', 'spotless')
+                    } catch (Exception e) {
+                        pullRequest?.createStatus('FAILURE', 'Spotless failed', 'spotless')
+                        throw e
+                    }
+                }
             }
         }
-
-
         stage('Test') {
             steps {
-                sh './gradlew test'
+                script {
+                    pullRequest?.createStatus('PENDING', 'Running tests...', 'test')
+                    try {
+                        sh './gradlew test --no-daemon'
+                        pullRequest?.createStatus('SUCCESS', 'Tests passed', 'test')
+                    } catch (Exception e) {
+                        pullRequest?.createStatus('FAILURE', 'Tests failed', 'test')
+                        throw e
+                    }
+                }
             }
         }
-
         stage('Publish to Maven repository') {
             environment {
                 GPG_KEY_ID    = credentials('GPG_KEY_ID')
@@ -56,7 +77,7 @@ pipeline {
 
                         export GPG_ASC_ARMOR="$(cat $GPG_KEY_PATH)"
 
-                        ./gradlew publish --info \
+                        ./gradlew publish --info --no-daemon \
                             -Psigning.keyId=$GPG_KEY_ID \
                             -Psigning.password=$GPG_KEY_PASS \
                             -Psigning.secretKeyRingFile=$GPG_KEY_PATH \
@@ -65,6 +86,7 @@ pipeline {
                             -PmavenCentralUsername=$OSSRH_CREDENTIALS_USR \
                             -PmavenCentralPassword=$OSSRH_CREDENTIALS_PSW
                     '''
+                    }
                 }
             }
         }
@@ -89,7 +111,7 @@ pipeline {
 
                         export GPG_ASC_ARMOR="$(cat $GPG_KEY_PATH)"
 
-                        ./gradlew publishPlugins --info \
+                        ./gradlew publishPlugins --info --no-daemon \
                             -Psigning.keyId=$GPG_KEY_ID \
                             -Psigning.password=$GPG_KEY_PASS \
                             -Psigning.secretKeyRingFile=$GPG_KEY_PATH \
@@ -100,4 +122,6 @@ pipeline {
             }
         }
     }
+
+
 }
