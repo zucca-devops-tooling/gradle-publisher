@@ -18,10 +18,8 @@ package dev.zuccaops
 import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.repositories.RepositoryPublisher
 import dev.zuccaops.repositories.RepositoryPublisherFactory
-import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.execution.TaskExecutionGraph
 
 /**
  * The main entry point for the Gradle Publisher plugin.
