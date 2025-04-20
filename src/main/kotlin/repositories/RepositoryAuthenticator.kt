@@ -15,6 +15,7 @@
  */
 package dev.zuccaops.repositories
 
+import dev.zuccaops.configuration.Defaults
 import dev.zuccaops.configuration.PluginConfiguration
 import org.gradle.api.Project
 import java.net.Authenticator
@@ -47,8 +48,11 @@ class RepositoryAuthenticator(
         val password: String? = getProdPassword()
 
         if (username != null && password != null) {
+            project.logger.debug("Requesting to repository with credentials")
             return PasswordAuthentication(username, password.toCharArray())
         }
+
+        project.logger.debug("Credentials could not be found, requesting to repository without credentials")
 
         return null
     }
@@ -61,12 +65,12 @@ class RepositoryAuthenticator(
 
     fun getDevPassword(): String? = getPasswordOrFallback(configuration.dev.passwordProperty)
 
-    private fun getUsernameOrFallback(usernamePropertyName: String?): String? =
+    private fun getUsernameOrFallback(usernamePropertyName: String): String? =
         getPropertyOrFallback(usernamePropertyName) {
             getFallbackUsername()
         }
 
-    private fun getPasswordOrFallback(passwordPropertyName: String?): String? =
+    private fun getPasswordOrFallback(passwordPropertyName: String): String? =
         getPropertyOrFallback(passwordPropertyName) {
             getFallbackPassword()
         }
@@ -76,7 +80,7 @@ class RepositoryAuthenticator(
     private fun getFallbackPassword(): String? = getProperty(configuration.passwordProperty)
 
     private fun getPropertyOrFallback(
-        propertyName: String?,
+        propertyName: String,
         fallbackFn: () -> String?,
     ): String? {
         val property: String? = getProperty(propertyName)
@@ -84,5 +88,25 @@ class RepositoryAuthenticator(
         return property ?: fallbackFn()
     }
 
-    private fun getProperty(propertyName: String?): String? = propertyName?.let { project.findProperty(it) as? String }
+    private fun getProperty(propertyName: String): String? {
+        val property = project.findProperty(propertyName)
+
+        if (isDefaultProperty(propertyName)) {
+            project.logger.debug("Credential not configured, attempting to find default: $propertyName")
+        }
+
+        if (property != null) {
+            project.logger.debug("Credential $propertyName found")
+            return property as String
+        }
+
+        if (!isDefaultProperty(propertyName)) {
+            project.logger.warn("⚠️ Configured credential '$propertyName' could not be found")
+        }
+
+        return null
+    }
+
+    private fun isDefaultProperty(propertyName: String): Boolean =
+        propertyName == Defaults.USER_PROPERTY || propertyName == Defaults.PASS_PROPERTY
 }
