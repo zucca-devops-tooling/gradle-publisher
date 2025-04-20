@@ -30,6 +30,7 @@ pipeline {
                         pullRequest.createStatus('FAILURE', 'Build failed', 'build')
                         throw e
                     }
+                }
             }
         }
         stage('Spotless') {
