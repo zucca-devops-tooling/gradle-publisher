@@ -33,6 +33,7 @@ kotlin {
     jvmToolchain(17)
 }
 
+@Suppress("UnstableApiUsage")
 gradlePlugin {
     website = "https://github.com/zucca-devops-tooling/gradle-publisher"
     vcsUrl = "https://github.com/zucca-devops-tooling/gradle-publisher.git"
