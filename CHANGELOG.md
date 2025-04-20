@@ -6,9 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+### Breaking change
+- The `alterProjectVersion` setting **no longer** prevents `project.version` from being modified during the execution of `publish` task.
+- This change ensures consistent versioning across all publications, including non-Maven ones (e.g., plugin marker publications).
+
 ### Changed
-- Plugin logic now only executes when the `publish` task is explicitly requested (`./gradlew publish`)
+- Plugin publishing configuration now executes **only** when the `publish` task is explicitly requested (`./gradlew publish`)
 - This avoids side effects during unrelated tasks like `build` or `test`
+- The plugin still computes the project version during all Gradle tasks, but applies it **only when required**.
 
 ### Highlights
 - Finalizes stable publishing flow
