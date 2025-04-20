@@ -65,7 +65,6 @@ pipeline {
             environment {
                 GPG_KEY_ID    = credentials('GPG_KEY_ID')
                 GPG_KEY_PASS  = credentials('GPG_KEY_PASS')
-
                 OSSRH_CREDENTIALS  = credentials('OSSRH_CREDENTIALS')
             }
             steps {
@@ -73,7 +72,6 @@ pipeline {
                     file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH')
                 ]) {
                     sh '''#!/bin/bash
-
                         set -euo pipefail
 
                         export GPG_ASC_ARMOR="$(cat $GPG_KEY_PATH)"
@@ -87,7 +85,6 @@ pipeline {
                             -PmavenCentralUsername=$OSSRH_CREDENTIALS_USR \
                             -PmavenCentralPassword=$OSSRH_CREDENTIALS_PSW
                     '''
-                    }
                 }
             }
         }
@@ -123,6 +120,4 @@ pipeline {
             }
         }
     }
-
-
 }
