@@ -16,7 +16,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    pullRequest.createStatus('PENDING', 'Building the project...', 'build')
+                    setGitHubPullRequestStatus context: 'build', status: 'PENDING', message: 'Building the project...'
                     try {
                         sh '''#!/bin/bash
 
@@ -25,9 +25,9 @@ pipeline {
                                 -PjfrogUser=$JFROG_CREDENTIALS_USR \
                                 -PjfrogPassword=$JFROG_CREDENTIALS_PSW \
                         '''
-                        pullRequest.createStatus('SUCCESS', 'Build succeeded', 'build')
+                        setGitHubPullRequestStatus context: 'build', status: 'SUCCESS', message: 'Build succeeded'
                     } catch (Exception e) {
-                        pullRequest.createStatus('FAILURE', 'Build failed', 'build')
+                        setGitHubPullRequestStatus context: 'build', status: 'FAILURE', message: 'Build failed'
                         throw e
                     }
                 }
@@ -36,12 +36,12 @@ pipeline {
         stage('Spotless') {
             steps {
                 script {
-                    pullRequest?.createStatus('PENDING', 'Checking code format...', 'spotless')
+                    setGitHubPullRequestStatus context: 'spotless', status: 'PENDING', message: 'Checking code format...'
                     try {
                         sh './gradlew check --no-daemon'
-                        pullRequest?.createStatus('SUCCESS', 'Spotless passed', 'spotless')
+                        setGitHubPullRequestStatus context: 'spotless', status: 'SUCCESS', message: 'Spotless passed'
                     } catch (Exception e) {
-                        pullRequest?.createStatus('FAILURE', 'Spotless failed', 'spotless')
+                        setGitHubPullRequestStatus context: 'spotless', status: 'FAILURE', message: 'Spotless failed'
                         throw e
                     }
                 }
@@ -50,12 +50,12 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    pullRequest?.createStatus('PENDING', 'Running tests...', 'test')
+                    setGitHubPullRequestStatus context: 'test', status: 'PENDING', message: 'Running tests...'
                     try {
                         sh './gradlew test --no-daemon'
-                        pullRequest?.createStatus('SUCCESS', 'Tests passed', 'test')
+                        setGitHubPullRequestStatus context: 'test', status: 'SUCCESS', message: 'Tests passed'
                     } catch (Exception e) {
-                        pullRequest?.createStatus('FAILURE', 'Tests failed', 'test')
+                        setGitHubPullRequestStatus context: 'test', status: 'FAILURE', message: 'Tests failed'
                         throw e
                     }
                 }
