@@ -17,6 +17,14 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Debug') {
+            steps {
+                script {
+                  echo "Repo: ${scm.getUserRemoteConfigs()?.first()?.getUrl()}"
+                  echo "Change ID: ${env.CHANGE_ID}"
+                }
+            }
+        }
         stage('Build') {
             steps {
                 script {
