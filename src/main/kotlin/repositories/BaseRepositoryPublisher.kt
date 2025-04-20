@@ -79,7 +79,11 @@ abstract class BaseRepositoryPublisher(
     /**
      * Select a set of tasks from the project to conditionally skip them
      */
-    private fun <T : Task> skipTasks(taskType: Class<T>, shouldSkip: Boolean, headerText: String) {
+    private fun <T : Task> skipTasks(
+        taskType: Class<T>,
+        shouldSkip: Boolean,
+        headerText: String,
+    ) {
         project.logger.debug("Checking if {} tasks should be disabled", taskType)
         if (shouldSkip) {
             val tasks = project.tasks.withType(taskType)
