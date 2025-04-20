@@ -16,8 +16,8 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh '''
-                    #!/bin/bash
+                sh '''#!/bin/bash
+
                     set -euo pipefail
                     ./gradlew clean assemble --refresh-dependencies --info \
                         -PjfrogUser=$JFROG_CREDENTIALS_USR \
@@ -50,8 +50,8 @@ pipeline {
                 withCredentials([
                     file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH')
                 ]) {
-                    sh '''
-                        #!/bin/bash
+                    sh '''#!/bin/bash
+
                         set -euo pipefail
 
                         export GPG_ASC_ARMOR="$(cat $GPG_KEY_PATH)"
@@ -83,8 +83,8 @@ pipeline {
                 withCredentials([
                     file(credentialsId: 'GPG_SECRET_KEY', variable: 'GPG_KEY_PATH')
                 ]) {
-                    sh '''
-                        #!/bin/bash
+                    sh '''#!/bin/bash
+
                         set -euo pipefail
 
                         export GPG_ASC_ARMOR="$(cat $GPG_KEY_PATH)"
