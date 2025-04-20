@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.1.20"
     `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "0.1.0"
+    id("dev.zucca-ops.gradle-publisher") version "0.1.1"
     id("java-gradle-plugin")
     signing
     id("com.diffplug.spotless") version "7.0.3"
@@ -33,6 +33,7 @@ kotlin {
     jvmToolchain(17)
 }
 
+@Suppress("UnstableApiUsage")
 gradlePlugin {
     website = "https://github.com/zucca-devops-tooling/gradle-publisher"
     vcsUrl = "https://github.com/zucca-devops-tooling/gradle-publisher.git"

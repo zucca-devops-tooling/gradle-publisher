@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Plugin logic now only executes when the `publish` task is explicitly requested (`./gradlew publish`)
+- This avoids side effects during unrelated tasks like `build` or `test`
+
+### Highlights
+- Finalizes stable publishing flow
+
 ## [0.1.1] - 2025-04-20
 ### Added
 - Configuration validation to prevent the plugin from running in an invalid or incomplete state

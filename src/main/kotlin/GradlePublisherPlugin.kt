@@ -41,15 +41,19 @@ class GradlePublisherPlugin : Plugin<Project> {
         target.plugins.apply("maven-publish")
 
         target.tasks.named("publish") {
-            logger.debug("Ensuring 'publish' depends on 'build'")
-            dependsOn(target.tasks.named("build"))
+            logger.debug("Ensuring 'publish' depends on 'assemble'")
+            dependsOn(target.tasks.named("assemble"))
         }
 
         target.afterEvaluate {
-            logger.info("Plugin configuration: $configuration")
-            val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
+            val requestedTasks = gradle.startParameter.taskNames
 
-            repositoryPublisher.configurePublishingRepository()
+            if (requestedTasks.any { it.contains("publish", ignoreCase = true) }) {
+                logger.info("Plugin configuration: $configuration")
+                val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
+
+                repositoryPublisher.configurePublishingRepository()
+            }
         }
     }
 }
