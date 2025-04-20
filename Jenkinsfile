@@ -1,3 +1,7 @@
+properties([
+  githubProjectProperty(projectUrlStr: 'https://github.com/zucca-devops-tooling/gradle-publisher')
+])
+
 pipeline {
     agent any
 
@@ -13,14 +17,6 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Debug') {
-              steps {
-                script {
-                  echo "CHANGE_ID: ${env.CHANGE_ID}"
-                  echo "GIT_URL: ${scm.getUserRemoteConfigs()?.first()?.getUrl()}"
-                }
-              }
-            }
         stage('Build') {
             steps {
                 script {
