@@ -91,7 +91,7 @@ pipeline {
 
         stage('Publish to Gradle Plugin Portal') {
             when {
-                branch 'PR-36'
+                branch 'main'
             }
             environment {
                 GPG_KEY_ID            = credentials('GPG_KEY_ID')
