@@ -16,7 +16,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    setStatus context: 'build', state: 'PENDING', message: 'Building the project...'
+                    setStatus('build','PENDING','Building the project...')
                     try {
                         sh '''#!/bin/bash
 
@@ -25,9 +25,9 @@ pipeline {
                                 -PjfrogUser=$JFROG_CREDENTIALS_USR \
                                 -PjfrogPassword=$JFROG_CREDENTIALS_PSW \
                         '''
-                        setStatus context: 'build', state: 'SUCCESS', message: 'Build succeeded'
+                        setStatus('build','SUCCESS','Build succeeded')
                     } catch (Exception e) {
-                        setStatus context: 'build', state: 'FAILURE', message: 'Build failed'
+                        setStatus('build','FAILURE','Build failed')
                         throw e
                     }
                 }
@@ -36,12 +36,12 @@ pipeline {
         stage('Spotless') {
             steps {
                 script {
-                    setStatus context: 'spotless', state: 'PENDING', message: 'Checking code format...'
+                    setStatus('spotless','PENDING','Checking code format...')
                     try {
                         sh './gradlew check --no-daemon'
-                        setStatus context: 'spotless', state: 'SUCCESS', message: 'Spotless passed'
+                        setStatus('spotless','SUCCESS','Spotless passed')
                     } catch (Exception e) {
-                        setStatus context: 'spotless', state: 'FAILURE', message: 'Spotless failed'
+                        setStatus('spotless','FAILURE','Spotless failed')
                         throw e
                     }
                 }
@@ -50,12 +50,12 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    setStatus context: 'test', state: 'PENDING', message: 'Running tests...'
+                    setStatus('test','PENDING','Running tests...')
                     try {
                         sh './gradlew test --no-daemon'
-                        setStatus context: 'test', state: 'SUCCESS', message: 'Tests passed'
+                        setStatus('test','SUCCESS','Tests passed')
                     } catch (Exception e) {
-                        setStatus context: 'test', state: 'FAILURE', message: 'Tests failed'
+                        setStatus('test','FAILURE','Tests failed')
                         throw e
                     }
                 }
