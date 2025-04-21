@@ -124,6 +124,9 @@ publisher {
     usernameProperty = "mavenCentralUsername"
     passwordProperty = "mavenCentralPassword"
     releaseBranchPatterns = listOf("^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
+}
+
+afterEvaluate{
     println("Resolved version: ${publisher.resolvedVersion}")
     println("Effective version: ${publisher.effectiveVersion}")
 }
