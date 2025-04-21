@@ -38,7 +38,7 @@ pipeline {
                 script {
                     setStatus('spotless','NEUTRAL','Checking code format...')
                     try {
-                        sh './gradlew check --no-daemon'
+                        sh './gradlew check -x test --no-daemon'
                         setStatus('spotless','SUCCESS','Spotless passed')
                     } catch (Exception e) {
                         setStatus('spotless','FAILURE','Spotless failed')

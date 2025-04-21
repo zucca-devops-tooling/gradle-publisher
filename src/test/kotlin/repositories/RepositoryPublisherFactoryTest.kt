@@ -9,10 +9,9 @@ import dev.zuccaops.repositories.central.MavenCentralRepositoryPublisher
 import dev.zuccaops.repositories.central.NexusRepositoryPublisher
 import dev.zuccaops.repositories.local.LocalRepositoryPublisher
 import dev.zuccaops.repositories.remote.RemoteRepositoryPublisher
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkConstructor
+import io.mockk.*
 import org.gradle.internal.impldep.org.junit.Assert.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import testutil.TestProjectFactory
 
@@ -20,6 +19,17 @@ class RepositoryPublisherFactoryTest {
 
 
     private val project = TestProjectFactory.create()
+    val config = mockk<PluginConfiguration>(relaxed = true)
+
+
+    @BeforeEach
+    fun setUp() {
+        mockkConstructor(VersionResolver::class)
+        every { anyConstructed<VersionResolver>().getVersion() } returns "1.0.0-snapshot"
+        every { anyConstructed<VersionResolver>().getVersionForProject() } returns "1.0.0"
+        every { config.resolvedVersionInternal = any() } just Runs
+        every { config.effectiveVersionInternal = any() } just Runs
+    }
 
     @Test
     fun `should return RemoteRepositoryPublisher in dev mode`() {
@@ -31,13 +41,10 @@ class RepositoryPublisherFactoryTest {
             every { target } returns "https://example.com/prod"
         }
 
-        val config = mockk<PluginConfiguration> {
-            every { dev } returns devConfig
-            every { prod } returns prodConfig
-            every { gitFolder } returns "."
-        }
+        every { config.dev } returns devConfig
+        every { config.prod } returns prodConfig
+        every { config.gitFolder } returns "."
 
-        mockkConstructor(VersionResolver::class)
         every { anyConstructed<VersionResolver>().isRelease() } returns false
 
         // when
@@ -57,13 +64,10 @@ class RepositoryPublisherFactoryTest {
             every { target } returns RepositoryConstants.MAVEN_CENTRAL_COMMAND
         }
 
-        val config = mockk<PluginConfiguration> {
-            every { dev } returns devConfig
-            every { prod } returns prodConfig
-            every { gitFolder } returns "."
-        }
+        every { config.dev } returns devConfig
+        every { config.prod } returns prodConfig
+        every { config.gitFolder } returns "."
 
-        mockkConstructor(VersionResolver::class)
         every { anyConstructed<VersionResolver>().isRelease() } returns true
 
         // when
@@ -84,13 +88,10 @@ class RepositoryPublisherFactoryTest {
             every { customGradleCommand } returns "closeAndReleaseStagingRepositories"
         }
 
-        val config = mockk<PluginConfiguration> {
-            every { dev } returns devConfig
-            every { prod } returns prodConfig
-            every { gitFolder } returns "."
-        }
+        every { config.dev } returns devConfig
+        every { config.prod } returns prodConfig
+        every { config.gitFolder } returns "."
 
-        mockkConstructor(VersionResolver::class)
         every { anyConstructed<VersionResolver>().isRelease() } returns true
 
         // when
@@ -113,13 +114,10 @@ class RepositoryPublisherFactoryTest {
             every { customGradleCommand } returns "closeAndReleaseStagingRepositories"
         }
 
-        val config = mockk<PluginConfiguration> {
-            every { dev } returns devConfig
-            every { prod } returns prodConfig
-            every { gitFolder } returns "."
-        }
+        every { config.dev } returns devConfig
+        every { config.prod } returns prodConfig
+        every { config.gitFolder } returns "."
 
-        mockkConstructor(VersionResolver::class)
         every { anyConstructed<VersionResolver>().isRelease() } returns false
 
         // when
