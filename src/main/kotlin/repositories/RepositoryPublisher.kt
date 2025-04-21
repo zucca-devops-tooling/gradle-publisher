@@ -28,4 +28,9 @@ interface RepositoryPublisher {
      * Applies the repository-specific publishing configuration to the project.
      */
     fun configurePublishingRepository()
+
+    /**
+     * Sets project.version for every gradle task
+     */
+    fun setProjectVersion()
 }

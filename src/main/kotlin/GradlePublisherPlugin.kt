@@ -48,10 +48,11 @@ class GradlePublisherPlugin : Plugin<Project> {
         target.afterEvaluate {
             val requestedTasks = gradle.startParameter.taskNames
 
-            if (requestedTasks.any { it.contains("publish", ignoreCase = true) }) {
-                logger.info("Plugin configuration: $configuration")
-                val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
+            logger.info("Gradle Publisher Plugin configuration: $configuration")
+            val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
+            repositoryPublisher.setProjectVersion()
 
+            if (requestedTasks.any { it.contains("publish", ignoreCase = true) }) {
                 repositoryPublisher.configurePublishingRepository()
             }
         }
