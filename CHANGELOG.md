@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - The `alterProjectVersion` setting **no longer** prevents `project.version` from being modified during the execution of `publish` task.
 - This change ensures consistent versioning across all publications, including non-Maven ones (e.g., plugin marker publications).
 
+### Added
+- `publisher.resolvedVersion` property: exposes the computed version (e.g., `1.0.0-feature-branch-SNAPSHOT`), **ignores** `alterProjectVersion`.
+- `publisher.effectiveVersion` property: exposes the version that **respects** `alterProjectVersion`.
+
 ### Changed
 - Plugin publishing configuration now executes **only** when the `publish` task is explicitly requested (`./gradlew publish`)
 - This avoids side effects during unrelated tasks like `build` or `test`
