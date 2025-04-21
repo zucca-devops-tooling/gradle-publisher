@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### 🐞 Fixed
+- Plugin no longer performs unnecessary publishing configuration when unrelated tasks (e.g., `publishPlugins`) are requested.
+- Now evaluates publishing logic **only** when the exact `publish` task is included in the requested task graph.
 
 ## [1.0.0] - 2025-04-21
 ### ⚠️ Breaking Change
