@@ -126,11 +126,6 @@ publisher {
     releaseBranchPatterns = listOf("^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
 }
 
-afterEvaluate{
-    println("Resolved version: ${publisher.resolvedVersion}")
-    println("Effective version: ${publisher.effectiveVersion}")
-}
-
 spotless {
     kotlin {
         target("src/main/**/*.kt")
