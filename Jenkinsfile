@@ -16,7 +16,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    setStatus('build','PENDING','Building the project...')
+                    setStatus('build',null,'Building the project...')
                     try {
                         sh '''#!/bin/bash
 
@@ -36,7 +36,7 @@ pipeline {
         stage('Spotless') {
             steps {
                 script {
-                    setStatus('spotless','PENDING','Checking code format...')
+                    setStatus('spotless',null,'Checking code format...')
                     try {
                         sh './gradlew check --no-daemon'
                         setStatus('spotless','SUCCESS','Spotless passed')
@@ -50,7 +50,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    setStatus('test','PENDING','Running tests...')
+                    setStatus('test',null,'Running tests...')
                     try {
                         sh './gradlew test --no-daemon'
                         setStatus('test','SUCCESS','Tests passed')
