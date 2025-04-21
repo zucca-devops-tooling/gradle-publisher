@@ -47,52 +47,80 @@ import javax.inject.Inject
  * @author Guido Zuccarelli
  */
 open class PluginConfiguration
-    @Inject
-    constructor(
-        objects: ObjectFactory,
-    ) {
-        val dev = objects.newInstance(RepositoryConfig::class.java)
-        val prod = objects.newInstance(RepositoryConfig::class.java)
+@Inject
+constructor(
+    objects: ObjectFactory,
+) {
+    internal var resolvedVersionInternal: String? = null
+    internal var effectiveVersionInternal: String? = null
 
-        /**
-         * Configure development repository.
-         */
-        fun dev(configure: RepositoryConfig.() -> Unit) {
-            dev.configure()
-        }
+    /**
+     * The fully resolved version based on branch context and plugin rules.
+     *
+     * This value is computed by the plugin after project evaluation.
+     * Accessing it before evaluation will result in an error.
+     *
+     * Always returns the full version (e.g., `1.2.3-feature-X-SNAPSHOT`)
+     * regardless of `alterProjectVersion`.
+     */
+    val resolvedVersion: String
+        get() = resolvedVersionInternal
+            ?: error("resolvedVersion is not available yet — plugin has not been evaluated")
 
-        /**
-         * Configure production repository.
-         */
-        fun prod(configure: RepositoryConfig.() -> Unit) {
-            prod.configure()
-        }
+    /**
+     * The version that was or will be applied to the project.
+     *
+     * - If `alterProjectVersion = true`, this will match `resolvedVersion`.
+     * - If `alterProjectVersion = false`, this will return the static `project.version`.
+     *
+     * Computed by the plugin after evaluation.
+     */
+    val effectiveVersion: String
+        get() = effectiveVersionInternal
+            ?: error("effectiveVersion is not available yet — plugin has not been evaluated")
 
-        /** Global fallback username property (used if not defined in `dev` or `prod`) */
-        var usernameProperty: String = Defaults.USER_PROPERTY
+    val dev = objects.newInstance(RepositoryConfig::class.java)
+    val prod = objects.newInstance(RepositoryConfig::class.java)
 
-        /** Global fallback password property (used if not defined in `dev` or `prod`) */
-        var passwordProperty: String = Defaults.PASS_PROPERTY
-
-        /** Folder containing the `.git` directory (relative to project root) */
-        var gitFolder: String = Defaults.GIT_FOLDER
-
-        /** List of regex patterns to identify release branches */
-        var releaseBranchPatterns: List<String> = Defaults.RELEASE_BRANCH_REGEXES
-
-        /** If true, the plugin modifies the project version on non-release branches */
-        var alterProjectVersion: Boolean = Defaults.ALTER_PROJECT_VERSION
-
-        override fun toString(): String =
-            buildString {
-                appendLine("PluginConfiguration(")
-                appendLine("  dev = $dev")
-                appendLine("  prod = $dev")
-                appendLine("  usernameProperty = $usernameProperty")
-                appendLine("  passwordProperty = $passwordProperty")
-                appendLine("  releaseBranchPatterns = $releaseBranchPatterns")
-                appendLine("  gitFolder = $gitFolder")
-                appendLine("  alterProjectVersion = $alterProjectVersion")
-                append(")")
-            }
+    /**
+     * Configure development repository.
+     */
+    fun dev(configure: RepositoryConfig.() -> Unit) {
+        dev.configure()
     }
+
+    /**
+     * Configure production repository.
+     */
+    fun prod(configure: RepositoryConfig.() -> Unit) {
+        prod.configure()
+    }
+
+    /** Global fallback username property (used if not defined in `dev` or `prod`) */
+    var usernameProperty: String = Defaults.USER_PROPERTY
+
+    /** Global fallback password property (used if not defined in `dev` or `prod`) */
+    var passwordProperty: String = Defaults.PASS_PROPERTY
+
+    /** Folder containing the `.git` directory (relative to project root) */
+    var gitFolder: String = Defaults.GIT_FOLDER
+
+    /** List of regex patterns to identify release branches */
+    var releaseBranchPatterns: List<String> = Defaults.RELEASE_BRANCH_REGEXES
+
+    /** If true, the plugin modifies the project version on non-release branches */
+    var alterProjectVersion: Boolean = Defaults.ALTER_PROJECT_VERSION
+
+    override fun toString(): String =
+        buildString {
+            appendLine("PluginConfiguration(")
+            appendLine("  dev = $dev")
+            appendLine("  prod = $dev")
+            appendLine("  usernameProperty = $usernameProperty")
+            appendLine("  passwordProperty = $passwordProperty")
+            appendLine("  releaseBranchPatterns = $releaseBranchPatterns")
+            appendLine("  gitFolder = $gitFolder")
+            appendLine("  alterProjectVersion = $alterProjectVersion")
+            append(")")
+        }
+}
