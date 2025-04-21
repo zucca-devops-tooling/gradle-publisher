@@ -45,6 +45,8 @@ object RepositoryPublisherFactory {
         configuration: PluginConfiguration,
     ): RepositoryPublisher {
         val versionResolver = VersionResolver(project, configuration)
+        configuration.resolvedVersionInternal = versionResolver.getVersion()
+        configuration.effectiveVersionInternal = versionResolver.getVersionForProject()
         val repositoryConfig: RepositoryConfig = if (versionResolver.isRelease()) configuration.prod else configuration.dev
 
         val repositoryAuthenticator = RepositoryAuthenticator(project, configuration)

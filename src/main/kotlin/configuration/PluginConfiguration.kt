@@ -51,6 +51,36 @@ open class PluginConfiguration
     constructor(
         objects: ObjectFactory,
     ) {
+        internal var resolvedVersionInternal: String? = null
+        internal var effectiveVersionInternal: String? = null
+
+        /**
+         * The fully resolved version based on branch context and plugin rules.
+         *
+         * This value is computed by the plugin after project evaluation.
+         * Accessing it before evaluation will result in an error.
+         *
+         * Always returns the full version (e.g., `1.2.3-feature-X-SNAPSHOT`)
+         * regardless of `alterProjectVersion`.
+         */
+        val resolvedVersion: String
+            get() =
+                resolvedVersionInternal
+                    ?: error("resolvedVersion is not available yet — plugin has not been evaluated")
+
+        /**
+         * The version that was or will be applied to the project.
+         *
+         * - If `alterProjectVersion = true`, this will match `resolvedVersion`.
+         * - If `alterProjectVersion = false`, this will return the static `project.version`.
+         *
+         * Computed by the plugin after evaluation.
+         */
+        val effectiveVersion: String
+            get() =
+                effectiveVersionInternal
+                    ?: error("effectiveVersion is not available yet — plugin has not been evaluated")
+
         val dev = objects.newInstance(RepositoryConfig::class.java)
         val prod = objects.newInstance(RepositoryConfig::class.java)
 
