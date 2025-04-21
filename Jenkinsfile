@@ -50,7 +50,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    setStatus('test','neutral','Running tests...')
+                    setStatus('test','NEUTRAL','Running tests...')
                     try {
                         sh './gradlew test --no-daemon'
                         setStatus('test','SUCCESS','Tests passed')
@@ -123,8 +123,5 @@ pipeline {
 }
 
 def setStatus(context, status, message) {
-    publishChecks name: context, conclusion: status, output: [
-        title: 'Jenkins CI',
-        summary: message
-    ]
+    publishChecks name: context, conclusion: status, title: 'Jenkins CI', summary: message
 }
