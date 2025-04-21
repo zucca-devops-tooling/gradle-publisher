@@ -22,7 +22,7 @@ Apply the plugin:
 
 ```kotlin
 plugins {
-  id("dev.zucca-ops.gradle-publisher") version "0.1.1"
+  id("dev.zucca-ops.gradle-publisher") version "1.0.0"
 }
 ```
 
@@ -30,7 +30,7 @@ Minimal configuration (defaults `target` to `local` if omitted):
 
 ```kotlin
 publisher {
-  prod { target = "https://your-prod-repo-url" }
+    prod { target = "https://your-prod-repo-url" }
 }
 ```
 
@@ -66,11 +66,11 @@ Example:
 
 ```kotlin
 publisher {
-  usernameProperty = "globalUser"
-  passwordProperty = "globalPass"
+    usernameProperty = "globalUser"
+    passwordProperty = "globalPass"
 
-  dev { target = "https://dev-repo-url" }
-  prod { target = "https://prod-repo-url" }
+    dev { target = "https://dev-repo-url" }
+    prod { target = "https://prod-repo-url" }
 }
 ```
 
@@ -141,39 +141,16 @@ Automatically disables signing and publishes to `~/.m2/repository`.
 
 ## 🔧 Advanced Configuration
 
-### Skipping GPG Signing
+### Altering Project Version (`alterProjectVersion`)
 
-Disable GPG signing for environments where signing isn't required, typically dev or local:
+The `alterProjectVersion` setting determines if the plugin should modify `project.version` directly:
 
-```kotlin
-dev {
-    target = "dev-repo-url"
-    sign = false
-}
-```
+- If `true` (default):  
+  `project.version` is modified to the computed version during all Gradle tasks.
+- If `false`:  
+  `project.version` remains unchanged for most Gradle tasks, except during the `publish` task, where it temporarily changes to ensure consistent publications.
 
-### Custom POM Configuration
-
-Customizing the POM is necessary when publishing to repositories like Maven Central:
-
-```kotlin
-publishing {
-    publications.withType<MavenPublication>().configureEach {
-        pom {
-            name.set("...")
-            description.set("...")
-            url.set("...")
-            licenses { /*...*/ }
-            developers { /*...*/ }
-            scm { /*...*/ }
-        }
-    }
-}
-```
-
-### Altering Project Version
-
-To prevent the plugin from modifying `project.version` directly, set `alterProjectVersion` to `false`:
+Example:
 
 ```kotlin
 publisher {
@@ -181,7 +158,22 @@ publisher {
 }
 ```
 
-This allows the plugin to compute a version internally without altering the project's version, useful for `afterEvaluate` scenarios.
+**Important:** The computed `project.version` and the following properties can only be accessed after the Gradle configuration phase (`afterEvaluate`).
+
+### Accessing Computed Versions
+
+- **`publisher.resolvedVersion`**: Always exposes the computed version (ignores `alterProjectVersion`). Useful for tagging or metadata.
+- **`publisher.effectiveVersion`**: Exposes the version respecting `alterProjectVersion`. Matches `project.version` behavior, except during the `publish` task when `alterProjectVersion` is `false`.
+
+Example usage:
+
+```kotlin
+afterEvaluate {
+    println("Resolved version: ${publisher.resolvedVersion}")
+    println("Effective version: ${publisher.effectiveVersion}")
+    println("Project version: ${project.version}")
+}
+```
 
 ---
 
