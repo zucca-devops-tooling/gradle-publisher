@@ -16,7 +16,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    setGitHubPullRequestStatus context: 'build', state: 'PENDING', message: 'Building the project...'
+                    setStatus('build','NEUTRAL','Building the project...')
                     try {
                         sh '''#!/bin/bash
 
@@ -25,9 +25,9 @@ pipeline {
                                 -PjfrogUser=$JFROG_CREDENTIALS_USR \
                                 -PjfrogPassword=$JFROG_CREDENTIALS_PSW \
                         '''
-                        setGitHubPullRequestStatus context: 'build', state: 'SUCCESS', message: 'Build succeeded'
+                        setStatus('build','SUCCESS','Build succeeded')
                     } catch (Exception e) {
-                        setGitHubPullRequestStatus context: 'build', state: 'FAILURE', message: 'Build failed'
+                        setStatus('build','FAILURE','Build failed')
                         throw e
                     }
                 }
@@ -36,12 +36,12 @@ pipeline {
         stage('Spotless') {
             steps {
                 script {
-                    setGitHubPullRequestStatus context: 'spotless', state: 'PENDING', message: 'Checking code format...'
+                    setStatus('spotless','NEUTRAL','Checking code format...')
                     try {
                         sh './gradlew check --no-daemon'
-                        setGitHubPullRequestStatus context: 'spotless', state: 'SUCCESS', message: 'Spotless passed'
+                        setStatus('spotless','SUCCESS','Spotless passed')
                     } catch (Exception e) {
-                        setGitHubPullRequestStatus context: 'spotless', state: 'FAILURE', message: 'Spotless failed'
+                        setStatus('spotless','FAILURE','Spotless failed')
                         throw e
                     }
                 }
@@ -50,12 +50,12 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    setGitHubPullRequestStatus context: 'test', state: 'PENDING', message: 'Running tests...'
+                    setStatus('test','NEUTRAL','Running tests...')
                     try {
                         sh './gradlew test --no-daemon'
-                        setGitHubPullRequestStatus context: 'test', state: 'SUCCESS', message: 'Tests passed'
+                        setStatus('test','SUCCESS','Tests passed')
                     } catch (Exception e) {
-                        setGitHubPullRequestStatus context: 'test', state: 'FAILURE', message: 'Tests failed'
+                        setStatus('test','FAILURE','Tests failed')
                         throw e
                     }
                 }
@@ -120,4 +120,8 @@ pipeline {
             }
         }
     }
+}
+
+def setStatus(context, status, message) {
+    publishChecks name: context, conclusion: status, title: 'Jenkins CI', summary: message
 }
