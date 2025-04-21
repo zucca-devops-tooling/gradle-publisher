@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.1.20"
     `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "0.1.0"
+    id("dev.zucca-ops.gradle-publisher") version "0.1.1-PR-30-SNAPSHOT"
     id("java-gradle-plugin")
     signing
     id("com.diffplug.spotless") version "7.0.3"
@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "dev.zucca-ops"
-version = "0.1.1"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -33,6 +33,7 @@ kotlin {
     jvmToolchain(17)
 }
 
+@Suppress("UnstableApiUsage")
 gradlePlugin {
     website = "https://github.com/zucca-devops-tooling/gradle-publisher"
     vcsUrl = "https://github.com/zucca-devops-tooling/gradle-publisher.git"
@@ -117,19 +118,18 @@ publisher {
     }
     prod {
         target = "mavenCentral"
-        customGradleCommand = "publishToMavenCentralPortal"
     }
 
+    alterProjectVersion = false
     usernameProperty = "mavenCentralUsername"
     passwordProperty = "mavenCentralPassword"
-    releaseBranchPatterns = listOf("main", "^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
+    releaseBranchPatterns = listOf("^release/\\d+\\.\\d+\\.\\d+$", "^hotfix/\\d+\\.\\d+\\.\\d+$")
 }
 
 spotless {
     kotlin {
-        target("src/**/*.kt")
+        target("src/main/**/*.kt")
         ktlint() // or prettier, diktat, etc.
-        targetExclude("src/test/**/*.kt")
         licenseHeader(
             """/*
  * Copyright 2025 GuidoZuccarelli
