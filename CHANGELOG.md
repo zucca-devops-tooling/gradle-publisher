@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-04-21
 ### ⚠️ Breaking Change
 - `alterProjectVersion` no longer prevents `project.version` from being updated during the `publish` task.
     - Ensures consistent versioning for all publications, including plugin marker publications.
@@ -45,7 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Initial release with Git Flow setup.
 - CHANGELOG.md added.
 
-[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.1.1...v1.0.0
 [0.1.1]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.0.2...v0.1.0
 [0.0.2]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.0.1...v0.0.2
