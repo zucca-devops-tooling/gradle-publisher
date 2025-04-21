@@ -7,41 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Breaking change
-- The `alterProjectVersion` setting **no longer** prevents `project.version` from being modified during the execution of `publish` task.
-- This change ensures consistent versioning across all publications, including non-Maven ones (e.g., plugin marker publications).
+### ⚠️ Breaking Change
+- `alterProjectVersion` no longer prevents `project.version` from being updated during the `publish` task.
+    - Ensures consistent versioning for all publications, including plugin marker publications.
 
-### Added
-- `publisher.resolvedVersion` property: exposes the computed version (e.g., `1.0.0-feature-branch-SNAPSHOT`), **ignores** `alterProjectVersion`.
-- `publisher.effectiveVersion` property: exposes the version that **respects** `alterProjectVersion`.
+### ✨ Added
+- `publisher.resolvedVersion`: Always provides the computed version (e.g., `1.0.0-feature-branch-SNAPSHOT`), ignoring the `alterProjectVersion` setting.
+- `publisher.effectiveVersion`: Provides the computed version respecting the `alterProjectVersion` setting.
 
-### Changed
-- Plugin publishing configuration now executes **only** when the `publish` task is explicitly requested (`./gradlew publish`)
-- This avoids side effects during unrelated tasks like `build` or `test`
-- The plugin still computes the project version during all Gradle tasks, but applies it **only when required**.
+### 🔄 Changed
+- Plugin publishing configuration is now executed **only** when explicitly invoking the `publish` task (`./gradlew publish`).
+    - Prevents unintended side effects during unrelated tasks (`build`, `test`, etc.).
+- Version computation continues during all Gradle tasks but applies changes **only when required** (respects `alterProjectVersion`).
 
-### Highlights
-- Finalizes stable publishing flow
+### 🎉 Highlights
+- Stabilized and finalized publishing workflow.
 
 ## [0.1.1] - 2025-04-20
-### Added
+### ✨ Added
 - Configuration validation to prevent the plugin from running in an invalid or incomplete state
 
 ## [0.1.0] - 2025-04-19
-### Added
+### ✨ Added
 - New configuration option: `alterProjectVersion` which when set to false prevents the plugin to modify the project version
 
-### Changed
+### 🔄 Changed
 - Avoid unnecessary third-party plugin application and task execution on non-publishable versions
 
 ## [0.0.2] - 2025-04-19
-### Added
+### ✨ Added
 - Logging across all major plugin operations (e.g. version resolution, repository setup, task routing)
 - Logging for minor configuration details and step-by-step processing
 - Internal efficiency improvements through caching and memoization
 
 ## [0.0.1] - 2025-04-16
-### Added
+### ✨ Added
 - Initial release with Git Flow setup.
 - CHANGELOG.md added.
 
