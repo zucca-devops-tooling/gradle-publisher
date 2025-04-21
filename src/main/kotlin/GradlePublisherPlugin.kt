@@ -52,7 +52,7 @@ class GradlePublisherPlugin : Plugin<Project> {
             val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
             repositoryPublisher.setProjectVersion()
 
-            if (requestedTasks.any { it.contains("publish", ignoreCase = true) }) {
+            if ("publish" in requestedTasks) {
                 repositoryPublisher.configurePublishingRepository()
             }
         }
