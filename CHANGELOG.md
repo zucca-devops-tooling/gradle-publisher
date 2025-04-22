@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+## [1.0.1] - 2025-04-22
 ### 🐞 Fixed
 - Plugin no longer performs unnecessary publishing configuration when unrelated tasks (e.g., `publishPlugins`) are requested.
 - Now evaluates publishing logic **only** when the exact `publish` task is included in the requested task graph.
@@ -49,7 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Initial release with Git Flow setup.
 - CHANGELOG.md added.
 
-[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.1.1...v1.0.0
 [0.1.1]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.0.2...v0.1.0
