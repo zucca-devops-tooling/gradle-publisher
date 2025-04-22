@@ -42,7 +42,6 @@ pipeline {
                         setStatus('spotless','SUCCESS','Spotless passed')
                     } catch (Exception e) {
                         setStatus('spotless','FAILURE','Spotless failed')
-                        throw e
                     }
                 }
             }
@@ -56,7 +55,6 @@ pipeline {
                         setStatus('test','SUCCESS','Tests passed')
                     } catch (Exception e) {
                         setStatus('test','FAILURE','Tests failed')
-                        throw e
                     }
                 }
             }

@@ -52,7 +52,9 @@ class GradlePublisherPlugin : Plugin<Project> {
             val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
             repositoryPublisher.setProjectVersion()
 
-            if (requestedTasks.any { it.contains("publish", ignoreCase = true) }) {
+            logger.info("Checking if publish was called")
+            logger.debug("Requested tasks: {}", requestedTasks)
+            if ("publish" in requestedTasks) {
                 repositoryPublisher.configurePublishingRepository()
             }
         }
