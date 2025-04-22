@@ -13,6 +13,7 @@ The Gradle Publisher Plugin automates CI-based publishing of Gradle artifacts, d
 - 🧠 Intelligent routing to Nexus or Maven Central
 - 🧰 Auto-application/configuration of `maven-publish`
 - 🧾 Automatic publishing extension configuration
+- 🛑 Avoids re-publishing: in prod environments, skips publishing if the version already exists
 
 ---
 
