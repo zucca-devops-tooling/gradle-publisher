@@ -17,9 +17,11 @@ package dev.zuccaops.repositories.remote
 
 import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.helpers.skipTasks
 import dev.zuccaops.repositories.BaseRepositoryPublisher
 import dev.zuccaops.repositories.RepositoryAuthenticator
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
 import java.io.FileNotFoundException
@@ -105,19 +107,11 @@ class RemoteRepositoryPublisher(
             }
         }
 
-        val nexusTasks =
-            project.tasks
-                .matching { it.name.contains("ToSonatypeRepository") || it.name.contains("SonatypeStaging") }
-
-        nexusTasks.configureEach {
-            if (this.name == nexusTasks.first().name) {
-                project.logger.info("Disabling nexus tasks (by publisher plugin):")
-            }
-            onlyIf {
-                false
-            }
-            project.logger.info("  ⛔ ${this.name}")
+        // Disable nexus tasks in case the nexus plugin its plugin is applied
+        val nexusTaskSelector: (Task) -> Boolean = {
+            it.name.contains("ToSonatypeRepository") || it.name.contains("SonatypeStaging")
         }
+        project.skipTasks(nexusTaskSelector, "Disabling nexus tasks (by publisher plugin):")
     }
 
     private fun getRepoUrl(): String {
