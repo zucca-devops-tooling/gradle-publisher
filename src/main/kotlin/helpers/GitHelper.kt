@@ -62,15 +62,14 @@ class GitHelper(
     }
 
     private fun extractBranchName(output: String): String? {
-        val tagsRef = "refs/tags/*"
+        val tagsRefPrefix = "tag: "
 
-        val onlyBranches = if (output.contains(pointer)) output.substringAfter(pointer) else output
-
-        return onlyBranches
+        return output
+            .substringAfter(pointer)
             .split(separator)
-            .filter { it.contains("/") } // These are branches
-            .filter { it != tagsRef } // We don't consider tags
-            .map { it.substringAfter("/") } // Get rid of `origin/`
+            .map { it.trim() }
+            .filterNot { it.startsWith(tagsRefPrefix) || it == "HEAD" }
+            .map { it.removePrefix("origin/") }
             .firstOrNull()
     }
 
