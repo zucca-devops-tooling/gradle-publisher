@@ -15,6 +15,7 @@
  */
 package dev.zuccaops.configuration
 
+import org.gradle.api.Action
 import org.gradle.api.model.ObjectFactory
 import javax.inject.Inject
 
@@ -87,15 +88,15 @@ open class PluginConfiguration
         /**
          * Configure development repository.
          */
-        fun dev(configure: RepositoryConfig.() -> Unit) {
-            dev.configure()
+        fun dev(configure: Action<RepositoryConfig>) {
+            configure.execute(dev)
         }
 
         /**
          * Configure production repository.
          */
-        fun prod(configure: RepositoryConfig.() -> Unit) {
-            prod.configure()
+        fun prod(configure: Action<RepositoryConfig>) {
+            configure.execute(prod)
         }
 
         /** Global fallback username property (used if not defined in `dev` or `prod`) */
