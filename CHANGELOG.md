@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+## [1.0.1] - 2025-04-26
 ### 🐞 Fixed
 - Gradle incompatibility with nested objects in `publisher` extension
 
@@ -59,7 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Initial release with Git Flow setup.
 - CHANGELOG.md added.
 
-[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.1.1...v1.0.0
 [0.1.1]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.1.0...v0.1.1
