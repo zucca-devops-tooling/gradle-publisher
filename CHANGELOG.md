@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### 🐞 Fixed
+- Gradle incompatibility with nested objects in `publisher` extension
+
+### ✨ Added
+- Support for Git branch detection when using a new local branch that has not been pushed to origin.
+
+### 🔄 Changed
+- Improved minor logging details.
+
 ## [1.0.1] - 2025-04-22
 ### 🐞 Fixed
 - Plugin no longer performs unnecessary publishing configuration when unrelated tasks (e.g., `publishPlugins`) are requested.
