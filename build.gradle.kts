@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.1.20"
     `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "1.0.1"
+    id("dev.zucca-ops.gradle-publisher") version "1.0.1-PR-37-SNAPSHOT"
     id("java-gradle-plugin")
     signing
     id("com.diffplug.spotless") version "7.0.3"
@@ -111,7 +111,7 @@ java {
 
 publisher {
     dev {
-        target = "https://zucca.jfrog.io/artifactory/publisher-libs-snapshot"
+        target = "https://zuccadev.jfrog.io/artifactory/publisher-libs-snapshot"
         usernameProperty = "jfrogUser"
         passwordProperty = "jfrogPassword"
         sign = false

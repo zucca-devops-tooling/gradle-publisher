@@ -31,6 +31,18 @@ class GitHelperTest {
     }
 
     @Test
+    fun `getBranch should return extracted LOCAL branch from decorated git output`() {
+        // given
+        every { gitHelper.executeGitCommand(any()) } returns "HEAD&any-dev-branch"
+
+        // when
+        val branch = gitHelper.getBranch()
+
+        // then
+        assertEquals("any-dev-branch", branch)
+    }
+
+    @Test
     fun `isMainBranch should return true when symbolicOutput matches`() {
         // given
         every { gitHelper
