@@ -111,7 +111,7 @@ java {
 
 publisher {
     dev {
-        target = "https://zucca.jfrog.io/artifactory/publisher-libs-snapshot"
+        target = "https://zuccadev.jfrog.io/artifactory/publisher-libs-snapshot"
         usernameProperty = "jfrogUser"
         passwordProperty = "jfrogPassword"
         sign = false

@@ -3,7 +3,7 @@ rootProject.name = "gradle-publisher"
 pluginManagement {
     repositories {
         maven {
-            url = uri("https://zucca.jfrog.io/artifactory/publisher-libs-snapshot")
+            url = uri("https://zuccadev.jfrog.io/artifactory/publisher-libs-snapshot")
 
             credentials {
                 username = gradle.startParameter.projectProperties["jfrogUser"]

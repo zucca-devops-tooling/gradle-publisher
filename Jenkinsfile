@@ -4,7 +4,7 @@ pipeline {
     environment {
         GRADLE_OPTS = '-Dorg.gradle.jvmargs="-Xmx2g -XX:+HeapDumpOnOutOfMemoryError"'
 
-        JFROG_CREDENTIALS  = credentials('jfrog-credentials')
+        JFROG_CREDENTIALS  = credentials('JFROG_CREDENTIALS')
     }
 
     stages {
