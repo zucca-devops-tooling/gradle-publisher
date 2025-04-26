@@ -33,13 +33,7 @@ class GitHelperTest {
     @Test
     fun `getBranch should return extracted LOCAL branch from decorated git output`() {
         // given
-        every { gitHelper.executeGitCommand(any()) } returns """
-            commit a8c8d5a5414fe304498c841d850c3ed9623f5a1a HEAD & any-dev-branch
-            Author: Guido Zuccarelli <mail>
-            Date:   Sat Apr 26 18:35:48 2025 +1000
-
-                First part of initial code
-        """.trimIndent()
+        every { gitHelper.executeGitCommand(any()) } returns "HEAD&any-dev-branch"
 
         // when
         val branch = gitHelper.getBranch()
