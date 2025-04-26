@@ -18,7 +18,6 @@ package dev.zuccaops.repositories
 import dev.zuccaops.helpers.VersionResolver
 import dev.zuccaops.helpers.skipTasksByType
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
