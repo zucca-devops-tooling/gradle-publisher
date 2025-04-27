@@ -44,6 +44,18 @@ Then simply run:
 The plugin automatically handles versions, targets, and credentials.
 
 ---
+## 📦 Example Usage
+
+If you want to see how dynamic versioning and environment-based publishing can be applied in a real multi-module project,  
+refer to the [Bound CI Demo](https://github.com/zucca-devops-tooling/bound-ci-demo).
+
+The demo showcases how to:
+
+- Generate and publish an API artifact with dynamic versioning
+- Consume that artifact within the same build
+- Handle snapshot and release separation cleanly in a CI environment
+
+---
 
 ## 🔍 Detailed Usage
 
