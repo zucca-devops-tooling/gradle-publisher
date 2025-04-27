@@ -56,11 +56,11 @@ class RemoteRepositoryPublisher(
 
             try {
                 URL(getUri()).readBytes()
-                project.logger.lifecycle("Production version not published yet, proceeding with publication")
-                return true
-            } catch (e: FileNotFoundException) {
                 project.logger.lifecycle("Production version already published, skipping tasks")
                 return false
+            } catch (e: FileNotFoundException) {
+                project.logger.lifecycle("Production version not published yet, proceeding with publication")
+                return true
             }
         }
 
