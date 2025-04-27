@@ -6,7 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
-## [1.0.1] - 2025-04-26
+
+## [1.0.3] - 2025-04-27
+### 🐞 Fixed
+- Plugin configuration was incorrectly skipped when invoking `publish` for a specific module in a multi-project build (e.g., `./gradlew :module:publish`).
+
+## [1.0.2] - 2025-04-26
 ### 🐞 Fixed
 - Gradle incompatibility with nested objects in `publisher` extension
 
@@ -60,7 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Initial release with Git Flow setup.
 - CHANGELOG.md added.
 
-[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v0.1.1...v1.0.0

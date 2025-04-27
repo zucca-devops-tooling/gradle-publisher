@@ -17,8 +17,10 @@ package dev.zuccaops.repositories.central
 
 import dev.zuccaops.configuration.Defaults
 import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.helpers.skipTasks
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 
 /**
@@ -69,17 +71,11 @@ class NexusRepositoryPublisher(
                 throw GradleException("Could not find Gradle task '$gradleCommand'. Please check your configuration or plugin setup.")
             }
 
-            val disabledTasks =
-                project.tasks
-                    .matching { it.name.startsWith("publish") && it.name.contains("To") && it.name != gradleCommand }
-
-            disabledTasks.configureEach {
-                if (this.name == disabledTasks.first().name) {
-                    project.logger.info("Disabling conflicting publish tasks (Sonatype rerouting in effect):")
-                }
-                enabled = false
-                project.logger.info("  ⛔ ${this.name}")
+            // Disable other publish task than nexus ones
+            val nonNexusPublishTaskSelector: (Task) -> Boolean = {
+                it.name.startsWith("publish") && it.name.contains("To") && it.name != gradleCommand
             }
+            project.skipTasks(nonNexusPublishTaskSelector, "Disabling conflicting publish tasks (Sonatype rerouting in effect):")
 
             // Dynamically register a rerouter task
             val rerouteTask =

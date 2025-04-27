@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.1.20"
     `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "1.0.1"
+    id("dev.zucca-ops.gradle-publisher") version "1.0.2-fix-publish-selector-SNAPSHOT"
     id("java-gradle-plugin")
     signing
     id("com.diffplug.spotless") version "7.0.3"
@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "dev.zucca-ops"
-version = "1.0.2"
+version = "1.0.3"
 
 repositories {
     mavenCentral()

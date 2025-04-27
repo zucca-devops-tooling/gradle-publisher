@@ -16,6 +16,7 @@
 package dev.zuccaops
 
 import dev.zuccaops.configuration.PluginConfiguration
+import dev.zuccaops.helpers.isPublishRequested
 import dev.zuccaops.repositories.RepositoryPublisher
 import dev.zuccaops.repositories.RepositoryPublisherFactory
 import org.gradle.api.Plugin
@@ -46,15 +47,11 @@ class GradlePublisherPlugin : Plugin<Project> {
         }
 
         target.afterEvaluate {
-            val requestedTasks = gradle.startParameter.taskNames
-
             logger.info("Gradle Publisher Plugin configuration: $configuration")
             val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
             repositoryPublisher.setProjectVersion()
 
-            logger.info("Checking if publish was called")
-            logger.debug("Requested tasks: {}", requestedTasks)
-            if ("publish" in requestedTasks) {
+            if (project.isPublishRequested()) {
                 repositoryPublisher.configurePublishingRepository()
             }
         }

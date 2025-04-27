@@ -16,8 +16,8 @@
 package dev.zuccaops.repositories
 
 import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.helpers.skipTasksByType
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
@@ -68,33 +68,12 @@ abstract class BaseRepositoryPublisher(
         }
 
         // Check if skipping publish
-        skipTasks(PublishToMavenRepository::class.java, !isPublishable(), "Version not publishable")
+        project.skipTasksByType(PublishToMavenRepository::class.java, { !isPublishable() }, "Version not publishable")
         // Check if skipping sign
-        skipTasks(Sign::class.java, !shouldSign(), "Version not signable")
+        project.skipTasksByType(Sign::class.java, { !shouldSign() }, "Version not signable")
 
         project.logger.lifecycle("Setting computed project version {} for publish task", computedVersion)
         project.version = computedVersion
-    }
-
-    /**
-     * Select a set of tasks from the project to conditionally skip them
-     */
-    private fun <T : Task> skipTasks(
-        taskType: Class<T>,
-        shouldSkip: Boolean,
-        headerText: String,
-    ) {
-        project.logger.debug("Checking if {} tasks should be disabled", taskType)
-        if (shouldSkip) {
-            val tasks = project.tasks.withType(taskType)
-            tasks.configureEach {
-                if (this.name == tasks.first().name) {
-                    project.logger.info("$headerText, disabling the following tasks:")
-                }
-                project.logger.info("  ⛔ ${this.name}")
-                onlyIf { false }
-            }
-        }
     }
 
     override fun setProjectVersion() {
