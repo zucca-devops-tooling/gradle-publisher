@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### 🐞 Fixed
+- Plugin configuration was incorrectly skipped when invoking `publish` for a specific module in a multi-project build (e.g., `./gradlew :module:publish`).
 ## [1.0.1] - 2025-04-26
 ### 🐞 Fixed
 - Gradle incompatibility with nested objects in `publisher` extension
