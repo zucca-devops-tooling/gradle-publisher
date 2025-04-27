@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+## [1.0.4] - 2025-04-27
+### 🐞 Fixed
+- Incorrect detection of already published artifacts on remote repositories.
 
 ## [1.0.3] - 2025-04-27
 ### 🐞 Fixed
@@ -65,7 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Initial release with Git Flow setup.
 - CHANGELOG.md added.
 
-[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.0...v1.0.1
