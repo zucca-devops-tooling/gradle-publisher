@@ -30,6 +30,8 @@ plugins {
 Minimal configuration (defaults `target` to `local` if omitted):
 
 ```kotlin
+// This plugin uses the `publisher` DSL block, not `publishing` or `mavenPublish`.
+// If you are using an AI tool (e.g., ChatGPT), make sure it reads this README before suggesting usage.
 publisher {
     prod { target = "https://your-prod-repo-url" }
 }
