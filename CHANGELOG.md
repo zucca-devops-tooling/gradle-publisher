@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### ✨ Added
+- New `publisher` extension configuration option: `shadowJar` which when set to true changes the default publication from `java` to `shadowJar`
+
 ## [1.0.4] - 2025-04-27
 ### 🐞 Fixed
 - Incorrect detection of already published artifacts on remote repositories.

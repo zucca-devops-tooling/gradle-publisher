@@ -2,6 +2,7 @@ package repositories.remote
 
 import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.helpers.publisherConfiguration
 import dev.zuccaops.repositories.RepositoryAuthenticator
 import dev.zuccaops.repositories.remote.RemoteRepositoryPublisher
 import io.mockk.every
@@ -30,9 +31,10 @@ class RemoteRepositoryPublisherTest {
         val config = mockk<PluginConfiguration> {
             every { dev } returns mockk { every { sign } returns false }
         }
+        every { project.publisherConfiguration() } returns config
         val authenticator = mockk<RepositoryAuthenticator>(relaxed = true)
 
-        val publisher = RemoteRepositoryPublisher(project, versionResolver, authenticator, config)
+        val publisher = RemoteRepositoryPublisher(project, versionResolver, authenticator)
 
         assertTrue(publisher.isPublishable())
     }
@@ -46,9 +48,11 @@ class RemoteRepositoryPublisherTest {
         val config = mockk<PluginConfiguration> {
             every { prod } returns mockk { every { target } returns "https://fake.repo/" }
         }
+        every { project.publisherConfiguration() } returns config
+
         val authenticator = mockk<RepositoryAuthenticator>(relaxed = true)
 
-        val publisher = RemoteRepositoryPublisher(project, resolver, authenticator, config)
+        val publisher = RemoteRepositoryPublisher(project, resolver, authenticator)
 
         val expectedUrl = "https://fake.repo/dev/zucca-ops/my-plugin/1.0.0"
         assertEquals(expectedUrl, publisher.getUri())
@@ -63,9 +67,12 @@ class RemoteRepositoryPublisherTest {
             every { prod } returns mockk { every { sign } returns true }
             every { dev } returns mockk { every { sign } returns false }
         }
+
+        every { project.publisherConfiguration() } returns config
+
         val authenticator = mockk<RepositoryAuthenticator>()
 
-        val publisher = RemoteRepositoryPublisher(project, versionResolver, authenticator, config)
+        val publisher = RemoteRepositoryPublisher(project, versionResolver, authenticator)
 
         assertTrue(publisher.shouldSign())
     }
