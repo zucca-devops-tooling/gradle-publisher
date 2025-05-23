@@ -23,7 +23,7 @@ Apply the plugin:
 
 ```kotlin
 plugins {
-  id("dev.zucca-ops.gradle-publisher") version "1.0.4"
+  id("dev.zucca-ops.gradle-publisher") version "1.1.0"
 }
 ```
 
