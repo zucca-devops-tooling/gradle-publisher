@@ -33,7 +33,7 @@ import org.gradle.api.Project
  * @author Guido Zuccarelli
  */
 class VersionResolver(
-    private val project: Project
+    private val project: Project,
 ) {
     private val configuration: PluginConfiguration = project.publisherConfiguration()
     private val gitHelper: GitHelper = GitHelper(project, configuration.gitFolder)

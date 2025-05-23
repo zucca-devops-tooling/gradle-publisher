@@ -48,7 +48,6 @@ class RemoteRepositoryPublisher(
     private val versionResolver: VersionResolver,
     private val repositoryAuthenticator: RepositoryAuthenticator,
 ) : BaseRepositoryPublisher(project, versionResolver) {
-
     private val configuration: PluginConfiguration = project.publisherConfiguration()
 
     override fun isPublishable(): Boolean {

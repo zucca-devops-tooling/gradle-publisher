@@ -40,9 +40,7 @@ import org.gradle.api.Project
  * @author Guido Zuccarelli
  */
 object RepositoryPublisherFactory {
-    fun get(
-        project: Project,
-    ): RepositoryPublisher {
+    fun get(project: Project): RepositoryPublisher {
         val versionResolver = VersionResolver(project)
         val configuration = project.publisherConfiguration()
         configuration.resolvedVersionInternal = versionResolver.getVersion()

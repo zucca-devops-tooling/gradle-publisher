@@ -36,7 +36,6 @@ import java.net.PasswordAuthentication
 class RepositoryAuthenticator(
     private val project: Project,
 ) : Authenticator() {
-
     private val configuration: PluginConfiguration = project.publisherConfiguration()
 
     /**

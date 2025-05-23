@@ -85,7 +85,6 @@ open class PluginConfiguration
         val dev = objects.newInstance(RepositoryConfig::class.java)
         val prod = objects.newInstance(RepositoryConfig::class.java)
 
-
         /**
          * Configure development repository.
          */

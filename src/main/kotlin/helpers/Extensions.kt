@@ -80,5 +80,4 @@ fun Project.isPublishRequested(): Boolean {
  * @return The [PluginConfiguration] instance registered with the project.
  * @throws IllegalStateException if the 'publisher' extension is not found.
  */
-fun Project.publisherConfiguration(): PluginConfiguration =
-    this.extensions.getByType(PluginConfiguration::class.java)
+fun Project.publisherConfiguration(): PluginConfiguration = this.extensions.getByType(PluginConfiguration::class.java)
