@@ -3,6 +3,7 @@ package repositories
 import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.configuration.RepositoryConfig
 import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.helpers.publisherConfiguration
 import dev.zuccaops.repositories.RepositoryConstants
 import dev.zuccaops.repositories.RepositoryPublisherFactory
 import dev.zuccaops.repositories.central.MavenCentralRepositoryPublisher
@@ -45,10 +46,12 @@ class RepositoryPublisherFactoryTest {
         every { config.prod } returns prodConfig
         every { config.gitFolder } returns "."
 
+        every { project.publisherConfiguration() } returns config
+
         every { anyConstructed<VersionResolver>().isRelease() } returns false
 
         // when
-        val publisher = RepositoryPublisherFactory.get(project, config)
+        val publisher = RepositoryPublisherFactory.get(project)
 
         // then
         assertTrue(publisher is RemoteRepositoryPublisher)
@@ -68,10 +71,12 @@ class RepositoryPublisherFactoryTest {
         every { config.prod } returns prodConfig
         every { config.gitFolder } returns "."
 
+        every { project.publisherConfiguration() } returns config
+
         every { anyConstructed<VersionResolver>().isRelease() } returns true
 
         // when
-        val publisher = RepositoryPublisherFactory.get(project, config)
+        val publisher = RepositoryPublisherFactory.get(project)
 
         // then
         assertTrue(publisher is MavenCentralRepositoryPublisher)
@@ -92,10 +97,13 @@ class RepositoryPublisherFactoryTest {
         every { config.prod } returns prodConfig
         every { config.gitFolder } returns "."
 
+        every { project.publisherConfiguration() } returns config
+
         every { anyConstructed<VersionResolver>().isRelease() } returns true
 
+
         // when
-        val publisher = RepositoryPublisherFactory.get(project, config)
+        val publisher = RepositoryPublisherFactory.get(project)
 
         // then
         assertTrue(publisher is NexusRepositoryPublisher)
@@ -120,8 +128,9 @@ class RepositoryPublisherFactoryTest {
 
         every { anyConstructed<VersionResolver>().isRelease() } returns false
 
+        every { project.publisherConfiguration() } returns config
         // when
-        val publisher = RepositoryPublisherFactory.get(project, config)
+        val publisher = RepositoryPublisherFactory.get(project)
 
         // then
         assertTrue(publisher is LocalRepositoryPublisher)

@@ -17,6 +17,7 @@ package dev.zuccaops.repositories
 
 import dev.zuccaops.configuration.Defaults
 import dev.zuccaops.configuration.PluginConfiguration
+import dev.zuccaops.helpers.publisherConfiguration
 import org.gradle.api.Project
 import java.net.Authenticator
 import java.net.PasswordAuthentication
@@ -29,14 +30,15 @@ import java.net.PasswordAuthentication
  * is needed at runtime via `Authenticator.setDefault(...)`.
  *
  * @property project the current Gradle project
- * @property configuration the plugin configuration containing credential keys
  *
  * @author Guido Zuccarelli
  */
 class RepositoryAuthenticator(
     private val project: Project,
-    private val configuration: PluginConfiguration,
 ) : Authenticator() {
+
+    private val configuration: PluginConfiguration = project.publisherConfiguration()
+
     /**
      * Automatically invoked when a remote connection requires authentication.
      * Provides production credentials by default.

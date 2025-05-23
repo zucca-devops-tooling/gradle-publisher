@@ -3,6 +3,7 @@ package helpers
 import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.helpers.GitHelper
 import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.helpers.publisherConfiguration
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
@@ -30,8 +31,9 @@ class VersionResolverTest {
         every { mockConfig.releaseBranchPatterns } returns listOf("^main$", "^release/\\d+\\.\\d+\\.\\d+$")
         mockkConstructor(GitHelper::class)
         every { anyConstructed<GitHelper>().getBranch() } returns "feature/cool-feature"
+        every { project.publisherConfiguration() } returns mockConfig
 
-        val resolver = VersionResolver(project, mockConfig)
+        val resolver = VersionResolver(project)
 
         //when
         val version = resolver.getVersion()
@@ -50,10 +52,11 @@ class VersionResolverTest {
 
         every { mockConfig.releaseBranchPatterns } returns listOf("^main$", "^release/\\d+\\.\\d+\\.\\d+$")
         every { mockConfig.alterProjectVersion } returns true
+        every { project.publisherConfiguration() } returns mockConfig
         mockkConstructor(GitHelper::class)
         every { anyConstructed<GitHelper>().getBranch() } returns "feature/cool-feature"
 
-        val resolver = VersionResolver(project, mockConfig)
+        val resolver = VersionResolver(project)
 
         //when
         val version = resolver.getVersionForProject()
@@ -72,10 +75,11 @@ class VersionResolverTest {
 
         every { mockConfig.releaseBranchPatterns } returns listOf("^main$", "^release/\\d+\\.\\d+\\.\\d+$")
         every { mockConfig.alterProjectVersion } returns false
+        every { project.publisherConfiguration() } returns mockConfig
         mockkConstructor(GitHelper::class)
         every { anyConstructed<GitHelper>().getBranch() } returns "feature/cool-feature"
 
-        val resolver = VersionResolver(project, mockConfig)
+        val resolver = VersionResolver(project)
 
         //when
         val version = resolver.getVersionForProject()
@@ -91,12 +95,13 @@ class VersionResolverTest {
         // given
         every { project.version } returns "2.0.0"
         val mockConfig = mockk<PluginConfiguration>(relaxed = true)
+        every { project.publisherConfiguration() } returns mockConfig
 
         every { mockConfig.releaseBranchPatterns } returns listOf("^main$", "^release/\\d+\\.\\d+\\.\\d+$")
         mockkConstructor(GitHelper::class)
         every { anyConstructed<GitHelper>().getBranch() } returns "release/2.0.0"
 
-        val resolver = VersionResolver(project, mockConfig)
+        val resolver = VersionResolver(project)
 
         //when
         val version = resolver.getVersion()
@@ -112,12 +117,13 @@ class VersionResolverTest {
         // given
         val mockConfig = mockk<PluginConfiguration>(relaxed = true)
         every { mockConfig.releaseBranchPatterns } returns emptyList()
+        every { project.publisherConfiguration() } returns mockConfig
 
         mockkConstructor(GitHelper::class)
         every { anyConstructed<GitHelper>().isMainBranch(any()) } returns true
         every { anyConstructed<GitHelper>().getBranch() } returns "some-main-branch"
 
-        val resolver = VersionResolver(project, mockConfig)
+        val resolver = VersionResolver(project)
 
         // when
         val isRelease = resolver.isRelease()
@@ -131,12 +137,13 @@ class VersionResolverTest {
         // given
         val mockConfig = mockk<PluginConfiguration>(relaxed = true)
         every { mockConfig.releaseBranchPatterns } returns emptyList()
+        every { project.publisherConfiguration() } returns mockConfig
 
         mockkConstructor(GitHelper::class)
         every { anyConstructed<GitHelper>().isMainBranch(any()) } returns false
         every { anyConstructed<GitHelper>().getBranch() } returns "some-non-main-branch"
 
-        val resolver = VersionResolver(project, mockConfig)
+        val resolver = VersionResolver(project)
 
         // when
         val isRelease = resolver.isRelease()

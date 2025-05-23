@@ -85,6 +85,7 @@ open class PluginConfiguration
         val dev = objects.newInstance(RepositoryConfig::class.java)
         val prod = objects.newInstance(RepositoryConfig::class.java)
 
+
         /**
          * Configure development repository.
          */
@@ -114,6 +115,9 @@ open class PluginConfiguration
         /** If true, the plugin modifies the project version on non-release branches */
         var alterProjectVersion: Boolean = Defaults.ALTER_PROJECT_VERSION
 
+        /** If true, publication type changes from Java to shadowJar */
+        var shadowJar: Boolean = Defaults.SHADOW_JAR
+
         override fun toString(): String =
             buildString {
                 appendLine("PluginConfiguration(")
@@ -124,6 +128,7 @@ open class PluginConfiguration
                 appendLine("  releaseBranchPatterns = $releaseBranchPatterns")
                 appendLine("  gitFolder = $gitFolder")
                 appendLine("  alterProjectVersion = $alterProjectVersion")
+                appendLine("  shadowJar = $shadowJar")
                 append(")")
             }
     }

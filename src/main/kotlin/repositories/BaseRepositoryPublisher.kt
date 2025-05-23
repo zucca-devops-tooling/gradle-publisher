@@ -15,8 +15,11 @@
  */
 package dev.zuccaops.repositories
 
+import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.helpers.publisherConfiguration
 import dev.zuccaops.helpers.skipTasksByType
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.publish.PublishingExtension
@@ -58,7 +61,7 @@ abstract class BaseRepositoryPublisher(
                 create<MavenPublication>("maven") {
                     groupId = project.group.toString()
                     artifactId = project.name
-                    from(project.components["java"])
+                    configureComponent(this)
                     version = computedVersion
                     project.logger.debug("Configured publication [group: $groupId, artifact: $artifactId, version: $version]")
                 }
@@ -74,6 +77,25 @@ abstract class BaseRepositoryPublisher(
 
         project.logger.lifecycle("Setting computed project version {} for publish task", computedVersion)
         project.version = computedVersion
+    }
+
+    private fun configureComponent(publication: MavenPublication) {
+        val configuration: PluginConfiguration = project.publisherConfiguration()
+
+        if (configuration.shadowJar) {
+            val shadowJarTask = project.tasks.findByName("shadowJar")
+            if (shadowJarTask != null) {
+                publication.artifact(shadowJarTask)
+                project.logger.debug("Configured SHADOW publication")
+            } else {
+                val errorMessage = "Publisher: 'publishShadowJar = true', but 'shadowJar' task not found!"
+                project.logger.error(errorMessage)
+                throw GradleException(errorMessage)
+            }
+        } else {
+            project.logger.debug("Configured JAVA publication")
+            publication.from(project.components["java"])
+        }
     }
 
     override fun setProjectVersion() {

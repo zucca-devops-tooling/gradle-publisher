@@ -1,11 +1,11 @@
 plugins {
-    kotlin("jvm") version "2.1.20"
-    `kotlin-dsl`
-    id("dev.zucca-ops.gradle-publisher") version "1.0.2-fix-publish-selector-SNAPSHOT"
+    id("dev.zucca-ops.gradle-publisher") version "1.0.4"
     id("java-gradle-plugin")
-    signing
     id("com.diffplug.spotless") version "7.0.3"
     id("com.gradle.plugin-publish") version "1.2.1"
+    kotlin("jvm") version "2.1.20"
+    `kotlin-dsl`
+    signing
 }
 
 group = "dev.zucca-ops"
@@ -111,9 +111,12 @@ java {
 
 publisher {
     dev {
-        target = "https://zuccadev.jfrog.io/artifactory/publisher-libs-snapshot"
-        usernameProperty = "jfrogUser"
-        passwordProperty = "jfrogPassword"
+ //       target = "https://zuccadev.jfrog.io/artifactory/publisher-libs-snapshot"
+ //       usernameProperty = "jfrogUser"
+ //       passwordProperty = "jfrogPassword"
+        target = "https://maven.pkg.github.com/zucca-devops-tooling/gradle-publisher"
+        usernameProperty = "githubPackagesUsername"
+        passwordProperty = "githubPackagesPassword"
         sign = false
     }
     prod {
@@ -129,7 +132,7 @@ publisher {
 spotless {
     kotlin {
         target("src/main/**/*.kt")
-        ktlint() // or prettier, diktat, etc.
+        ktlint()
         licenseHeader(
             """/*
  * Copyright 2025 GuidoZuccarelli

@@ -4,7 +4,8 @@ pipeline {
     environment {
         GRADLE_OPTS = '-Dorg.gradle.jvmargs="-Xmx2g -XX:+HeapDumpOnOutOfMemoryError"'
 
-        JFROG_CREDENTIALS  = credentials('JFROG_CREDENTIALS')
+        GH_CREDENTIALS  = credentials('GITHUB_PACKAGES')
+        // JFROG_CREDENTIALS  = credentials('JFROG_CREDENTIALS')
     }
 
     stages {
@@ -22,8 +23,6 @@ pipeline {
 
                             set -euo pipefail
                             ./gradlew clean assemble --refresh-dependencies --info --no-daemon \
-                                -PjfrogUser=$JFROG_CREDENTIALS_USR \
-                                -PjfrogPassword=$JFROG_CREDENTIALS_PSW \
                         '''
                         setStatus('build','SUCCESS','Build succeeded')
                     } catch (Exception e) {
@@ -78,8 +77,8 @@ pipeline {
                             -Psigning.keyId=$GPG_KEY_ID \
                             -Psigning.password=$GPG_KEY_PASS \
                             -Psigning.secretKeyRingFile=$GPG_KEY_PATH \
-                            -PjfrogUser=$JFROG_CREDENTIALS_USR \
-                            -PjfrogPassword=$JFROG_CREDENTIALS_PSW \
+                            -PgithubPackagesUsername=$GH_CREDENTIALS_USR \
+                            -PgithubPackagesPassword=$GH_CREDENTIALS_PSW \
                             -PmavenCentralUsername=$OSSRH_CREDENTIALS_USR \
                             -PmavenCentralPassword=$OSSRH_CREDENTIALS_PSW
                     '''

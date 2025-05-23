@@ -15,9 +15,9 @@
  */
 package dev.zuccaops.repositories
 
-import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.configuration.RepositoryConfig
 import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.helpers.publisherConfiguration
 import dev.zuccaops.repositories.central.MavenCentralRepositoryPublisher
 import dev.zuccaops.repositories.central.NexusRepositoryPublisher
 import dev.zuccaops.repositories.local.LocalRepositoryPublisher
@@ -42,14 +42,14 @@ import org.gradle.api.Project
 object RepositoryPublisherFactory {
     fun get(
         project: Project,
-        configuration: PluginConfiguration,
     ): RepositoryPublisher {
-        val versionResolver = VersionResolver(project, configuration)
+        val versionResolver = VersionResolver(project)
+        val configuration = project.publisherConfiguration()
         configuration.resolvedVersionInternal = versionResolver.getVersion()
         configuration.effectiveVersionInternal = versionResolver.getVersionForProject()
         val repositoryConfig: RepositoryConfig = if (versionResolver.isRelease()) configuration.prod else configuration.dev
 
-        val repositoryAuthenticator = RepositoryAuthenticator(project, configuration)
+        val repositoryAuthenticator = RepositoryAuthenticator(project)
 
         return when (repositoryConfig.target) {
             RepositoryConstants.LOCAL_TARGET_COMMAND -> LocalRepositoryPublisher(project, versionResolver)
@@ -60,7 +60,7 @@ object RepositoryPublisherFactory {
                     versionResolver,
                     repositoryConfig.customGradleCommand!!,
                 )
-            else -> RemoteRepositoryPublisher(project, versionResolver, repositoryAuthenticator, configuration)
+            else -> RemoteRepositoryPublisher(project, versionResolver, repositoryAuthenticator)
         }
     }
 }

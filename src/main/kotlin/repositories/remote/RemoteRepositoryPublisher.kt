@@ -17,6 +17,7 @@ package dev.zuccaops.repositories.remote
 
 import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.helpers.publisherConfiguration
 import dev.zuccaops.helpers.skipTasks
 import dev.zuccaops.repositories.BaseRepositoryPublisher
 import dev.zuccaops.repositories.RepositoryAuthenticator
@@ -39,7 +40,6 @@ import java.net.URL
  * @param project The Gradle project
  * @param versionResolver Utility to resolve version based on Git and environment
  * @param repositoryAuthenticator Provides credentials based on environment
- * @param configuration Plugin configuration for dev/prod targets and credentials
  *
  * @author Guido Zuccarelli
  */
@@ -47,8 +47,10 @@ class RemoteRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,
     private val repositoryAuthenticator: RepositoryAuthenticator,
-    private val configuration: PluginConfiguration,
 ) : BaseRepositoryPublisher(project, versionResolver) {
+
+    private val configuration: PluginConfiguration = project.publisherConfiguration()
+
     override fun isPublishable(): Boolean {
         if (versionResolver.isRelease()) {
             project.logger.info("Checking if artifact exists at: ${getUri()}")

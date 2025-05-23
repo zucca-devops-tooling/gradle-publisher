@@ -1,6 +1,7 @@
 package repositories
 
 import dev.zuccaops.configuration.PluginConfiguration
+import dev.zuccaops.helpers.publisherConfiguration
 import dev.zuccaops.repositories.RepositoryAuthenticator
 import io.mockk.every
 import io.mockk.mockk
@@ -23,7 +24,9 @@ class RepositoryAuthenticatorTest {
             every { prod.passwordProperty } returns "prodPass"
         }
 
-        val authenticator = RepositoryAuthenticator(project, config)
+        every { project.publisherConfiguration() } returns config
+
+        val authenticator = RepositoryAuthenticator(project)
 
         // when
         val username = authenticator.getProdUsername()
@@ -48,7 +51,9 @@ class RepositoryAuthenticatorTest {
             every { passwordProperty } returns "globalPass"
         }
 
-        val authenticator = RepositoryAuthenticator(project, config)
+        every { project.publisherConfiguration() } returns config
+
+        val authenticator = RepositoryAuthenticator(project)
 
         // when
         val username = authenticator.getProdUsername()
