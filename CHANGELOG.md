@@ -6,8 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+## [1.1.0] - 2025-05-23
 ### ✨ Added
-- New `publisher` extension configuration option: `shadowJar` which when set to true changes the default publication from `java` to `shadowJar`
+- New configuration option: `shadowJar` which when set to true changes the publication type from `java` to `shadowJar`
 
 ## [1.0.4] - 2025-04-27
 ### 🐞 Fixed
@@ -71,7 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Initial release with Git Flow setup.
 - CHANGELOG.md added.
 
-[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/zucca-devops-tooling/gradle-publisher/compare/v1.0.1...v1.0.2
