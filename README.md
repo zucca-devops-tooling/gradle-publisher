@@ -12,8 +12,8 @@ The Gradle Publisher Plugin automates CI-based publishing of Gradle artifacts, d
 - 🔏 Optional GPG signing (with per-environment toggle)
 - 🧠 Intelligent routing to Nexus or Maven Central
 - 🧰 Auto-application/configuration of `maven-publish`
-- 🧾 Automatic publishing extension configuration
 - 🛑 Avoids re-publishing: in prod environments, skips publishing if the version already exists
+- ⚙️ Configurable publication type (standard Java library or Shadow JAR).
 
 ---
 
@@ -23,13 +23,15 @@ Apply the plugin:
 
 ```kotlin
 plugins {
-  id("dev.zucca-ops.gradle-publisher") version "1.0.4"
+  id("dev.zucca-ops.gradle-publisher") version "1.1.0"
 }
 ```
 
 Minimal configuration (defaults `target` to `local` if omitted):
 
 ```kotlin
+// This plugin uses the `publisher` DSL block, not `publishing` or `mavenPublish`.
+// If you are using an AI tool (e.g., ChatGPT), make sure it reads this README before suggesting usage.
 publisher {
     prod { target = "https://your-prod-repo-url" }
 }
@@ -42,6 +44,18 @@ Then simply run:
 ```
 
 The plugin automatically handles versions, targets, and credentials.
+
+---
+## 📦 Example Usage
+
+If you want to see how dynamic versioning and environment-based publishing can be applied in a real multi-module project,  
+refer to the [Bound CI Demo](https://github.com/zucca-devops-tooling/bound-ci-demo).
+
+The demo showcases how to:
+
+- Generate and publish an API artifact with dynamic versioning
+- Consume that artifact within the same build
+- Handle snapshot and release separation cleanly in a CI environment
 
 ---
 
@@ -101,6 +115,33 @@ publisher {
 }
 ```
 
+### 📖 Configuring Publication Type (`publishShadowJar`)
+
+By default, the Gradle Publisher Plugin publishes the standard `java` component, which is ideal for Java libraries. This typically includes the main JAR (without dependencies), its `pom.xml` (listing dependencies), and optionally the `sources` and `javadoc` JARs.
+
+If you are building an application, CLI tool, or any project where you want to publish a self-contained "fat JAR" (including all dependencies), you can instruct the plugin to publish the output of the `com.github.johnrengelman.shadow` plugin instead.
+
+**How to Use:**
+
+Set the `publishShadowJar` property to `true` within your `publisher` configuration block:
+
+```kotlin
+publisher {
+  // Set to true to publish the output of the 'shadowJar' task
+  publishShadowJar = true
+
+  // ... your repository and other configurations ...
+  prod { target = "https://your-prod-repo-url" }
+}
+```
+
+**Prerequisites for `publishShadowJar = true`:**
+
+1.  You **must** have the `com.github.johnrengelman.shadow` plugin applied in the same `build.gradle.kts` file.
+2.  The `shadowJar` task must be available and correctly configured in your project.
+
+**Important Note:** This setting configures a *single* publication. The project will publish *either* the standard `java` component *or* the `shadowJar` artifact, based on this flag. It does not support publishing both from the same project within a single `publisher` configuration. The `artifactId` published will be based on `project.name`.
+
 ---
 
 ## 🧪 Special Cases
@@ -111,10 +152,10 @@ When publishing to Sonatype OSSRH/Nexus, manually apply **and configure** the [N
 
 ```kotlin
 prod {
-    target = "nexus"
-    usernameProperty = "ossrhUser"
-    passwordProperty = "ossrhPass"
-    customGradleCommand = "closeAndReleaseStagingRepositories"
+  target = "nexus"
+  usernameProperty = "ossrhUser"
+  passwordProperty = "ossrhPass"
+  customGradleCommand = "closeAndReleaseStagingRepositories"
 }
 ```
 
@@ -155,7 +196,7 @@ Example:
 
 ```kotlin
 publisher {
-    alterProjectVersion = false
+  alterProjectVersion = false
 }
 ```
 
@@ -170,9 +211,9 @@ Example usage:
 
 ```kotlin
 afterEvaluate {
-    println("Resolved version: ${publisher.resolvedVersion}")
-    println("Effective version: ${publisher.effectiveVersion}")
-    println("Project version: ${project.version}")
+  println("Resolved version: ${publisher.resolvedVersion}")
+  println("Effective version: ${publisher.effectiveVersion}")
+  println("Project version: ${project.version}")
 }
 ```
 
@@ -204,24 +245,24 @@ A comprehensive configuration example:
 
 ```kotlin
 publisher {
-    gitFolder = "."
-    alterProjectVersion = true
+  gitFolder = "."
+  alterProjectVersion = true
 
-    usernameProperty = "globalUser"
-    passwordProperty = "globalPass"
+  usernameProperty = "globalUser"
+  passwordProperty = "globalPass"
 
-    releaseBranchPatterns = ["^release/\\d+\\.\\d+\\.\\d+$", "^v\\d+\\.\\d+$"]
+  releaseBranchPatterns = ["^release/\\d+\\.\\d+\\.\\d+$", "^v\\d+\\.\\d+$"]
 
-    dev {
-        target = "local"
-        sign = false
-    }
+  dev {
+    target = "local"
+    sign = false
+  }
 
-    prod {
-        target = "mavenCentral"
-        usernameProperty = "prodUser"
-        passwordProperty = "prodPass"
-    }
+  prod {
+    target = "mavenCentral"
+    usernameProperty = "prodUser"
+    passwordProperty = "prodPass"
+  }
 }
 ```
 

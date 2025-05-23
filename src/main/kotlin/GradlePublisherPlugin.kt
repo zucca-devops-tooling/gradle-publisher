@@ -48,7 +48,7 @@ class GradlePublisherPlugin : Plugin<Project> {
 
         target.afterEvaluate {
             logger.info("Gradle Publisher Plugin configuration: $configuration")
-            val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this, configuration)
+            val repositoryPublisher: RepositoryPublisher = RepositoryPublisherFactory.get(this)
             repositoryPublisher.setProjectVersion()
 
             if (project.isPublishRequested()) {

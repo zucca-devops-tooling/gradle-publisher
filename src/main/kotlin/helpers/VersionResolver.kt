@@ -29,14 +29,13 @@ import org.gradle.api.Project
  * - `1.2.3` on `main` → `1.2.3`
  *
  * @param project the Gradle project
- * @param configuration the plugin configuration
  *
  * @author Guido Zuccarelli
  */
 class VersionResolver(
     private val project: Project,
-    private val configuration: PluginConfiguration,
 ) {
+    private val configuration: PluginConfiguration = project.publisherConfiguration()
     private val gitHelper: GitHelper = GitHelper(project, configuration.gitFolder)
     private var finalVersion: String? = null
     private var isRelease: Boolean? = null

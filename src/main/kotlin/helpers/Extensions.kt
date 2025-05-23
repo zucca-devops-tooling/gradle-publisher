@@ -15,6 +15,7 @@
  */
 package dev.zuccaops.helpers
 
+import dev.zuccaops.configuration.PluginConfiguration
 import org.gradle.api.Project
 import org.gradle.api.Task
 
@@ -72,3 +73,11 @@ fun Project.isPublishRequested(): Boolean {
 
     return requestedTasks.any { it == "publish" || it == "$path:publish" }
 }
+
+/**
+ * Provides convenient, typed access to the 'publisher' extension configuration.
+ *
+ * @return The [PluginConfiguration] instance registered with the project.
+ * @throws IllegalStateException if the 'publisher' extension is not found.
+ */
+fun Project.publisherConfiguration(): PluginConfiguration = this.extensions.getByType(PluginConfiguration::class.java)
