@@ -1,9 +1,9 @@
 plugins {
-    id("dev.zucca-ops.gradle-publisher") version "1.0.4"
+    id("dev.zucca-ops.gradle-publisher") version "1.1.0"
     id("java-gradle-plugin")
-    id("com.diffplug.spotless") version "7.0.3"
-    id("com.gradle.plugin-publish") version "1.2.1"
-    kotlin("jvm") version "2.1.20"
+    id("com.diffplug.spotless") version "8.3.0"
+    id("com.gradle.plugin-publish") version "2.0.0"
+    kotlin("jvm") version "2.1.21"
     `kotlin-dsl`
     signing
 }
@@ -16,9 +16,10 @@ repositories {
 }
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-    testImplementation("io.mockk:mockk:1.13.7")
-    testImplementation("io.mockk:mockk-agent-jvm:1.13.7")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
+    testImplementation("io.mockk:mockk:1.14.6")
+    testImplementation("io.mockk:mockk-agent-jvm:1.14.6")
     implementation(gradleApi())
     implementation(localGroovy())
     implementation("tech.yanand.maven-central-publish:tech.yanand.maven-central-publish.gradle.plugin:1.2.0")
@@ -33,7 +34,6 @@ kotlin {
     jvmToolchain(17)
 }
 
-@Suppress("UnstableApiUsage")
 gradlePlugin {
     website = "https://github.com/zucca-devops-tooling/gradle-publisher"
     vcsUrl = "https://github.com/zucca-devops-tooling/gradle-publisher.git"
@@ -111,9 +111,6 @@ java {
 
 publisher {
     dev {
- //       target = "https://zuccadev.jfrog.io/artifactory/publisher-libs-snapshot"
- //       usernameProperty = "jfrogUser"
- //       passwordProperty = "jfrogPassword"
         target = "https://maven.pkg.github.com/zucca-devops-tooling/gradle-publisher"
         usernameProperty = "githubPackagesUsername"
         passwordProperty = "githubPackagesPassword"
