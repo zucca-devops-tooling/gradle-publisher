@@ -21,6 +21,7 @@ class GitHelperTest {
     @Test
     fun `getBranch should return extracted branch from decorated git output`() {
         // given
+        every { gitHelper.getBranchByCIEnv() } returns null
         every { gitHelper.executeGitCommand(any()) } returns "origin/main"
 
         // when
@@ -33,6 +34,7 @@ class GitHelperTest {
     @Test
     fun `getBranch should return extracted LOCAL branch from decorated git output`() {
         // given
+        every { gitHelper.getBranchByCIEnv() } returns null
         every { gitHelper.executeGitCommand(any()) } returns "HEAD&any-dev-branch"
 
         // when
@@ -40,6 +42,48 @@ class GitHelperTest {
 
         // then
         assertEquals("any-dev-branch", branch)
+    }
+
+    @Test
+    fun `getBranch should ignore grafted and symbolic remote HEAD decorations`() {
+        // given
+        every { gitHelper.getBranchByCIEnv() } returns null
+        every { gitHelper.executeGitCommand(any()) } returns "grafted#origin/HEAD&origin/main#origin/chore/ci-migration"
+
+        // when
+        val branch = gitHelper.getBranch()
+
+        // then
+        assertEquals("chore/ci-migration", branch)
+    }
+
+    @Test
+    fun `getBranch should prefer CI branch from GitHub Actions`() {
+        // given
+        every { gitHelper.getBranchByCIEnv() } returns "chore/ci-migration"
+
+        // when
+        val branch = gitHelper.getBranch()
+
+        // then
+        assertEquals("chore/ci-migration", branch)
+        verify(exactly = 0) { gitHelper.executeGitCommand(any()) }
+    }
+
+    @Test
+    fun `getBranchByCIEnv should prefer GitHub head ref over pull request ref`() {
+        // given
+        val envVars =
+            mapOf(
+                "GITHUB_HEAD_REF" to "chore/ci-migration",
+                "GITHUB_REF" to "refs/pull/123/merge",
+            )
+
+        // when
+        val branch = gitHelper.getBranchByCIEnv(envVars)
+
+        // then
+        assertEquals("chore/ci-migration", branch)
     }
 
     @Test
