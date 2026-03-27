@@ -1,103 +1,190 @@
 # Gradle Publisher Plugin
 
-The Gradle Publisher Plugin automates CI-based publishing of Gradle artifacts, dynamically managing versions and routing publications based on Git branches and environments. Ideal for multi-environment workflows, Maven Central, and Nexus publishing.
+`gradle-publisher` is a Gradle plugin for CI-oriented publishing.
 
----
+It resolves a project version from Git state, chooses a publishing target based on whether the current branch is treated as `dev` or `prod`, and wires repository credentials from Gradle properties.
 
-## ✨ Features
+It is intended for builds that need one publishing flow with:
 
-- 🔀 Dynamic version names based on Git branches
-- 📦 Separate dev/prod repository targets
-- 🔑 Environment-specific credentials
-- 🔏 Optional GPG signing (with per-environment toggle)
-- 🧠 Intelligent routing to Nexus or Maven Central
-- 🧰 Auto-application/configuration of `maven-publish`
-- 🛑 Avoids re-publishing: in prod environments, skips publishing if the version already exists
-- ⚙️ Configurable publication type (standard Java library or Shadow JAR).
+- dynamic snapshot versions for non-release branches
+- stable versions for release/default branches
+- separate dev/prod repositories
+- optional signing control per target
+- support for local, remote, Nexus, and Maven Central publishing
 
----
+## What It Does
 
-## 🚀 Quick Start
+The plugin:
+
+- applies `maven-publish`
+- computes a publish version from the current Git branch
+- treats release branches as `prod`
+- treats all other branches as `dev`
+- picks the configured repository for the active environment
+- resolves credentials from explicit environment config, then falls back to global config
+- skips re-publishing when the artifact already exists for release publishing targets
+
+## Quick Start
 
 Apply the plugin:
 
 ```kotlin
 plugins {
-  id("dev.zucca-ops.gradle-publisher") version "1.1.0"
+    id("dev.zucca-ops.gradle-publisher") version "1.1.0"
 }
 ```
 
-Minimal configuration (defaults `target` to `local` if omitted):
+Minimal configuration:
 
 ```kotlin
-// This plugin uses the `publisher` DSL block, not `publishing` or `mavenPublish`.
-// If you are using an AI tool (e.g., ChatGPT), make sure it reads this README before suggesting usage.
 publisher {
-    prod { target = "https://your-prod-repo-url" }
+    prod {
+        target = "https://your-prod-repo-url"
+    }
 }
 ```
 
-Then simply run:
+Then publish:
 
 ```bash
 ./gradlew publish
 ```
 
-The plugin automatically handles versions, targets, and credentials.
+If no target is configured, the plugin defaults to `local`.
 
----
-## 📦 Example Usage
+## Versioning Rules
 
-If you want to see how dynamic versioning and environment-based publishing can be applied in a real multi-module project,  
-refer to the [Bound CI Demo](https://github.com/zucca-devops-tooling/bound-ci-demo).
+Given `project.version = 1.5.3`:
 
-The demo showcases how to:
+- on a release/default branch: `1.5.3`
+- on a non-release branch like `feature/my-work`: `1.5.3-feature-my-work-SNAPSHOT`
 
-- Generate and publish an API artifact with dynamic versioning
-- Consume that artifact within the same build
-- Handle snapshot and release separation cleanly in a CI environment
+Release detection works like this:
 
----
+- if `releaseBranchPatterns` is configured, the current branch must match one of those regexes
+- otherwise, the plugin treats the repository default branch as the release branch
+- if the default branch cannot be detected, it falls back to `main` / `master`
 
-## 🔍 Detailed Usage
+## Configuration Reference
 
-### Version Behavior
+Top-level `publisher` properties:
 
-- If the current Git branch matches `releaseBranchPatterns`, the original version is preserved:
-  ```
-  project.version = 1.5.3 → 1.5.3
-  ```
-- If not, the branch name and `-SNAPSHOT` suffix are appended:
-  ```
-  project.version = 1.5.3 → 1.5.3-feature-branch-SNAPSHOT
-  ```
-- Default branches (`main`, `master`) are auto-detected if no patterns are provided.
+| Property | Type | Default | Description |
+| --- | --- | --- | --- |
+| `usernameProperty` | `String` | `mavenUsername` | Global fallback username property |
+| `passwordProperty` | `String` | `mavenPassword` | Global fallback password property |
+| `gitFolder` | `String` | `"."` | Repository root or `.git` entry used for Git resolution |
+| `releaseBranchPatterns` | `List<String>` | `[]` | Regexes that define release branches |
+| `alterProjectVersion` | `Boolean` | `true` | Whether the plugin updates `project.version` outside publish execution |
+| `shadowJar` | `Boolean` | `false` | Publish the `shadowJar` task output instead of the standard `java` component |
 
-### Credentials Configuration
+Per-environment properties (`dev {}` / `prod {}`):
 
-Credentials can be defined globally or per environment. Environment-specific credentials take precedence over global ones.
+| Property | Type | Default | Description |
+| --- | --- | --- | --- |
+| `target` | `String` | `local` | Publishing target |
+| `usernameProperty` | `String` | `mavenUsername` | Username property for this environment |
+| `passwordProperty` | `String` | `mavenPassword` | Password/token property for this environment |
+| `customGradleCommand` | `String?` | `null` | Required when `target = "nexus"` |
+| `sign` | `Boolean` | `true` | Whether artifacts should be signed for this environment |
 
-Example:
+Credential lookup order:
+
+1. environment-specific property name
+2. global `publisher.usernameProperty` / `publisher.passwordProperty`
+3. built-in defaults `mavenUsername` / `mavenPassword`
+
+## Supported Targets
+
+### Local
+
+```kotlin
+publisher {
+    dev {
+        target = "local"
+        sign = false
+    }
+}
+```
+
+Publishes to `~/.m2/repository`.
+
+### Remote Maven Repository
+
+```kotlin
+publisher {
+    dev {
+        target = "https://your-dev-repo-url"
+        usernameProperty = "devUser"
+        passwordProperty = "devPassword"
+        sign = false
+    }
+
+    prod {
+        target = "https://your-prod-repo-url"
+        usernameProperty = "prodUser"
+        passwordProperty = "prodPassword"
+    }
+}
+```
+
+### Maven Central Portal
+
+```kotlin
+publisher {
+    prod {
+        target = "mavenCentral"
+    }
+}
+```
+
+This routes `publish` to `publishToMavenCentralPortal`.
+
+### Nexus / OSSRH
+
+```kotlin
+publisher {
+    prod {
+        target = "nexus"
+        usernameProperty = "ossrhUser"
+        passwordProperty = "ossrhPass"
+        customGradleCommand = "closeAndReleaseStagingRepositories"
+    }
+}
+```
+
+For `nexus`, you must apply and configure the Nexus publishing plugin yourself. `customGradleCommand` is only used for `target = "nexus"`.
+
+## Credentials
+
+Pass credentials as Gradle properties, for example:
+
+```bash
+./gradlew publish -PprodUser=user -PprodPassword=token
+```
+
+Or configure global fallbacks:
 
 ```kotlin
 publisher {
     usernameProperty = "globalUser"
     passwordProperty = "globalPass"
 
-    dev { target = "https://dev-repo-url" }
-    prod { target = "https://prod-repo-url" }
+    dev {
+        target = "https://dev-repo-url"
+    }
+
+    prod {
+        target = "https://prod-repo-url"
+    }
 }
 ```
 
-Passing credentials via CLI:
+## Git Configuration
 
-```bash
-./gradlew publish -PglobalUser=user -PglobalPass=pass
-```
+By default the plugin resolves Git metadata from the current project directory.
 
-### Git Folder Configuration
-
-Specify the path to the repository root or the `.git` entry to use (defaults to current directory):
+If your build runs from a different path, point it at the repository root or the `.git` entry:
 
 ```kotlin
 publisher {
@@ -105,166 +192,87 @@ publisher {
 }
 ```
 
-If the configured path does not point to a valid Git-aware checkout, the plugin now fails fast with an explicit error instead of continuing with ambiguous branch detection.
+If the configured path is not Git-aware, the plugin fails fast with a detailed error instead of guessing.
 
-### Release Branch Patterns
+## Shadow JAR Publishing
 
-Define patterns to identify release branches. Versions on matching branches remain unchanged:
-
-```kotlin
-publisher {
-    releaseBranchPatterns = ["^release/\\d+\\.\\d+\\.\\d+$", "^v\\d+\\.\\d+$"]
-}
-```
-
-### 📖 Configuring Publication Type (`publishShadowJar`)
-
-By default, the Gradle Publisher Plugin publishes the standard `java` component, which is ideal for Java libraries. This typically includes the main JAR (without dependencies), its `pom.xml` (listing dependencies), and optionally the `sources` and `javadoc` JARs.
-
-If you are building an application, CLI tool, or any project where you want to publish a self-contained "fat JAR" (including all dependencies), you can instruct the plugin to publish the output of the `com.github.johnrengelman.shadow` plugin instead.
-
-**How to Use:**
-
-Set the `publishShadowJar` property to `true` within your `publisher` configuration block:
+To publish a `shadowJar` artifact instead of the normal `java` component:
 
 ```kotlin
 publisher {
-  // Set to true to publish the output of the 'shadowJar' task
-  publishShadowJar = true
+    shadowJar = true
 
-  // ... your repository and other configurations ...
-  prod { target = "https://your-prod-repo-url" }
+    prod {
+        target = "https://your-prod-repo-url"
+    }
 }
 ```
 
-**Prerequisites for `publishShadowJar = true`:**
+Requirements:
 
-1.  You **must** have the `com.github.johnrengelman.shadow` plugin applied in the same `build.gradle.kts` file.
-2.  The `shadowJar` task must be available and correctly configured in your project.
+- a `shadowJar` task must exist in the project
+- this setting publishes one artifact variant, not both standard and shadow artifacts
 
-**Important Note:** This setting configures a *single* publication. The project will publish *either* the standard `java` component *or* the `shadowJar` artifact, based on this flag. It does not support publishing both from the same project within a single `publisher` configuration. The `artifactId` published will be based on `project.name`.
+## Accessing Resolved Versions
 
----
+After evaluation, the plugin exposes:
 
-## 🧪 Special Cases
-
-### Publishing to Nexus
-
-When publishing to Sonatype OSSRH/Nexus, manually apply **and configure** the [Nexus Publish Plugin](https://github.com/gradle-nexus/publish-plugin). Define the task required for publication:
-
-```kotlin
-prod {
-  target = "nexus"
-  usernameProperty = "ossrhUser"
-  passwordProperty = "ossrhPass"
-  customGradleCommand = "closeAndReleaseStagingRepositories"
-}
-```
-
-### Publishing to Maven Central (New Portal)
-
-Automatically uses the task `publishToMavenCentralPortal`, powered by [flying-gradle-plugin](https://github.com/yananhub/flying-gradle-plugin):
-
-```kotlin
-prod { target = "mavenCentral" }
-```
-
-**Note:** `customGradleCommand` applies exclusively to Nexus publishing.
-
-### Local Publishing
-
-Publish to your local `.m2` repository for testing purposes:
-
-```kotlin
-dev { target = "local" }
-```
-
-Automatically disables signing and publishes to `~/.m2/repository`.
-
----
-
-## 🔧 Advanced Configuration
-
-### Altering Project Version (`alterProjectVersion`)
-
-The `alterProjectVersion` setting determines if the plugin should modify `project.version` directly:
-
-- If `true` (default):  
-  `project.version` is modified to the computed version during all Gradle tasks.
-- If `false`:  
-  `project.version` remains unchanged for most Gradle tasks, except during the `publish` task, where it temporarily changes to ensure consistent publications.
+- `publisher.resolvedVersion`
+- `publisher.effectiveVersion`
 
 Example:
 
 ```kotlin
-publisher {
-  alterProjectVersion = false
+afterEvaluate {
+    println("Resolved version: ${publisher.resolvedVersion}")
+    println("Effective version: ${publisher.effectiveVersion}")
+    println("Project version: ${project.version}")
 }
 ```
 
-**Important:** The computed `project.version` and the following properties can only be accessed after the Gradle configuration phase (`afterEvaluate`).
-
-### Accessing Computed Versions
-
-- **`publisher.resolvedVersion`**: Always exposes the computed version (ignores `alterProjectVersion`). Useful for tagging or metadata.
-- **`publisher.effectiveVersion`**: Exposes the version respecting `alterProjectVersion`. Matches `project.version` behavior, except during the `publish` task when `alterProjectVersion` is `false`.
-
-Example usage:
+## Complete Example
 
 ```kotlin
-afterEvaluate {
-  println("Resolved version: ${publisher.resolvedVersion}")
-  println("Effective version: ${publisher.effectiveVersion}")
-  println("Project version: ${project.version}")
+publisher {
+    gitFolder = "."
+    alterProjectVersion = true
+
+    usernameProperty = "globalUser"
+    passwordProperty = "globalPass"
+
+    releaseBranchPatterns = listOf(
+        "^release/\\d+\\.\\d+\\.\\d+$",
+        "^v\\d+\\.\\d+$",
+    )
+
+    dev {
+        target = "local"
+        sign = false
+    }
+
+    prod {
+        target = "mavenCentral"
+        usernameProperty = "prodUser"
+        passwordProperty = "prodPass"
+    }
 }
 ```
 
----
+## Troubleshooting
 
-## 🐞 Debugging
-
-Run with detailed logs for troubleshooting:
+Run with info logs:
 
 ```bash
 ./gradlew publish --info
 ```
 
----
+Common points:
 
-## 📌 Important Notes
+- `publish` is the task this plugin hooks into
+- `publishPlugins` is separate from this plugin's publishing flow
+- `alterProjectVersion = false` keeps the normal project version for most tasks and only applies the computed version during publishing
+- if no release patterns are configured, release detection depends on default-branch resolution
 
-- Automatically applies `maven-publish`
-- Defaults to `mavenLocal` if no targets configured
-- `customGradleCommand` is exclusive to `target="nexus"`
-- Credentials default to `mavenUsername` and `mavenPassword` if unspecified
-- Compatible with CI/CD tools (Jenkins, GitHub Actions, GitLab CI, etc.)
+## Example Project
 
----
-
-## 🛠️ Complete Configuration Example
-
-A comprehensive configuration example:
-
-```kotlin
-publisher {
-  gitFolder = "."
-  alterProjectVersion = true
-
-  usernameProperty = "globalUser"
-  passwordProperty = "globalPass"
-
-  releaseBranchPatterns = ["^release/\\d+\\.\\d+\\.\\d+$", "^v\\d+\\.\\d+$"]
-
-  dev {
-    target = "local"
-    sign = false
-  }
-
-  prod {
-    target = "mavenCentral"
-    usernameProperty = "prodUser"
-    passwordProperty = "prodPass"
-  }
-}
-```
-
+For a multi-module example, see [Bound CI Demo](https://github.com/zucca-devops-tooling/bound-ci-demo).
