@@ -89,7 +89,6 @@ jobs:
     name: Publish to Maven repository
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push'
 
     steps:
       - name: Checkout
