@@ -451,7 +451,5 @@ class GitHelper(
     }
 
     @VisibleForTesting
-    internal fun executeGitCommand(options: List<String>): String {
-        return executeGitCommandResult(options).output
-    }
+    internal fun executeGitCommand(options: List<String>): String = executeGitCommandResult(options).output
 }
