@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package dev.zuccaops.helpers
+
 import org.gradle.api.Project
 import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
 import java.io.ByteArrayOutputStream
@@ -34,6 +35,7 @@ class GitHelper(
 ) {
     private val pointer = "&"
     private val separator = "#"
+    private val ignoredRefs = setOf("HEAD", "grafted")
 
     /**
      * Gets the branch name for a specific Git revision using `git log`.
@@ -63,20 +65,73 @@ class GitHelper(
 
     private fun extractBranchName(output: String): String? {
         val tagsRefPrefix = "tag: "
+        val candidates = mutableListOf<Pair<Int, String>>()
 
-        return output
-            .substringAfter(pointer)
+        output
             .split(separator)
             .map { it.trim() }
-            .filterNot { it.startsWith(tagsRefPrefix) || it == "HEAD" }
-            .map { it.removePrefix("origin/") }
+            .filter { it.isNotEmpty() }
+            .forEach { ref ->
+                when {
+                    ref.startsWith(tagsRefPrefix) || ref in ignoredRefs -> Unit
+                    ref.startsWith("HEAD$pointer") ->
+                        normalizeBranchRef(ref.substringAfter(pointer))?.let {
+                            candidates += 0 to it
+                        }
+                    ref.startsWith("origin/HEAD$pointer") || ref.startsWith("refs/remotes/origin/HEAD$pointer") ->
+                        normalizeBranchRef(ref.substringAfter(pointer))?.let {
+                            candidates += 3 to it
+                        }
+                    ref.contains(pointer) ->
+                        normalizeBranchRef(ref.substringAfter(pointer))?.let {
+                            candidates += 3 to it
+                        }
+                    else ->
+                        normalizeBranchRef(ref)?.let {
+                            val priority =
+                                if (ref.startsWith("origin/") || ref.startsWith("refs/remotes/origin/")) {
+                                    2
+                                } else {
+                                    1
+                                }
+                            candidates += priority to it
+                        }
+                }
+            }
+
+        return candidates
+            .sortedBy { it.first }
+            .map { it.second }
             .firstOrNull()
+    }
+
+    private fun normalizeBranchRef(ref: String): String? {
+        val trimmed = ref.trim()
+
+        if (trimmed.isEmpty() || trimmed in ignoredRefs || trimmed.startsWith("tag: ")) {
+            return null
+        }
+
+        return when {
+            trimmed.startsWith("refs/heads/") -> trimmed.removePrefix("refs/heads/")
+            trimmed.startsWith("refs/remotes/origin/HEAD") -> null
+            trimmed.startsWith("refs/remotes/origin/") -> trimmed.removePrefix("refs/remotes/origin/")
+            trimmed.startsWith("origin/HEAD") -> null
+            trimmed.startsWith("origin/") -> trimmed.removePrefix("origin/")
+            else -> trimmed
+        }
     }
 
     /**
      * Attempts to resolve the branch name of the current commit or a previous one.
      */
     fun getBranch(): String {
+        val ciBranch = getBranchByCIEnv()
+        if (ciBranch != null) {
+            project.logger.info("Detected branch from CI environment: $ciBranch")
+            return ciBranch
+        }
+
         var branch = getBranchForRevision(-1) // Based on current commit
 
         if (branch == null) {
@@ -132,6 +187,74 @@ class GitHelper(
 
         // Fallback: common CI env vars
         return getDefaultBranchByCIEnv()
+    }
+
+    @VisibleForTesting
+    fun getBranchByCIEnv(): String? = getBranchByCIEnv(System.getenv())
+
+    @VisibleForTesting
+    internal fun getBranchByCIEnv(envVars: Map<String, String>): String? {
+        project.logger.debug("Checking env vars to detect current branch")
+
+        envVars["GITHUB_HEAD_REF"]
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                project.logger.debug("`GITHUB_HEAD_REF` found")
+                return it
+            }
+
+        envVars["GITHUB_REF"]
+            ?.takeIf { it.startsWith("refs/heads/") }
+            ?.removePrefix("refs/heads/")
+            ?.let {
+                project.logger.debug("`GITHUB_REF` found")
+                return it
+            }
+
+        envVars["CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"]
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                project.logger.debug("`CI_MERGE_REQUEST_SOURCE_BRANCH_NAME` found")
+                return it
+            }
+
+        envVars["CI_COMMIT_BRANCH"]
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                project.logger.debug("`CI_COMMIT_BRANCH` found")
+                return it
+            }
+
+        envVars["CI_COMMIT_REF_NAME"]
+            ?.takeIf { it.isNotBlank() && envVars["CI_COMMIT_TAG"].isNullOrBlank() }
+            ?.let {
+                project.logger.debug("`CI_COMMIT_REF_NAME` found")
+                return it
+            }
+
+        envVars["BRANCH_NAME"]
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                project.logger.debug("`BRANCH_NAME` found")
+                return it
+            }
+
+        envVars["BITBUCKET_BRANCH"]
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                project.logger.debug("`BITBUCKET_BRANCH` found")
+                return it
+            }
+
+        envVars["GIT_BRANCH"]
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                project.logger.debug("`GIT_BRANCH` found")
+                return it.removePrefix("refs/heads/").removePrefix("origin/")
+            }
+
+        project.logger.debug("No envVars found for current branch")
+        return null
     }
 
     @VisibleForTesting

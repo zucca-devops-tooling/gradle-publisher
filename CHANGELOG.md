@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Branch detection now prefers CI-provided branch metadata and ignores `grafted`/symbolic remote decorations that can appear in shallow GitHub Actions checkouts.
+
 ## [1.1.0] - 2025-05-23
 ### ✨ Added
 - New configuration option: `shadowJar` which when set to true changes the publication type from `java` to `shadowJar`
