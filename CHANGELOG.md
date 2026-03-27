@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Branch detection now prefers CI-provided branch metadata and ignores `grafted`/symbolic remote decorations that can appear in shallow GitHub Actions checkouts.
 - The plugin now fails fast with a comprehensive error when the Git-aware context is missing or misconfigured, instead of continuing with ambiguous branch resolution.
 
+### Security
+- Remote repository existence checks no longer install a JVM-global authenticator, reducing the risk of credential leakage across Gradle daemon builds.
+
 ## [1.1.0] - 2025-05-23
 ### ✨ Added
 - New configuration option: `shadowJar` which when set to true changes the publication type from `java` to `shadowJar`
