@@ -105,7 +105,7 @@ open class PluginConfiguration
         /** Global fallback password property (used if not defined in `dev` or `prod`) */
         var passwordProperty: String = Defaults.PASS_PROPERTY
 
-        /** Folder containing the `.git` directory (relative to project root) */
+        /** Repository root or `.git` entry to use for Git-aware version resolution (relative to project root) */
         var gitFolder: String = Defaults.GIT_FOLDER
 
         /** List of regex patterns to identify release branches */
