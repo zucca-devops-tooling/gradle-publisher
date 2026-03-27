@@ -97,13 +97,15 @@ Passing credentials via CLI:
 
 ### Git Folder Configuration
 
-Specify the path to your Git folder (defaults to current directory):
+Specify the path to the repository root or the `.git` entry to use (defaults to current directory):
 
 ```kotlin
 publisher {
     gitFolder = "some/path/to/.git"
 }
 ```
+
+If the configured path does not point to a valid Git-aware checkout, the plugin now fails fast with an explicit error instead of continuing with ambiguous branch detection.
 
 ### Release Branch Patterns
 
