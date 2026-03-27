@@ -19,15 +19,15 @@ import dev.zuccaops.configuration.PluginConfiguration
 import dev.zuccaops.helpers.VersionResolver
 import dev.zuccaops.helpers.publisherConfiguration
 import dev.zuccaops.helpers.skipTasks
+import dev.zuccaops.repositories.ArtifactExistenceChecker
 import dev.zuccaops.repositories.BaseRepositoryPublisher
 import dev.zuccaops.repositories.RepositoryAuthenticator
+import dev.zuccaops.repositories.shouldPublishRelease
+import dev.zuccaops.repositories.shouldPublishSnapshot
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
-import java.io.FileNotFoundException
-import java.net.Authenticator
-import java.net.URL
 
 /**
  * Publisher for remote Maven repositories (e.g., Artifactory, GitHub Packages).
@@ -51,22 +51,16 @@ class RemoteRepositoryPublisher(
     private val configuration: PluginConfiguration = project.publisherConfiguration()
 
     override fun isPublishable(): Boolean {
-        if (versionResolver.isRelease()) {
-            project.logger.info("Checking if artifact exists at: ${getUri()}")
-            Authenticator.setDefault(repositoryAuthenticator)
-
-            try {
-                URL(getUri()).readBytes()
-                project.logger.lifecycle("Production version already published, skipping tasks")
-                return false
-            } catch (e: FileNotFoundException) {
-                project.logger.lifecycle("Production version not published yet, proceeding with publication")
-                return true
-            }
+        if (!versionResolver.isRelease()) {
+            return project.shouldPublishSnapshot()
         }
 
-        project.logger.lifecycle("Snapshot version detected, proceeding with publication")
-        return true
+        val artifactUri = getUri()
+        project.logger.info("Checking if artifact exists at: $artifactUri")
+
+        return project.shouldPublishRelease(
+            ArtifactExistenceChecker.checkHttp(artifactUri, repositoryAuthenticator.getProdCredentials()),
+        )
     }
 
     override fun shouldSign(): Boolean = if (versionResolver.isRelease()) configuration.prod.sign else configuration.dev.sign

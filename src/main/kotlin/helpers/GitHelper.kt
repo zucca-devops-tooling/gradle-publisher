@@ -82,20 +82,29 @@ class GitHelper(
             .filter { it.isNotEmpty() }
             .forEach { ref ->
                 when {
-                    ref.startsWith(tagsRefPrefix) || ref in ignoredRefs -> Unit
-                    ref.startsWith("HEAD$pointer") ->
+                    ref.startsWith(tagsRefPrefix) || ref in ignoredRefs -> {
+                        Unit
+                    }
+
+                    ref.startsWith("HEAD$pointer") -> {
                         normalizeBranchRef(ref.substringAfter(pointer))?.let {
                             candidates += 0 to it
                         }
-                    ref.startsWith("origin/HEAD$pointer") || ref.startsWith("refs/remotes/origin/HEAD$pointer") ->
+                    }
+
+                    ref.startsWith("origin/HEAD$pointer") || ref.startsWith("refs/remotes/origin/HEAD$pointer") -> {
                         normalizeBranchRef(ref.substringAfter(pointer))?.let {
                             candidates += 3 to it
                         }
-                    ref.contains(pointer) ->
+                    }
+
+                    ref.contains(pointer) -> {
                         normalizeBranchRef(ref.substringAfter(pointer))?.let {
                             candidates += 3 to it
                         }
-                    else ->
+                    }
+
+                    else -> {
                         normalizeBranchRef(ref)?.let {
                             val priority =
                                 if (ref.startsWith("origin/") || ref.startsWith("refs/remotes/origin/")) {
@@ -105,6 +114,7 @@ class GitHelper(
                                 }
                             candidates += priority to it
                         }
+                    }
                 }
             }
 

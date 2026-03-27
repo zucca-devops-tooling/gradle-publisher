@@ -50,15 +50,25 @@ object RepositoryPublisherFactory {
         val repositoryAuthenticator = RepositoryAuthenticator(project)
 
         return when (repositoryConfig.target) {
-            RepositoryConstants.LOCAL_TARGET_COMMAND -> LocalRepositoryPublisher(project, versionResolver)
-            RepositoryConstants.MAVEN_CENTRAL_COMMAND -> MavenCentralRepositoryPublisher(project, versionResolver, repositoryAuthenticator)
-            RepositoryConstants.SONATYPE_COMMAND ->
+            RepositoryConstants.LOCAL_TARGET_COMMAND -> {
+                LocalRepositoryPublisher(project, versionResolver)
+            }
+
+            RepositoryConstants.MAVEN_CENTRAL_COMMAND -> {
+                MavenCentralRepositoryPublisher(project, versionResolver, repositoryAuthenticator)
+            }
+
+            RepositoryConstants.SONATYPE_COMMAND -> {
                 NexusRepositoryPublisher(
                     project,
                     versionResolver,
                     repositoryConfig.customGradleCommand!!,
                 )
-            else -> RemoteRepositoryPublisher(project, versionResolver, repositoryAuthenticator)
+            }
+
+            else -> {
+                RemoteRepositoryPublisher(project, versionResolver, repositoryAuthenticator)
+            }
         }
     }
 }

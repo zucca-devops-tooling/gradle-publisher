@@ -26,8 +26,8 @@ import java.net.PasswordAuthentication
  * Authenticates against remote repositories by resolving credentials from
  * project properties, using a fallback hierarchy for dev and prod environments.
  *
- * This class also integrates with `HttpURLConnection` when authentication
- * is needed at runtime via `Authenticator.setDefault(...)`.
+ * This class can also be used as a `java.net.Authenticator` when required,
+ * while still exposing resolved credentials directly to callers.
  *
  * @property project the current Gradle project
  *
@@ -45,12 +45,11 @@ class RepositoryAuthenticator(
      * @return the password authentication object or null if credentials are missing
      */
     override fun getPasswordAuthentication(): PasswordAuthentication? {
-        val username: String? = getProdUsername()
-        val password: String? = getProdPassword()
+        val credentials = getProdCredentials()
 
-        if (username != null && password != null) {
+        if (credentials != null) {
             project.logger.debug("Requesting to repository with credentials")
-            return PasswordAuthentication(username, password.toCharArray())
+            return PasswordAuthentication(credentials.username, credentials.password.toCharArray())
         }
 
         project.logger.debug("Credentials could not be found, requesting to repository without credentials")
@@ -65,6 +64,9 @@ class RepositoryAuthenticator(
     fun getProdPassword(): String? = getPasswordOrFallback(configuration.prod.passwordProperty)
 
     fun getDevPassword(): String? = getPasswordOrFallback(configuration.dev.passwordProperty)
+
+    internal fun getProdCredentials(): RepositoryCredentials? =
+        getCredentials(configuration.prod.usernameProperty, configuration.prod.passwordProperty)
 
     private fun getUsernameOrFallback(usernamePropertyName: String): String? =
         getPropertyOrFallback(usernamePropertyName) {
@@ -87,6 +89,20 @@ class RepositoryAuthenticator(
         val property: String? = getProperty(propertyName)
 
         return property ?: fallbackFn()
+    }
+
+    private fun getCredentials(
+        usernamePropertyName: String,
+        passwordPropertyName: String,
+    ): RepositoryCredentials? {
+        val username = getUsernameOrFallback(usernamePropertyName)
+        val password = getPasswordOrFallback(passwordPropertyName)
+
+        return if (username != null && password != null) {
+            RepositoryCredentials(username, password)
+        } else {
+            null
+        }
     }
 
     private fun getProperty(propertyName: String): String? {

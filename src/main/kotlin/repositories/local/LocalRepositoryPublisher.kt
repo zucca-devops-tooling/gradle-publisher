@@ -16,8 +16,11 @@
 package dev.zuccaops.repositories.local
 
 import dev.zuccaops.helpers.VersionResolver
+import dev.zuccaops.repositories.ArtifactExistenceChecker
 import dev.zuccaops.repositories.BaseRepositoryPublisher
 import dev.zuccaops.repositories.RepositoryConstants
+import dev.zuccaops.repositories.shouldPublishRelease
+import dev.zuccaops.repositories.shouldPublishSnapshot
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.kotlin.dsl.get
@@ -42,26 +45,19 @@ class LocalRepositoryPublisher(
     private val versionResolver: VersionResolver,
 ) : BaseRepositoryPublisher(project, versionResolver) {
     override fun isPublishable(): Boolean {
-        if (versionResolver.isRelease()) {
-            val m2Repo = File(System.getProperty("user.home"), RepositoryConstants.LOCAL_MAVEN_PATH)
-            val groupPath = project.group.toString().replace('.', '/')
-            val artifactId = project.name
-            val version = versionResolver.getVersion()
-
-            val artifactPath = File(m2Repo, "$groupPath/$artifactId/$version/$artifactId-$version.jar")
-            project.logger.info("Checking if artifact exists at: $artifactPath")
-
-            if (artifactPath.exists()) {
-                project.logger.lifecycle("Production version already published, skipping tasks")
-                return false
-            } else {
-                project.logger.lifecycle("Production version not published yet, proceeding with publication")
-                return true
-            }
+        if (!versionResolver.isRelease()) {
+            return project.shouldPublishSnapshot()
         }
 
-        project.logger.lifecycle("Snapshot version detected, proceeding with publication")
-        return true
+        val m2Repo = File(System.getProperty("user.home"), RepositoryConstants.LOCAL_MAVEN_PATH)
+        val groupPath = project.group.toString().replace('.', '/')
+        val artifactId = project.name
+        val version = versionResolver.getVersion()
+
+        val artifactPath = File(m2Repo, "$groupPath/$artifactId/$version/$artifactId-$version.jar")
+        project.logger.info("Checking if artifact exists at: $artifactPath")
+
+        return project.shouldPublishRelease(ArtifactExistenceChecker.checkFile(artifactPath))
     }
 
     /**
