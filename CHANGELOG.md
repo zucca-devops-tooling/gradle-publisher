@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ### Fixed
 - Branch detection now prefers CI-provided branch metadata and ignores `grafted`/symbolic remote decorations that can appear in shallow GitHub Actions checkouts.
+- The plugin now fails fast with a comprehensive error when the Git-aware context is missing or misconfigured, instead of continuing with ambiguous branch resolution.
 
 ## [1.1.0] - 2025-05-23
 ### ✨ Added
