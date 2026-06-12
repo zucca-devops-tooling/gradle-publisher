@@ -19,6 +19,7 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -51,7 +52,7 @@ class PackagedPluginIntegrationTest {
     }
 
     @Test
-    fun `candidate repository contains a resolvable plugin marker implementation and runtime metadata`() {
+    fun `candidate repository contains a self-contained resolvable plugin`() {
         val markerPom = markerArtifactDirectory().resolve("$PLUGIN_ID.gradle.plugin-$candidateVersion.pom")
         val implementationPom = implementationArtifactDirectory().resolve("$IMPLEMENTATION_ARTIFACT-$candidateVersion.pom")
         val implementationModule = implementationArtifactDirectory().resolve("$IMPLEMENTATION_ARTIFACT-$candidateVersion.module")
@@ -66,15 +67,15 @@ class PackagedPluginIntegrationTest {
         assertTrue(implementationPom.exists(), "The implementation POM must be published")
         assertTrue(implementationModule.exists(), "Gradle module metadata must be published")
         assertTrue(implementationJar.exists(), "The implementation JAR must be published")
-        assertTrue(
-            dependenciesIn(implementationPom).contains(
-                Coordinate(
-                    "tech.yanand.maven-central-publish",
-                    "tech.yanand.maven-central-publish.gradle.plugin",
-                    "1.2.0",
-                ),
-            ),
-            "The packaged implementation metadata must retain its runtime dependency",
+        assertFalse(
+            dependenciesIn(implementationPom).any { dependency ->
+                dependency.group.startsWith("tech.yanand")
+            },
+            "The packaged implementation POM must not depend on Yanand",
+        )
+        assertFalse(
+            implementationModule.readText().contains("tech.yanand"),
+            "The packaged Gradle module metadata must not depend on Yanand",
         )
 
         ZipFile(implementationJar.toFile()).use { jar ->
@@ -85,20 +86,9 @@ class PackagedPluginIntegrationTest {
             assertEquals("dev.zuccaops.GradlePublisherPlugin", properties.getProperty("implementation-class"))
         }
 
-        assertTrue(
-            candidateRepository
-                .resolve(
-                    "tech/yanand/maven-central-publish/" +
-                        "tech.yanand.maven-central-publish.gradle.plugin/1.2.0/" +
-                        "tech.yanand.maven-central-publish.gradle.plugin-1.2.0.pom",
-                ).exists(),
-        )
-        assertTrue(
-            candidateRepository
-                .resolve(
-                    "tech/yanand/gradle/maven-central-publish/1.2.0/" +
-                        "maven-central-publish-1.2.0.jar",
-                ).exists(),
+        assertFalse(
+            candidateRepository.resolve("tech/yanand").exists(),
+            "The isolated candidate repository must not stage Yanand artifacts",
         )
     }
 

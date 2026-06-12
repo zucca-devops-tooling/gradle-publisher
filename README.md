@@ -143,6 +143,13 @@ publisher {
 
 This routes `publish` to `publishToMavenCentralPortal`.
 
+The plugin publishes Maven-layout artifacts into `build/repos/bundles`, creates
+`build/repos/bundles.zip`, and uploads that bundle to the Central Portal Publisher
+API with `USER_MANAGED` publishing. The task waits for validation and then leaves
+the deployment ready for manual publishing in the Central Portal.
+The configured portal username and password are Base64-encoded as
+`username:password` and sent as a Bearer token.
+
 ### Nexus / OSSRH
 
 ```kotlin

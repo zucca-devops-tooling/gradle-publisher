@@ -14,7 +14,6 @@ version = "1.1.1"
 val integrationTestCandidateVersion = "0.0.0-integration-test"
 val integrationTestRepositoryDirectory = layout.buildDirectory.dir("integration-test-repository")
 val integrationTestConsumerDirectory = layout.buildDirectory.dir("integration-test-consumers")
-val mavenCentralPublishPluginVersion = "1.2.0"
 
 repositories {
     mavenCentral()
@@ -27,10 +26,6 @@ dependencies {
     testImplementation("io.mockk:mockk-agent-jvm:1.14.6")
     implementation(gradleApi())
     implementation(localGroovy())
-    implementation(
-        "tech.yanand.maven-central-publish:" +
-            "tech.yanand.maven-central-publish.gradle.plugin:$mavenCentralPublishPluginVersion",
-    )
 }
 
 val functionalTestSourceSet = sourceSets.create("functionalTest")
@@ -45,38 +40,9 @@ configurations[integrationTestSourceSet.implementationConfigurationName]
 configurations[integrationTestSourceSet.runtimeOnlyConfigurationName]
     .extendsFrom(configurations.testRuntimeOnly.get())
 
-val integrationTestRuntimeMarkerPom by configurations.creating {
-    isCanBeConsumed = false
-    isCanBeResolved = true
-    isTransitive = false
-}
-val integrationTestRuntimeImplementationPom by configurations.creating {
-    isCanBeConsumed = false
-    isCanBeResolved = true
-    isTransitive = false
-}
-val integrationTestRuntimeImplementationJar by configurations.creating {
-    isCanBeConsumed = false
-    isCanBeResolved = true
-    isTransitive = false
-}
-
 dependencies {
     add(functionalTestSourceSet.implementationConfigurationName, gradleTestKit())
     add(integrationTestSourceSet.implementationConfigurationName, gradleTestKit())
-    add(
-        integrationTestRuntimeMarkerPom.name,
-        "tech.yanand.maven-central-publish:" +
-            "tech.yanand.maven-central-publish.gradle.plugin:$mavenCentralPublishPluginVersion@pom",
-    )
-    add(
-        integrationTestRuntimeImplementationPom.name,
-        "tech.yanand.gradle:maven-central-publish:$mavenCentralPublishPluginVersion@pom",
-    )
-    add(
-        integrationTestRuntimeImplementationJar.name,
-        "tech.yanand.gradle:maven-central-publish:$mavenCentralPublishPluginVersion",
-    )
 }
 
 tasks.test {
@@ -107,59 +73,6 @@ val cleanIntegrationTestConsumers =
         delete(integrationTestConsumerDirectory)
     }
 
-val runtimeMarkerPom =
-    integrationTestRepositoryDirectory.map {
-        it.file(
-            "tech/yanand/maven-central-publish/" +
-                "tech.yanand.maven-central-publish.gradle.plugin/" +
-                "$mavenCentralPublishPluginVersion/" +
-                "tech.yanand.maven-central-publish.gradle.plugin-$mavenCentralPublishPluginVersion.pom",
-        ).asFile
-    }
-val runtimeImplementationPom =
-    integrationTestRepositoryDirectory.map {
-        it.file(
-            "tech/yanand/gradle/maven-central-publish/" +
-                "$mavenCentralPublishPluginVersion/" +
-                "maven-central-publish-$mavenCentralPublishPluginVersion.pom",
-        ).asFile
-    }
-val runtimeImplementationJar =
-    integrationTestRepositoryDirectory.map {
-        it.file(
-            "tech/yanand/gradle/maven-central-publish/" +
-                "$mavenCentralPublishPluginVersion/" +
-                "maven-central-publish-$mavenCentralPublishPluginVersion.jar",
-        ).asFile
-    }
-
-val stageIntegrationTestRuntimeDependencies =
-    tasks.register("stageIntegrationTestRuntimeDependencies") {
-        description = "Stages packaged plugin runtime dependencies in the integration-test repository."
-        group = LifecycleBasePlugin.BUILD_GROUP
-        dependsOn(cleanIntegrationTestRepository)
-        inputs.files(
-            integrationTestRuntimeMarkerPom,
-            integrationTestRuntimeImplementationPom,
-            integrationTestRuntimeImplementationJar,
-        )
-        outputs.files(runtimeMarkerPom, runtimeImplementationPom, runtimeImplementationJar)
-
-        doLast {
-            fun copySingleFile(
-                source: Configuration,
-                destination: File,
-            ) {
-                destination.parentFile.mkdirs()
-                source.singleFile.copyTo(destination, overwrite = true)
-            }
-
-            copySingleFile(integrationTestRuntimeMarkerPom, runtimeMarkerPom.get())
-            copySingleFile(integrationTestRuntimeImplementationPom, runtimeImplementationPom.get())
-            copySingleFile(integrationTestRuntimeImplementationJar, runtimeImplementationJar.get())
-        }
-    }
-
 val candidatePublicationTasks =
     listOf(
         "publishIntegrationTestPluginMavenPublicationToIntegrationTestRepository",
@@ -174,7 +87,6 @@ val prepareIntegrationTestRepository =
     tasks.register("prepareIntegrationTestRepository") {
         description = "Publishes the packaged candidate plugin into an isolated Maven repository."
         group = LifecycleBasePlugin.BUILD_GROUP
-        dependsOn(stageIntegrationTestRuntimeDependencies)
         dependsOn(candidatePublicationTasks)
         outputs.dir(integrationTestRepositoryDirectory)
     }

@@ -17,18 +17,18 @@ package dev.zuccaops.repositories.central
 
 import dev.zuccaops.helpers.VersionResolver
 import dev.zuccaops.repositories.RepositoryAuthenticator
-import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ArtifactRepositoryContainer.MAVEN_CENTRAL_URL
 import org.gradle.api.artifacts.dsl.RepositoryHandler
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.provider.Property
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
+import org.gradle.api.tasks.bundling.Zip
 import java.util.Base64
 
 /**
- * Publisher that targets the new Maven Central (Central Portal) using the [flying-gradle-plugin](https://github.com/yananhub/flying-gradle-plugin).
+ * Publisher that targets the Maven Central Portal.
  *
- * This class dynamically applies the plugin and configures it using reflection to avoid compile-time dependency.
- * It uses `USER_MANAGED` publishing mode, so manual review and publishing is expected in the portal.
+ * It stages Maven-layout artifacts locally, creates a deployment bundle, and uploads it using
+ * `USER_MANAGED` publishing mode so manual review and publishing is expected in the portal.
  *
  * For release branches, the plugin checks if the artifact already exists in Maven Central
  * and skips publishing if it has already been released.
@@ -45,26 +45,24 @@ class MavenCentralRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,
     private val repositoryAuthenticator: RepositoryAuthenticator,
-) : SonatypeRepositoryPublisher(project, versionResolver) {
+    repositoryBaseUrl: String = MAVEN_CENTRAL_URL.toString(),
+) : SonatypeRepositoryPublisher(project, versionResolver, repositoryBaseUrl) {
     companion object {
-        // Plugin routing details
         const val ROUTING_COMMAND = "publishToMavenCentralPortal"
-        const val ROUTING_PLUGIN_ID = "tech.yanand.maven-central-publish"
-
-        // Extension and reflection method names
-        const val MAVEN_CENTRAL_EXTENSION_NAME = "mavenCentral"
-        const val METHOD_GET_REPO_DIR = "getRepoDir"
-        const val METHOD_GET_AUTH_TOKEN = "getAuthToken"
-        const val METHOD_GET_PUBLISHING_TYPE = "getPublishingType"
-
-        // Other constants
+        const val ZIP_TASK_NAME = "zipBundleForUpload"
         const val DEFAULT_REPO_DIR_PATH = "repos/bundles"
+        const val DEFAULT_PORTAL_BASE_URL = "https://central.sonatype.com"
+        const val DEFAULT_MAX_WAIT_SECONDS = 60L
+        const val DEFAULT_POLL_INTERVAL_MILLIS = 10_000L
         const val PUBLISHING_TYPE_USER_MANAGED = "USER_MANAGED"
+        const val PORTAL_BASE_URL_PROPERTY = "mavenCentralPortalBaseUrl"
+        const val MAX_WAIT_SECONDS_PROPERTY = "mavenCentralPortalMaxWaitSeconds"
+        const val POLL_INTERVAL_MILLIS_PROPERTY = "mavenCentralPortalPollIntervalMillis"
+        const val REPOSITORY_BASE_URL_PROPERTY = "mavenCentralRepositoryBaseUrl"
     }
 
     /**
-     * Applies the `flying-gradle-plugin` and configures it.
-     * Also finalizes the `publish` task with `publishToMavenCentralPortal`.
+     * Configures bundle creation and finalizes `publish` with the Central Portal upload.
      */
     override fun configurePublishingRepository() {
         super.configurePublishingRepository()
@@ -91,14 +89,10 @@ class MavenCentralRepositoryPublisher(
             return
         }
 
-        project.logger.lifecycle("Applying $ROUTING_PLUGIN_ID plugin")
-        project.pluginManager.apply(ROUTING_PLUGIN_ID)
-
-        val encodedCredentials = encodeBasicAuth(username, password)
-        configureMavenCentralExtension(encodedCredentials)
+        registerPortalTasks(encodeBasicAuth(username, password))
 
         project.tasks.named("publish").configure {
-            project.logger.lifecycle("⚙️ Routing 'publish' to '$ROUTING_COMMAND' after finish")
+            project.logger.lifecycle("Routing 'publish' to '$ROUTING_COMMAND' after finish")
             finalizedBy(ROUTING_COMMAND)
         }
     }
@@ -118,51 +112,62 @@ class MavenCentralRepositoryPublisher(
     override fun shouldSign(): Boolean = true
 
     /**
-     * Register a local bundle directory that flying-gradle-plugin will zip and upload.
+     * Register the local Maven repository that will be zipped and uploaded.
      */
     override fun registerRepository(repositoryHandler: RepositoryHandler) {
         repositoryHandler.maven {
             name = "Local"
             url =
                 project.layout.buildDirectory
-                    .dir("repos/bundles")
+                    .dir(DEFAULT_REPO_DIR_PATH)
                     .get()
                     .asFile
                     .toURI()
         }
     }
 
-    /**
-     * Configures `flying-gradle-plugin` extension using reflection
-     */
-    @Suppress("UNCHECKED_CAST")
-    private fun configureMavenCentralExtension(encodedCredentials: String) {
-        project.logger.info("Configuring mavenCentral extension")
-        project.extensions.configure(
-            MAVEN_CENTRAL_EXTENSION_NAME,
-            Action<Any> {
-                val clazz = this.javaClass
+    private fun registerPortalTasks(encodedCredentials: String) {
+        val repoDirectory = project.layout.buildDirectory.dir(DEFAULT_REPO_DIR_PATH)
+        val zipTask =
+            project.tasks.register(ZIP_TASK_NAME, Zip::class.java) {
+                group = "central publish"
+                description = "Creates the Maven Central Portal deployment bundle."
+                from(repoDirectory)
+                archiveFileName.set("bundles.zip")
+                destinationDirectory.set(project.layout.buildDirectory.dir("repos"))
+                isPreserveFileTimestamps = false
+                isReproducibleFileOrder = true
+                dependsOn(
+                    project.tasks
+                        .withType(PublishToMavenRepository::class.java)
+                        .matching { it.repository.name == "Local" },
+                )
+            }
 
-                project.logger.debug("Setting repoDir to $DEFAULT_REPO_DIR_PATH")
-                val repoDir = project.layout.buildDirectory.dir(DEFAULT_REPO_DIR_PATH)
-
-                clazz
-                    .getMethod(METHOD_GET_REPO_DIR)
-                    .invoke(this)
-                    .let { (it as DirectoryProperty).set(repoDir) }
-
-                project.logger.debug("Setting authToken with encoded credentials")
-                clazz
-                    .getMethod(METHOD_GET_AUTH_TOKEN)
-                    .invoke(this)
-                    .let { (it as Property<String>).set(encodedCredentials) }
-
-                project.logger.debug("Setting publishingType to $PUBLISHING_TYPE_USER_MANAGED")
-                clazz
-                    .getMethod(METHOD_GET_PUBLISHING_TYPE)
-                    .invoke(this)
-                    .let { (it as Property<String>).set(PUBLISHING_TYPE_USER_MANAGED) }
-            },
-        )
+        project.tasks.register(ROUTING_COMMAND, PublishToCentralPortalTask::class.java) {
+            group = "central publish"
+            description = "Uploads a deployment bundle to the Maven Central Portal."
+            dependsOn(zipTask)
+            bundleFile.set(zipTask.flatMap { it.archiveFile })
+            authToken.set(encodedCredentials)
+            baseUrl.set(
+                project.providers
+                    .gradleProperty(PORTAL_BASE_URL_PROPERTY)
+                    .orElse(DEFAULT_PORTAL_BASE_URL),
+            )
+            publishingType.set(PUBLISHING_TYPE_USER_MANAGED)
+            maxWaitSeconds.set(
+                project.providers
+                    .gradleProperty(MAX_WAIT_SECONDS_PROPERTY)
+                    .map(String::toLong)
+                    .orElse(DEFAULT_MAX_WAIT_SECONDS),
+            )
+            pollIntervalMillis.set(
+                project.providers
+                    .gradleProperty(POLL_INTERVAL_MILLIS_PROPERTY)
+                    .map(String::toLong)
+                    .orElse(DEFAULT_POLL_INTERVAL_MILLIS),
+            )
+        }
     }
 }
