@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Added an internal Java 17 Central Portal client that uploads Maven deployment bundles with Bearer authentication and polls deployment status.
+- Added focused unit, functional, and offline packaged-plugin integration coverage for Central Portal publishing.
+
+### Changed
+- Maven Central publishing now creates `build/repos/bundles.zip` with a Gradle `Zip` task and uploads it through the existing `publishToMavenCentralPortal` task using `USER_MANAGED` publishing.
+
+### Removed
+- Removed the Yanand Maven Central publishing runtime dependency, dynamic plugin application, reflective extension configuration, and Layer 3 dependency staging.
+
 ## [1.1.1] - 2026-03-27
 ### Fixed
 - Branch detection now prefers CI-provided branch metadata and ignores `grafted`/symbolic remote decorations that can appear in shallow GitHub Actions checkouts.
