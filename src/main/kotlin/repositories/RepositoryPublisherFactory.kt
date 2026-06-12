@@ -62,7 +62,7 @@ object RepositoryPublisherFactory {
                 NexusRepositoryPublisher(
                     project,
                     versionResolver,
-                    repositoryConfig.customGradleCommand!!,
+                    repositoryConfig.customGradleCommand.orEmpty(),
                 )
             }
 

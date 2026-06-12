@@ -109,6 +109,9 @@ publisher {
 
 Publishes to `~/.m2/repository`.
 
+No extra plugin configuration is required. The standard JVM/Maven override
+`-Dmaven.repo.local=/path/to/repository` is honored when a different local Maven repository is required.
+
 ### Remote Maven Repository
 
 ```kotlin
@@ -257,6 +260,30 @@ publisher {
     }
 }
 ```
+
+## Testing
+
+Run the fast unit tests:
+
+```bash
+./gradlew test
+```
+
+Run the Layer 2 functional tests:
+
+```bash
+./gradlew functionalTest
+```
+
+Run all verification, including formatting, unit tests, and functional tests:
+
+```bash
+./gradlew check
+```
+
+The functional tests in `src/functionalTest/kotlin` use Gradle TestKit and `withPluginClasspath()` to exercise the plugin from source in isolated temporary Gradle projects. They initialize real Git repositories and use isolated Gradle, TestKit, and Maven repository directories.
+
+These are not packaged-plugin tests and do not resolve a published plugin artifact. They are also distinct from external smoke tests that run in a separate consumer repository against real infrastructure. Those higher layers are intentionally outside this test suite.
 
 ## Troubleshooting
 
