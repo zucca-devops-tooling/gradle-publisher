@@ -11,6 +11,11 @@ plugins {
 group = "dev.zucca-ops"
 version = "1.1.1"
 
+val integrationTestCandidateVersion = "0.0.0-integration-test"
+val integrationTestRepositoryDirectory = layout.buildDirectory.dir("integration-test-repository")
+val integrationTestConsumerDirectory = layout.buildDirectory.dir("integration-test-consumers")
+val mavenCentralPublishPluginVersion = "1.2.0"
+
 repositories {
     mavenCentral()
 }
@@ -22,18 +27,56 @@ dependencies {
     testImplementation("io.mockk:mockk-agent-jvm:1.14.6")
     implementation(gradleApi())
     implementation(localGroovy())
-    implementation("tech.yanand.maven-central-publish:tech.yanand.maven-central-publish.gradle.plugin:1.2.0")
+    implementation(
+        "tech.yanand.maven-central-publish:" +
+            "tech.yanand.maven-central-publish.gradle.plugin:$mavenCentralPublishPluginVersion",
+    )
 }
 
 val functionalTestSourceSet = sourceSets.create("functionalTest")
+val integrationTestSourceSet = sourceSets.create("integrationTest")
 
 configurations[functionalTestSourceSet.implementationConfigurationName]
     .extendsFrom(configurations.testImplementation.get())
 configurations[functionalTestSourceSet.runtimeOnlyConfigurationName]
     .extendsFrom(configurations.testRuntimeOnly.get())
+configurations[integrationTestSourceSet.implementationConfigurationName]
+    .extendsFrom(configurations.testImplementation.get())
+configurations[integrationTestSourceSet.runtimeOnlyConfigurationName]
+    .extendsFrom(configurations.testRuntimeOnly.get())
+
+val integrationTestRuntimeMarkerPom by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = false
+}
+val integrationTestRuntimeImplementationPom by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = false
+}
+val integrationTestRuntimeImplementationJar by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = false
+}
 
 dependencies {
     add(functionalTestSourceSet.implementationConfigurationName, gradleTestKit())
+    add(integrationTestSourceSet.implementationConfigurationName, gradleTestKit())
+    add(
+        integrationTestRuntimeMarkerPom.name,
+        "tech.yanand.maven-central-publish:" +
+            "tech.yanand.maven-central-publish.gradle.plugin:$mavenCentralPublishPluginVersion@pom",
+    )
+    add(
+        integrationTestRuntimeImplementationPom.name,
+        "tech.yanand.gradle:maven-central-publish:$mavenCentralPublishPluginVersion@pom",
+    )
+    add(
+        integrationTestRuntimeImplementationJar.name,
+        "tech.yanand.gradle:maven-central-publish:$mavenCentralPublishPluginVersion",
+    )
 }
 
 tasks.test {
@@ -50,8 +93,119 @@ val functionalTest =
         shouldRunAfter(tasks.test)
     }
 
+val cleanIntegrationTestRepository =
+    tasks.register<Delete>("cleanIntegrationTestRepository") {
+        description = "Deletes the isolated Maven repository used by integration tests."
+        group = LifecycleBasePlugin.BUILD_GROUP
+        delete(integrationTestRepositoryDirectory)
+    }
+
+val cleanIntegrationTestConsumers =
+    tasks.register<Delete>("cleanIntegrationTestConsumers") {
+        description = "Deletes standalone consumer builds created by integration tests."
+        group = LifecycleBasePlugin.BUILD_GROUP
+        delete(integrationTestConsumerDirectory)
+    }
+
+val runtimeMarkerPom =
+    integrationTestRepositoryDirectory.map {
+        it.file(
+            "tech/yanand/maven-central-publish/" +
+                "tech.yanand.maven-central-publish.gradle.plugin/" +
+                "$mavenCentralPublishPluginVersion/" +
+                "tech.yanand.maven-central-publish.gradle.plugin-$mavenCentralPublishPluginVersion.pom",
+        ).asFile
+    }
+val runtimeImplementationPom =
+    integrationTestRepositoryDirectory.map {
+        it.file(
+            "tech/yanand/gradle/maven-central-publish/" +
+                "$mavenCentralPublishPluginVersion/" +
+                "maven-central-publish-$mavenCentralPublishPluginVersion.pom",
+        ).asFile
+    }
+val runtimeImplementationJar =
+    integrationTestRepositoryDirectory.map {
+        it.file(
+            "tech/yanand/gradle/maven-central-publish/" +
+                "$mavenCentralPublishPluginVersion/" +
+                "maven-central-publish-$mavenCentralPublishPluginVersion.jar",
+        ).asFile
+    }
+
+val stageIntegrationTestRuntimeDependencies =
+    tasks.register("stageIntegrationTestRuntimeDependencies") {
+        description = "Stages packaged plugin runtime dependencies in the integration-test repository."
+        group = LifecycleBasePlugin.BUILD_GROUP
+        dependsOn(cleanIntegrationTestRepository)
+        inputs.files(
+            integrationTestRuntimeMarkerPom,
+            integrationTestRuntimeImplementationPom,
+            integrationTestRuntimeImplementationJar,
+        )
+        outputs.files(runtimeMarkerPom, runtimeImplementationPom, runtimeImplementationJar)
+
+        doLast {
+            fun copySingleFile(
+                source: Configuration,
+                destination: File,
+            ) {
+                destination.parentFile.mkdirs()
+                source.singleFile.copyTo(destination, overwrite = true)
+            }
+
+            copySingleFile(integrationTestRuntimeMarkerPom, runtimeMarkerPom.get())
+            copySingleFile(integrationTestRuntimeImplementationPom, runtimeImplementationPom.get())
+            copySingleFile(integrationTestRuntimeImplementationJar, runtimeImplementationJar.get())
+        }
+    }
+
+val candidatePublicationTasks =
+    listOf(
+        "publishIntegrationTestPluginMavenPublicationToIntegrationTestRepository",
+        "publishIntegrationTestPluginMarkerMavenPublicationToIntegrationTestRepository",
+    )
+
+tasks.matching { it.name in candidatePublicationTasks }.configureEach {
+    dependsOn(cleanIntegrationTestRepository)
+}
+
+val prepareIntegrationTestRepository =
+    tasks.register("prepareIntegrationTestRepository") {
+        description = "Publishes the packaged candidate plugin into an isolated Maven repository."
+        group = LifecycleBasePlugin.BUILD_GROUP
+        dependsOn(stageIntegrationTestRuntimeDependencies)
+        dependsOn(candidatePublicationTasks)
+        outputs.dir(integrationTestRepositoryDirectory)
+    }
+
+val integrationTest =
+    tasks.register<Test>("integrationTest") {
+        description = "Runs integration tests against packaged candidate plugin artifacts."
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        testClassesDirs = integrationTestSourceSet.output.classesDirs
+        classpath = integrationTestSourceSet.runtimeClasspath
+        useJUnitPlatform()
+        dependsOn(prepareIntegrationTestRepository, cleanIntegrationTestConsumers)
+        shouldRunAfter(functionalTest)
+        inputs.dir(integrationTestRepositoryDirectory)
+        inputs.property("candidateVersion", integrationTestCandidateVersion)
+        systemProperty("integrationTest.candidateVersion", integrationTestCandidateVersion)
+
+        doFirst {
+            systemProperty(
+                "integrationTest.repository",
+                integrationTestRepositoryDirectory.get().asFile.absolutePath,
+            )
+            systemProperty(
+                "integrationTest.consumerDirectory",
+                integrationTestConsumerDirectory.get().asFile.absolutePath,
+            )
+        }
+    }
+
 tasks.check {
-    dependsOn(functionalTest)
+    dependsOn(functionalTest, integrationTest)
 }
 
 kotlin {
@@ -81,7 +235,9 @@ signing {
     if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !keyPath.isNullOrBlank()) {
         logger.lifecycle("🔐 Using GPG secret key file at $keyPath")
         useInMemoryPgpKeys(File(keyPath).readText(), password)
-        publishing.publications.withType<MavenPublication>().configureEach {
+        publishing.publications.withType<MavenPublication>().matching {
+            !name.startsWith("integrationTest")
+        }.configureEach {
             signing.sign(this)
         }
     } else {
@@ -90,6 +246,36 @@ signing {
 }
 
 publishing {
+    publications {
+        create<MavenPublication>("integrationTestPluginMaven") {
+            groupId = project.group.toString()
+            artifactId = project.name
+            version = integrationTestCandidateVersion
+            from(components["java"])
+        }
+
+        create<MavenPublication>("integrationTestPluginMarkerMaven") {
+            groupId = "dev.zucca-ops.gradle-publisher"
+            artifactId = "dev.zucca-ops.gradle-publisher.gradle.plugin"
+            version = integrationTestCandidateVersion
+
+            pom.withXml {
+                val dependencies = asNode().appendNode("dependencies")
+                val dependency = dependencies.appendNode("dependency")
+                dependency.appendNode("groupId", project.group.toString())
+                dependency.appendNode("artifactId", project.name)
+                dependency.appendNode("version", integrationTestCandidateVersion)
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "integrationTest"
+            url = integrationTestRepositoryDirectory.get().asFile.toURI()
+        }
+    }
+
     publications.withType<MavenPublication>().configureEach {
         pom {
             name.set("Gradle Publisher")
@@ -120,6 +306,30 @@ publishing {
         }
     }
 }
+
+tasks.withType<org.gradle.api.publish.maven.tasks.PublishToMavenRepository>().configureEach {
+    val isCandidatePublication = name.startsWith("publishIntegrationTest")
+    val isIntegrationTestRepository = name.endsWith("ToIntegrationTestRepository")
+
+    when {
+        isCandidatePublication && isIntegrationTestRepository -> {
+            onlyIf {
+                gradle.taskGraph.hasTask(prepareIntegrationTestRepository.get())
+            }
+        }
+
+        isCandidatePublication || isIntegrationTestRepository -> {
+            enabled = false
+        }
+    }
+}
+
+tasks.withType<org.gradle.api.publish.maven.tasks.PublishToMavenLocal>().configureEach {
+    if (name.startsWith("publishIntegrationTest")) {
+        enabled = false
+    }
+}
+
 afterEvaluate {
     tasks.matching { it.name == "publishPluginMavenPublicationToLocalRepository" }.configureEach {
         dependsOn("signMavenPublication")
@@ -153,7 +363,7 @@ publisher {
 
 spotless {
     kotlin {
-        target("src/main/**/*.kt", "src/functionalTest/**/*.kt")
+        target("src/main/**/*.kt", "src/functionalTest/**/*.kt", "src/integrationTest/**/*.kt")
         ktlint()
         licenseHeader(
             """/*

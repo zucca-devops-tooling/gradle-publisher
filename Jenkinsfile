@@ -36,23 +36,53 @@ pipeline {
                 script {
                     setStatus('spotless','NEUTRAL','Checking code format...')
                     try {
-                        sh './gradlew check -x test --no-daemon'
+                        sh './gradlew spotlessCheck --no-daemon'
                         setStatus('spotless','SUCCESS','Spotless passed')
                     } catch (Exception e) {
                         setStatus('spotless','FAILURE','Spotless failed')
+                        throw e
                     }
                 }
             }
         }
-        stage('Test') {
+        stage('Unit Test') {
             steps {
                 script {
-                    setStatus('test','NEUTRAL','Running tests...')
+                    setStatus('unit-test','NEUTRAL','Running unit tests...')
                     try {
                         sh './gradlew test --no-daemon'
-                        setStatus('test','SUCCESS','Tests passed')
+                        setStatus('unit-test','SUCCESS','Unit tests passed')
                     } catch (Exception e) {
-                        setStatus('test','FAILURE','Tests failed')
+                        setStatus('unit-test','FAILURE','Unit tests failed')
+                        throw e
+                    }
+                }
+            }
+        }
+        stage('Functional Test') {
+            steps {
+                script {
+                    setStatus('functional-test','NEUTRAL','Running functional tests...')
+                    try {
+                        sh './gradlew functionalTest --no-daemon'
+                        setStatus('functional-test','SUCCESS','Functional tests passed')
+                    } catch (Exception e) {
+                        setStatus('functional-test','FAILURE','Functional tests failed')
+                        throw e
+                    }
+                }
+            }
+        }
+        stage('Integration Test') {
+            steps {
+                script {
+                    setStatus('integration-test','NEUTRAL','Running packaged-plugin integration tests...')
+                    try {
+                        sh './gradlew integrationTest --no-daemon'
+                        setStatus('integration-test','SUCCESS','Integration tests passed')
+                    } catch (Exception e) {
+                        setStatus('integration-test','FAILURE','Integration tests failed')
+                        throw e
                     }
                 }
             }
