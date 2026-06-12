@@ -34,7 +34,7 @@ package dev.zuccaops.configuration
  *
  * @property target The URL or keyword for the repository. Examples:
  * - `"local"` to publish to local Maven
- * - `"mavenCentral"` to use flying-gradle-plugin
+ * - `"mavenCentral"` to use the Central Portal Publisher API
  * - `"nexus"` for OSSRH/Sonatype (requires `customGradleCommand`)
  * - or any full repository URL
  *

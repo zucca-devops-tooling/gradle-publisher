@@ -28,6 +28,7 @@ import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesti
 abstract class SonatypeRepositoryPublisher(
     private val project: Project,
     private val versionResolver: VersionResolver,
+    private val repositoryBaseUrl: String = ArtifactRepositoryContainer.MAVEN_CENTRAL_URL.toString(),
 ) : BaseRepositoryPublisher(project, versionResolver) {
     private var isPublishable: Boolean? = null
 
@@ -42,7 +43,7 @@ abstract class SonatypeRepositoryPublisher(
         val group = project.group.toString().replace(".", "/")
         val name = project.name.replace(".", "/")
 
-        return "${ArtifactRepositoryContainer.MAVEN_CENTRAL_URL}$group/$name/${versionResolver.getVersion()}"
+        return "${repositoryBaseUrl.trimEnd('/')}/$group/$name/${versionResolver.getVersion()}"
     }
 
     override fun isPublishable(): Boolean {
