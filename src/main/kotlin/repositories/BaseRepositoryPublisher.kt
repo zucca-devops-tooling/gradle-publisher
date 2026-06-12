@@ -88,7 +88,7 @@ abstract class BaseRepositoryPublisher(
                 publication.artifact(shadowJarTask)
                 project.logger.debug("Configured SHADOW publication")
             } else {
-                val errorMessage = "Publisher: 'publishShadowJar = true', but 'shadowJar' task not found!"
+                val errorMessage = "Publisher: 'shadowJar = true', but task 'shadowJar' was not found."
                 project.logger.error(errorMessage)
                 throw GradleException(errorMessage)
             }

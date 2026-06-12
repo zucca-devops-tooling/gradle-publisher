@@ -25,16 +25,41 @@ dependencies {
     implementation("tech.yanand.maven-central-publish:tech.yanand.maven-central-publish.gradle.plugin:1.2.0")
 }
 
+val functionalTestSourceSet = sourceSets.create("functionalTest")
+
+configurations[functionalTestSourceSet.implementationConfigurationName]
+    .extendsFrom(configurations.testImplementation.get())
+configurations[functionalTestSourceSet.runtimeOnlyConfigurationName]
+    .extendsFrom(configurations.testRuntimeOnly.get())
+
+dependencies {
+    add(functionalTestSourceSet.implementationConfigurationName, gradleTestKit())
+}
+
 tasks.test {
     useJUnitPlatform()
 }
 
+val functionalTest =
+    tasks.register<Test>("functionalTest") {
+        description = "Runs functional tests with Gradle TestKit."
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        testClassesDirs = functionalTestSourceSet.output.classesDirs
+        classpath = functionalTestSourceSet.runtimeClasspath
+        useJUnitPlatform()
+        shouldRunAfter(tasks.test)
+    }
+
+tasks.check {
+    dependsOn(functionalTest)
+}
 
 kotlin {
     jvmToolchain(17)
 }
 
 gradlePlugin {
+    testSourceSets(functionalTestSourceSet)
     website = "https://github.com/zucca-devops-tooling/gradle-publisher"
     vcsUrl = "https://github.com/zucca-devops-tooling/gradle-publisher.git"
     plugins {
@@ -128,7 +153,7 @@ publisher {
 
 spotless {
     kotlin {
-        target("src/main/**/*.kt")
+        target("src/main/**/*.kt", "src/functionalTest/**/*.kt")
         ktlint()
         licenseHeader(
             """/*

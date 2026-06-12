@@ -26,6 +26,8 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.kotlin.dsl.get
 import java.io.File
 
+private const val LOCAL_MAVEN_PROPERTY = "maven.repo.local"
+
 /**
  * Publisher for local Maven repository (`~/.m2/repository`).
  *
@@ -49,7 +51,12 @@ class LocalRepositoryPublisher(
             return project.shouldPublishSnapshot()
         }
 
-        val m2Repo = File(System.getProperty("user.home"), RepositoryConstants.LOCAL_MAVEN_PATH)
+        val m2Repo =
+            System
+                .getProperty(LOCAL_MAVEN_PROPERTY)
+                ?.takeIf { it.isNotBlank() }
+                ?.let(::File)
+                ?: File(System.getProperty("user.home"), RepositoryConstants.LOCAL_MAVEN_PATH)
         val groupPath = project.group.toString().replace('.', '/')
         val artifactId = project.name
         val version = versionResolver.getVersion()
