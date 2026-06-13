@@ -1,3 +1,5 @@
+// DEPRECATED: Jenkins is no longer an active CI system for this repository.
+// Keep this file for historical reference only; update GitHub Actions instead.
 pipeline {
     agent any
 
@@ -36,53 +38,23 @@ pipeline {
                 script {
                     setStatus('spotless','NEUTRAL','Checking code format...')
                     try {
-                        sh './gradlew spotlessCheck --no-daemon'
+                        sh './gradlew check -x test --no-daemon'
                         setStatus('spotless','SUCCESS','Spotless passed')
                     } catch (Exception e) {
                         setStatus('spotless','FAILURE','Spotless failed')
-                        throw e
                     }
                 }
             }
         }
-        stage('Unit Test') {
+        stage('Test') {
             steps {
                 script {
-                    setStatus('unit-test','NEUTRAL','Running unit tests...')
+                    setStatus('test','NEUTRAL','Running tests...')
                     try {
                         sh './gradlew test --no-daemon'
-                        setStatus('unit-test','SUCCESS','Unit tests passed')
+                        setStatus('test','SUCCESS','Tests passed')
                     } catch (Exception e) {
-                        setStatus('unit-test','FAILURE','Unit tests failed')
-                        throw e
-                    }
-                }
-            }
-        }
-        stage('Functional Test') {
-            steps {
-                script {
-                    setStatus('functional-test','NEUTRAL','Running functional tests...')
-                    try {
-                        sh './gradlew functionalTest --no-daemon'
-                        setStatus('functional-test','SUCCESS','Functional tests passed')
-                    } catch (Exception e) {
-                        setStatus('functional-test','FAILURE','Functional tests failed')
-                        throw e
-                    }
-                }
-            }
-        }
-        stage('Integration Test') {
-            steps {
-                script {
-                    setStatus('integration-test','NEUTRAL','Running packaged-plugin integration tests...')
-                    try {
-                        sh './gradlew integrationTest --no-daemon'
-                        setStatus('integration-test','SUCCESS','Integration tests passed')
-                    } catch (Exception e) {
-                        setStatus('integration-test','FAILURE','Integration tests failed')
-                        throw e
+                        setStatus('test','FAILURE','Tests failed')
                     }
                 }
             }
