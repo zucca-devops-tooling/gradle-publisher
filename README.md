@@ -143,6 +143,13 @@ publisher {
 
 This routes `publish` to `publishToMavenCentralPortal`.
 
+The plugin publishes Maven-layout artifacts into `build/repos/bundles`, creates
+`build/repos/bundles.zip`, and uploads that bundle to the Central Portal Publisher
+API with `USER_MANAGED` publishing. The task waits for validation and then leaves
+the deployment ready for manual publishing in the Central Portal.
+The configured portal username and password are Base64-encoded as
+`username:password` and sent as a Bearer token.
+
 ### Nexus / OSSRH
 
 ```kotlin
@@ -269,21 +276,23 @@ Run the fast unit tests:
 ./gradlew test
 ```
 
-Run the Layer 2 functional tests:
+Run the functional tests:
 
 ```bash
 ./gradlew functionalTest
 ```
 
-Run all verification, including formatting, unit tests, and functional tests:
+Run the packaged-plugin integration tests:
+
+```bash
+./gradlew integrationTest
+```
+
+Run all verification, including formatting, unit tests, functional tests, and integration tests:
 
 ```bash
 ./gradlew check
 ```
-
-The functional tests in `src/functionalTest/kotlin` use Gradle TestKit and `withPluginClasspath()` to exercise the plugin from source in isolated temporary Gradle projects. They initialize real Git repositories and use isolated Gradle, TestKit, and Maven repository directories.
-
-These are not packaged-plugin tests and do not resolve a published plugin artifact. They are also distinct from external smoke tests that run in a separate consumer repository against real infrastructure. Those higher layers are intentionally outside this test suite.
 
 ## Troubleshooting
 

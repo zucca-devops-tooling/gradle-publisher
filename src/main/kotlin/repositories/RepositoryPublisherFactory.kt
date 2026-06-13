@@ -19,10 +19,12 @@ import dev.zuccaops.configuration.RepositoryConfig
 import dev.zuccaops.helpers.VersionResolver
 import dev.zuccaops.helpers.publisherConfiguration
 import dev.zuccaops.repositories.central.MavenCentralRepositoryPublisher
+import dev.zuccaops.repositories.central.MavenCentralRepositoryPublisher.Companion.REPOSITORY_BASE_URL_PROPERTY
 import dev.zuccaops.repositories.central.NexusRepositoryPublisher
 import dev.zuccaops.repositories.local.LocalRepositoryPublisher
 import dev.zuccaops.repositories.remote.RemoteRepositoryPublisher
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ArtifactRepositoryContainer.MAVEN_CENTRAL_URL
 
 /**
  * Factory responsible for selecting the correct [RepositoryPublisher] implementation
@@ -33,7 +35,7 @@ import org.gradle.api.Project
  *
  * Based on the selected configuration, it delegates to one of:
  * - [LocalRepositoryPublisher] (local testing/dev)
- * - [MavenCentralRepositoryPublisher] (via flying-gradle-plugin)
+ * - [MavenCentralRepositoryPublisher] (Central Portal bundle upload)
  * - [NexusRepositoryPublisher] (custom Gradle task for central)
  * - [RemoteRepositoryPublisher] (for Artifactory, Nexus, etc.)
  *
@@ -55,7 +57,13 @@ object RepositoryPublisherFactory {
             }
 
             RepositoryConstants.MAVEN_CENTRAL_COMMAND -> {
-                MavenCentralRepositoryPublisher(project, versionResolver, repositoryAuthenticator)
+                MavenCentralRepositoryPublisher(
+                    project,
+                    versionResolver,
+                    repositoryAuthenticator,
+                    project.findProperty(REPOSITORY_BASE_URL_PROPERTY)?.toString()
+                        ?: MAVEN_CENTRAL_URL.toString(),
+                )
             }
 
             RepositoryConstants.SONATYPE_COMMAND -> {

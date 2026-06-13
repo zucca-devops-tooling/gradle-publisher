@@ -22,16 +22,13 @@ dependencies {
     testImplementation("io.mockk:mockk-agent-jvm:1.14.6")
     implementation(gradleApi())
     implementation(localGroovy())
-    implementation("tech.yanand.maven-central-publish:tech.yanand.maven-central-publish.gradle.plugin:1.2.0")
 }
 
 val functionalTestSourceSet = sourceSets.create("functionalTest")
-
 configurations[functionalTestSourceSet.implementationConfigurationName]
     .extendsFrom(configurations.testImplementation.get())
 configurations[functionalTestSourceSet.runtimeOnlyConfigurationName]
     .extendsFrom(configurations.testRuntimeOnly.get())
-
 dependencies {
     add(functionalTestSourceSet.implementationConfigurationName, gradleTestKit())
 }
@@ -81,7 +78,11 @@ signing {
     if (!keyId.isNullOrBlank() && !password.isNullOrBlank() && !keyPath.isNullOrBlank()) {
         logger.lifecycle("🔐 Using GPG secret key file at $keyPath")
         useInMemoryPgpKeys(File(keyPath).readText(), password)
-        publishing.publications.withType<MavenPublication>().configureEach {
+        publishing.publications.withType<MavenPublication>().matching {
+            name == "maven" ||
+                name == "pluginMaven" ||
+                name == "gradlePublisherPluginPluginMarkerMaven"
+        }.configureEach {
             signing.sign(this)
         }
     } else {
@@ -120,14 +121,6 @@ publishing {
         }
     }
 }
-afterEvaluate {
-    tasks.matching { it.name == "publishPluginMavenPublicationToLocalRepository" }.configureEach {
-        dependsOn("signMavenPublication")
-    }
-    tasks.matching { it.name == "publishMavenPublicationToLocalRepository" }.configureEach {
-        dependsOn("signPluginMavenPublication")
-    }
-}
 
 java {
     withJavadocJar()
@@ -153,7 +146,7 @@ publisher {
 
 spotless {
     kotlin {
-        target("src/main/**/*.kt", "src/functionalTest/**/*.kt")
+        target("src/main/**/*.kt", "src/functionalTest/**/*.kt", "src/integrationTest/**/*.kt")
         ktlint()
         licenseHeader(
             """/*
@@ -175,3 +168,5 @@ spotless {
         )
     }
 }
+
+apply(from = "gradle/integration-testing.gradle.kts")

@@ -1,3 +1,5 @@
+// DEPRECATED: Jenkins is no longer an active CI system for this repository.
+// Keep this file for historical reference only; update GitHub Actions instead.
 pipeline {
     agent any
 
