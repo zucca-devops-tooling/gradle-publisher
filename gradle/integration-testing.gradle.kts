@@ -1,22 +1,37 @@
 import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.testing.Test
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
+import org.gradle.plugins.signing.Sign
 
 val integrationTestCandidateVersion = "0.0.0-integration-test"
 val integrationTestRepositoryDirectory = layout.buildDirectory.dir("integration-test-repository")
 val integrationTestConsumerDirectory = layout.buildDirectory.dir("integration-test-consumers")
+val integrationTestEntryTasks =
+    setOf(
+        "integrationTest",
+        "prepareIntegrationTestRepository",
+        "check",
+        "build",
+        "buildNeeded",
+        "buildDependents",
+    )
+val integrationTestRequested =
+    gradle.startParameter.taskNames.any {
+        it.substringAfterLast(':') in integrationTestEntryTasks
+    }
+
+if (integrationTestRequested) {
+    // Gradle's generated implementation and marker publications inherit this candidate version.
+    project.version = integrationTestCandidateVersion
+}
 
 val sourceSets = extensions.getByType<SourceSetContainer>()
 val integrationTestSourceSet = sourceSets.create("integrationTest")
@@ -46,29 +61,6 @@ val cleanIntegrationTestConsumers =
     }
 
 extensions.configure<PublishingExtension> {
-    publications {
-        create<MavenPublication>("integrationTestPluginMaven") {
-            groupId = project.group.toString()
-            artifactId = project.name
-            version = integrationTestCandidateVersion
-            from(components["java"])
-        }
-
-        create<MavenPublication>("integrationTestPluginMarkerMaven") {
-            groupId = "dev.zucca-ops.gradle-publisher"
-            artifactId = "dev.zucca-ops.gradle-publisher.gradle.plugin"
-            version = integrationTestCandidateVersion
-
-            pom.withXml {
-                val dependencies = asNode().appendNode("dependencies")
-                val dependency = dependencies.appendNode("dependency")
-                dependency.appendNode("groupId", project.group.toString())
-                dependency.appendNode("artifactId", project.name)
-                dependency.appendNode("version", integrationTestCandidateVersion)
-            }
-        }
-    }
-
     repositories {
         maven {
             name = "integrationTest"
@@ -79,8 +71,8 @@ extensions.configure<PublishingExtension> {
 
 val candidatePublicationTasks =
     listOf(
-        "publishIntegrationTestPluginMavenPublicationToIntegrationTestRepository",
-        "publishIntegrationTestPluginMarkerMavenPublicationToIntegrationTestRepository",
+        "publishPluginMavenPublicationToIntegrationTestRepository",
+        "publishGradlePublisherPluginPluginMarkerMavenPublicationToIntegrationTestRepository",
     )
 
 tasks.matching { it.name in candidatePublicationTasks }.configureEach {
@@ -94,6 +86,21 @@ val prepareIntegrationTestRepository =
         dependsOn(cleanIntegrationTestRepository, candidatePublicationTasks)
         outputs.dir(integrationTestRepositoryDirectory)
     }
+
+if (integrationTestRequested) {
+    gradle.taskGraph.whenReady {
+        listOf(
+            "signPluginMavenPublication",
+            "signGradlePublisherPluginPluginMarkerMavenPublication",
+        ).forEach { taskName ->
+            val signTask = tasks.getByName(taskName) as Sign
+            signTask.apply {
+                required(false)
+                enabled = false
+            }
+        }
+    }
+}
 
 val integrationTest =
     tasks.register<Test>("integrationTest") {
@@ -125,24 +132,15 @@ tasks.named("check") {
 }
 
 tasks.withType<PublishToMavenRepository>().configureEach {
-    val isCandidatePublication = name.startsWith("publishIntegrationTest")
     val isIntegrationTestRepository = name.endsWith("ToIntegrationTestRepository")
 
-    when {
-        isCandidatePublication && isIntegrationTestRepository -> {
+    if (isIntegrationTestRepository) {
+        if (name in candidatePublicationTasks) {
             onlyIf {
-                gradle.taskGraph.hasTask(prepareIntegrationTestRepository.get())
+                integrationTestRequested
             }
-        }
-
-        isCandidatePublication || isIntegrationTestRepository -> {
+        } else {
             enabled = false
         }
-    }
-}
-
-tasks.withType<PublishToMavenLocal>().configureEach {
-    if (name.startsWith("publishIntegrationTest")) {
-        enabled = false
     }
 }

@@ -47,8 +47,6 @@ val functionalTest =
         shouldRunAfter(tasks.test)
     }
 
-apply(from = "gradle/integration-testing.gradle.kts")
-
 tasks.check {
     dependsOn(functionalTest)
 }
@@ -179,3 +177,5 @@ spotless {
         )
     }
 }
+
+apply(from = "gradle/integration-testing.gradle.kts")
