@@ -276,40 +276,23 @@ Run the fast unit tests:
 ./gradlew test
 ```
 
-Run the Layer 2 functional tests:
+Run the functional tests:
 
 ```bash
 ./gradlew functionalTest
 ```
 
-Run the Layer 3 packaged-plugin integration tests:
+Run the packaged-plugin integration tests:
 
 ```bash
 ./gradlew integrationTest
 ```
-
-The `integrationTest` task depends on `prepareIntegrationTestRepository`, which publishes a deterministic candidate version to `build/integration-test-repository`. The repository is cleaned before each preparation and contains the plugin implementation, Gradle plugin marker, and required runtime artifacts.
-
-Layer 3 build orchestration is isolated in `gradle/integration-testing.gradle.kts` so the root build remains focused on production plugin configuration.
-
-Layer 3 consumers are standalone temporary Gradle builds. They resolve the candidate through `pluginManagement.repositories`, apply it with the normal versioned plugins DSL, run offline with isolated Gradle and Maven homes, and initialize real Git repositories.
-
-Layer 3 intentionally does not use `GradleRunner.withPluginClasspath()`. Injecting the implementation directly would bypass the packaged plugin marker, published metadata, and runtime dependency resolution that this layer exists to verify.
 
 Run all verification, including formatting, unit tests, functional tests, and integration tests:
 
 ```bash
 ./gradlew check
 ```
-
-The test layers are:
-
-- Layer 1: unit tests in `src/test/kotlin`
-- Layer 2: TestKit functional tests in `src/functionalTest/kotlin`, using `withPluginClasspath()` to exercise plugin behavior from source
-- Layer 3: integration tests in `src/integrationTest/kotlin`, consuming packaged candidate artifacts from the isolated repository
-- Layer 4: smoke tests consuming externally published artifacts from a separate consumer repository
-
-Layer 3 focuses on packaging, marker resolution, runtime metadata, normal plugin application, version access, and one representative publication. External publication infrastructure and Layer 4 smoke tests are intentionally outside this repository's test suite.
 
 ## Troubleshooting
 

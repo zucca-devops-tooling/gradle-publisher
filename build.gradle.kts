@@ -122,15 +122,6 @@ publishing {
     }
 }
 
-afterEvaluate {
-    tasks.matching { it.name == "publishPluginMavenPublicationToLocalRepository" }.configureEach {
-        dependsOn("signMavenPublication")
-    }
-    tasks.matching { it.name == "publishMavenPublicationToLocalRepository" }.configureEach {
-        dependsOn("signPluginMavenPublication")
-    }
-}
-
 java {
     withJavadocJar()
     withSourcesJar()
