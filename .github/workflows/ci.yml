@@ -8,10 +8,14 @@ on:
       - release/**
       - hotfix/**
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
 
 permissions:
   contents: read
-  packages: write
 
 env:
   GRADLE_OPTS: >-
@@ -138,12 +142,36 @@ jobs:
     name: Publish to Maven repository
     runs-on: ubuntu-latest
     needs: integration-test
+    if: >-
+      github.event_name == 'push' ||
+      (
+        github.event_name == 'pull_request' &&
+        github.event.action == 'labeled' &&
+        github.event.label.name == 'publish-snapshot'
+      )
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: read
+    outputs:
+      published-version: ${{ steps.publication-version.outputs.version }}
+      publication-channel: ${{ steps.publication-version.outputs.channel }}
 
     steps:
+      - name: Reject forked PR snapshots
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name != github.repository
+        shell: bash
+        run: |
+          echo "::error::publish-snapshot is only supported for branches in ${{ github.repository }}. Forked PRs cannot use repository publishing secrets."
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -154,18 +182,91 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Publish
+      - name: Resolve publication version
+        id: publication-version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="$(./gradlew -q printPublicationVersion --no-daemon | tail -n 1)"
+          if [[ -z "$version" ]]; then
+            echo "::error::Gradle did not print a publication version."
+            exit 1
+          fi
+
+          channel="maven-central"
+          if [[ "$version" == *-SNAPSHOT ]]; then
+            channel="github-packages"
+          fi
+
+          snapshot_context="false"
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            snapshot_context="true"
+          elif [[ "$GITHUB_EVENT_NAME" == "push" && ( "$GITHUB_REF_NAME" == "develop" || "$GITHUB_REF_NAME" == "main" ) ]]; then
+            snapshot_context="true"
+          fi
+
+          if [[ "$snapshot_context" == "true" && "$version" != *-SNAPSHOT ]]; then
+            echo "::error::Expected a snapshot publication version, but Gradle resolved '$version'."
+            exit 1
+          fi
+
+          if [[ "$snapshot_context" == "false" && "$version" == *-SNAPSHOT ]]; then
+            echo "::error::Expected a production publication version, but Gradle resolved '$version'."
+            exit 1
+          fi
+
+          {
+            echo "version=$version"
+            echo "channel=$channel"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Resolved publication version: $version"
+          echo "Publication channel: $channel"
+
+      - name: Publish snapshot to GitHub Packages
+        if: steps.publication-version.outputs.channel == 'github-packages'
+        shell: bash
+        env:
+          GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+          GH_PACKAGES_USERNAME: ${{ secrets.GH_PACKAGES_USERNAME }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          token="${GH_PACKAGES_TOKEN:-${GITHUB_TOKEN:-}}"
+          if [[ -z "$token" ]]; then
+            echo "::error::GitHub Packages publication requires GH_PACKAGES_TOKEN or the workflow GITHUB_TOKEN."
+            exit 1
+          fi
+
+          ./gradlew publish --info --no-daemon \
+            -PgithubPackagesUsername="${GH_PACKAGES_USERNAME:-$GITHUB_ACTOR}" \
+            -PgithubPackagesPassword="$token"
+
+      - name: Publish production to Maven Central
+        if: steps.publication-version.outputs.channel == 'maven-central'
         shell: bash
         env:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_KEY_PASS: ${{ secrets.GPG_KEY_PASS }}
           GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
-          GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
-          GH_PACKAGES_USERNAME: ${{ secrets.GH_PACKAGES_USERNAME }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         run: |
           set -euo pipefail
+
+          missing=()
+          for name in GPG_KEY_ID GPG_KEY_PASS GPG_SECRET_KEY OSSRH_USERNAME OSSRH_PASSWORD; do
+            if [[ -z "${!name:-}" ]]; then
+              missing+=("$name")
+            fi
+          done
+
+          if (( ${#missing[@]} > 0 )); then
+            echo "::error::Missing required Maven Central publication secrets: ${missing[*]}"
+            exit 1
+          fi
 
           GPG_KEY_PATH="$RUNNER_TEMP/gpg-private-key.asc"
           printf '%s' "$GPG_SECRET_KEY" > "$GPG_KEY_PATH"
@@ -174,10 +275,24 @@ jobs:
             -Psigning.keyId="$GPG_KEY_ID" \
             -Psigning.password="$GPG_KEY_PASS" \
             -Psigning.secretKeyRingFile="$GPG_KEY_PATH" \
-            -PgithubPackagesUsername="${GH_PACKAGES_USERNAME:-$GITHUB_ACTOR}" \
-            -PgithubPackagesPassword="$GH_PACKAGES_TOKEN" \
             -PmavenCentralUsername="$OSSRH_USERNAME" \
             -PmavenCentralPassword="$OSSRH_PASSWORD"
+
+  snapshot-smoke:
+    name: Layer 4 Smoke Test
+    needs: publish-maven
+    if: >-
+      needs.publish-maven.outputs.publication-channel == 'github-packages' &&
+      endsWith(needs.publish-maven.outputs.published-version, '-SNAPSHOT')
+    permissions:
+      contents: read
+      packages: read
+    uses: zucca-devops-tooling/gradle-publisher-smoke/.github/workflows/smoke.yml@main
+    with:
+      version: ${{ needs.publish-maven.outputs.published-version }}
+      channel: github-packages
+    secrets:
+      GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
 
   publish-gradle-plugin-portal:
     name: Publish to Gradle Plugin Portal

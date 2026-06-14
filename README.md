@@ -294,6 +294,36 @@ Run all verification, including formatting, unit tests, functional tests, and in
 ./gradlew check
 ```
 
+## Layer 4 Smoke Tests
+
+Layer 4 smoke tests live in
+[`zucca-devops-tooling/gradle-publisher-smoke`](https://github.com/zucca-devops-tooling/gradle-publisher-smoke)
+and consume only externally published plugin artifacts.
+
+CI runs Layer 4 automatically after GitHub Packages snapshots are published from
+`develop`, `main`, or a same-repository PR labeled `publish-snapshot`. Ordinary
+PRs do not publish snapshots. A PR snapshot is published only for the commit that
+is current when the label is added; to publish a newer PR commit, remove and add
+the label again, or use a manual publishing workflow.
+
+Run a GitHub Packages snapshot smoke test manually:
+
+```bash
+gh workflow run smoke.yml \
+  --repo zucca-devops-tooling/gradle-publisher-smoke \
+  -f version=1.2.0-develop-SNAPSHOT \
+  -f channel=github-packages
+```
+
+Run a Maven Central release smoke test manually after the version is available:
+
+```bash
+gh workflow run smoke.yml \
+  --repo zucca-devops-tooling/gradle-publisher-smoke \
+  -f version=1.2.0 \
+  -f channel=maven-central
+```
+
 ## Troubleshooting
 
 Run with info logs:

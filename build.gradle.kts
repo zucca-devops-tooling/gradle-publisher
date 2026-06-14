@@ -51,6 +51,15 @@ tasks.check {
     dependsOn(functionalTest)
 }
 
+tasks.register("printPublicationVersion") {
+    description = "Prints the resolved publication version used by CI."
+    group = "publishing"
+
+    doLast {
+        println(publisher.resolvedVersion)
+    }
+}
+
 kotlin {
     jvmToolchain(17)
 }
